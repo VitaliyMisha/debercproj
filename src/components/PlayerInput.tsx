@@ -19,7 +19,7 @@ const PlayerInput: React.FC<PlayerInputProps> = ({idx, name, onChange}) => {
             value = '😸 Бая';
         }
         if (kiw.includes(value.trim().toLowerCase())) {
-            value = `🥷${kiw}`;
+            value = `🥷${value}`;
         }
         onChange(value, idx);
     };
