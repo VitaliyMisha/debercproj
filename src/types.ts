@@ -1,6 +1,7 @@
 export interface Player {
     id: number;
     name: string;
+    winCount: number
 }
 
 export interface Round {
@@ -14,4 +15,5 @@ export interface Game {
     createdAt: string;
     players: Player[];
     rounds: Round[];
+    dealerId: number;
 }

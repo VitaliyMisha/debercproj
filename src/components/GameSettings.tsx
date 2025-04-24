@@ -1,4 +1,3 @@
-// src/components/GameSettings.tsx
 import React from 'react';
 
 interface GameSettingsProps {
@@ -17,7 +16,7 @@ const GameSettings: React.FC<GameSettingsProps> = ({
     <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <label className="flex-1 flex flex-col">
-                <span className="text-gray-700 font-medium mb-1">Кількість гравців</span>
+                <span className="text-gray-700 font-medium mb-1 text-center">Кількість гравців</span>
                 <select
                     className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={playerCount}
