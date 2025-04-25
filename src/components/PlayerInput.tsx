@@ -13,10 +13,10 @@ const PlayerInput: React.FC<PlayerInputProps> = ({idx, name, onChange}) => {
         const baya = ['бая', 'кот']
         const kiw = ['киш', 'кіш']
         if (zaets.includes(value.trim().toLowerCase())) {
-            value = '🐰 Заєць';
+            value = `🐰${value}`
         }
         if (baya.includes(value.trim().toLowerCase())) {
-            value = '😸 Бая';
+            value = `😸${value}`
         }
         if (kiw.includes(value.trim().toLowerCase())) {
             value = `🥷${value}`;

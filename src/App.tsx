@@ -21,7 +21,17 @@ export default function App() {
     const [error, setError] = useState<string>('');
     const [hasHistoryShown, setHasHistoryShown] = useState(false);
 
-    // Retrieve the last gameId from localStorage, or set to 1 if none exists
+    const WIN_COUNTS_KEY = 'playerWinCounts';
+
+    const loadWinCounts = (): Record<string, number> => {
+        const stored = localStorage.getItem(WIN_COUNTS_KEY);
+        return stored ? JSON.parse(stored) : {};
+    };
+
+    const saveWinCounts = (counts: Record<string, number>) => {
+        localStorage.setItem(WIN_COUNTS_KEY, JSON.stringify(counts));
+    };
+
     const [gameId, setGameId] = useState(() => {
         const storedGameId = localStorage.getItem('gameId');
         return storedGameId ? parseInt(storedGameId, 10) : 1;
@@ -35,12 +45,15 @@ export default function App() {
         setNames(Array(playerCount).fill(''));
     }, [playerCount]);
 
-    const createGame = (reusePlayers?: Player[], showHistory:boolean = false) => {
+    const createGame = (reusePlayers?: Player[], showHistory: boolean = false) => {
+        const winCounts = loadWinCounts();
+
         const players: Player[] = reusePlayers || names.map((name, idx) => ({
             id: idx + 1,
             name,
-            winCount: 0,
+            winCount: winCounts['id'] || 0,
         }));
+
         const newGame: Game = {
             id: gameId,
             createdAt: new Date().toISOString(),
@@ -51,7 +64,7 @@ export default function App() {
         setGame(newGame);
         setWinnerPlayer(null);
         setScores(Object.fromEntries(players.map(p => [p.id.toString(), ''])));
-        setGameId(prev => prev + 1); // Increment the gameId after each new game creation
+        setGameId(prev => prev + 1);
         setError('');
         setHasHistoryShown(showHistory);
     };
@@ -96,7 +109,15 @@ export default function App() {
             const updatedPlayers = currentGame.players.map(p =>
                 p.id === winner ? { ...p, winCount: p.winCount + 1 } : p
             );
-            setGame({ ...currentGame, players: updatedPlayers });
+            const updatedGame = { ...currentGame, players: updatedPlayers };
+            setGame(updatedGame);
+
+            const winCounts = loadWinCounts();
+            const winnerId = String(currentGame.players.find(p => p.id === winner)?.id);
+            if (winnerId) {
+                winCounts[winnerId] = (winCounts[winnerId] || 0) + 1;
+                saveWinCounts(winCounts);
+            }
         } else if (contenders.length > 1) {
             const maxScore = Math.max(...contenders.map(p => totals[p.id]));
             const winners = contenders.filter(p => totals[p.id] === maxScore);
@@ -156,11 +177,13 @@ export default function App() {
         setError('');
         setHasHistoryShown(false);
         setGameId(1);
+        // Якщо потрібно очистити статистику перемог:
+        // localStorage.removeItem(WIN_COUNTS_KEY);
     };
 
     const continueGame = () => {
         if (game && game.players) {
-            createGame(game.players as Player[],true);
+            createGame(game.players as Player[], true);
         }
     };
 
@@ -178,10 +201,10 @@ export default function App() {
                         {names.map((n, idx) => (
                             <div key={idx} className="mb-3 flex items-center justify-between">
                                 <PlayerInput idx={idx} name={n} onChange={(value, i) => {
-                                        const arr = [...names];
-                                        arr[i] = value;
-                                        setNames(arr);
-                                    }}
+                                    const arr = [...names];
+                                    arr[i] = value;
+                                    setNames(arr);
+                                }}
                                 />
                                 <label className="ml-2 text-sm">
                                     <input type="radio" name="dealer" checked={dealerIndex===idx} onChange={()=>setDealerIndex(idx)} className="mr-1" />Роздає
