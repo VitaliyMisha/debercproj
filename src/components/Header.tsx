@@ -7,7 +7,7 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ gameId, targetScore, dealerName }) => (
-    <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-6 rounded-lg shadow-lg text-center">
+    <div className="bg-linear-to-r from-blue-500 to-indigo-600 text-white p-6 rounded-lg shadow-lg text-center">
         <h1 className="text-3xl font-semibold">
             Гра #{gameId}
         </h1>

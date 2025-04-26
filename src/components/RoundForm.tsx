@@ -21,7 +21,7 @@ const RoundForm: React.FC<RoundFormProps> = ({ players, scores, onScoreChange, o
                     type="text"
                     value={scores[p.id] || ''}
                     onChange={(e) => onScoreChange(e, p.id)}
-                    className="flex-1 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 p-2 border border-gray-300 rounded-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                     placeholder="Введіть рахунок"
                 />
             </div>
@@ -30,7 +30,7 @@ const RoundForm: React.FC<RoundFormProps> = ({ players, scores, onScoreChange, o
             <button
                 onClick={onAddRound}
                 disabled={isAddDisabled}
-                className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-6 py-2 bg-blue-500 text-white rounded-sm hover:bg-blue-600 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             >
                 Додати раунд
             </button>

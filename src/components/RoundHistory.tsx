@@ -37,7 +37,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
             <h2 className="text-xl font-semibold mb-2 text-center">Історія раундів</h2>
             <ul>
                 {rounds.map(r => (
-                    <li key={r.number} className="mb-4 p-3 border rounded">
+                    <li key={r.number} className="mb-4 p-3 border rounded-sm">
                         {editingRound === r.number ? (
                             <>
                                 <div className="grid grid-cols-2 gap-2 mb-3">
@@ -45,7 +45,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                                         <input
                                             key={p.id}
                                             type="text"
-                                            className="p-2 border rounded"
+                                            className="p-2 border rounded-sm"
                                             value={editScores[p.id] || ''}
                                             onChange={e => setEditScores({ ...editScores, [p.id]: e.target.value })}
                                         />
@@ -53,11 +53,11 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                                 </div>
                                 <div className="flex space-x-2">
                                     <button
-                                        className="px-4 py-1 bg-green-500 text-white rounded"
+                                        className="px-4 py-1 bg-green-500 text-white rounded-sm"
                                         onClick={saveEdit}
                                     >Зберегти</button>
                                     <button
-                                        className="px-4 py-1 bg-gray-300 text-gray-700 rounded"
+                                        className="px-4 py-1 bg-gray-300 text-gray-700 rounded-sm"
                                         onClick={cancelEdit}
                                     >Відмінити</button>
                                 </div>

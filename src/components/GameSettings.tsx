@@ -18,7 +18,7 @@ const GameSettings: React.FC<GameSettingsProps> = ({
             <label className="flex-1 flex flex-col">
                 <span className="text-gray-700 font-medium mb-1 text-center">Кількість гравців</span>
                 <select
-                    className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="p-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                     value={playerCount}
                     onChange={(e) => setPlayerCount(Number(e.target.value))}
                 >
@@ -33,7 +33,7 @@ const GameSettings: React.FC<GameSettingsProps> = ({
             <label className="flex-1 flex flex-col">
                 <span className="text-gray-700 font-medium mb-1 text-center">До скільки</span>
                 <select
-                    className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="p-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                     value={targetScore}
                     onChange={(e) => setTargetScore(Number(e.target.value))}
                 >
