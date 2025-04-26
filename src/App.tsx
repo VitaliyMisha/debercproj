@@ -45,22 +45,31 @@ export default function App() {
         setNames(Array(playerCount).fill(''));
     }, [playerCount]);
 
-    const createGame = (reusePlayers?: Player[], showHistory: boolean = false) => {
+    const createGame = (
+        reusePlayers?: Player[],
+        showHistory: boolean = false,
+        preserveWinCounts: boolean = false,
+        startingDealerId?: number
+    ) => {
         const winCounts = loadWinCounts();
 
-        const players: Player[] = reusePlayers || names.map((name, idx) => ({
-            id: idx + 1,
-            name,
-            winCount: winCounts['id'] || 0,
-        }));
+        const players: Player[] = reusePlayers || names.map((name, idx) => {
+            const id = idx + 1;
+            return {
+                id,
+                name,
+                winCount: preserveWinCounts ? 0 : (winCounts[id] || 0),
+            };
+        });
 
         const newGame: Game = {
             id: gameId,
             createdAt: new Date().toISOString(),
             players,
             rounds: [],
-            dealerId: players[dealerIndex].id,
+            dealerId: startingDealerId || players[dealerIndex].id, // ← використовуємо переданий dealerId
         };
+
         setGame(newGame);
         setWinnerPlayer(null);
         setScores(Object.fromEntries(players.map(p => [p.id.toString(), ''])));
@@ -68,6 +77,7 @@ export default function App() {
         setError('');
         setHasHistoryShown(showHistory);
     };
+
 
     const isValidScore = (val: string | number): boolean => {
         const trimmed = val?.toString().trim().toUpperCase();
@@ -176,16 +186,25 @@ export default function App() {
         setWinnerPlayer(null);
         setError('');
         setHasHistoryShown(false);
-        setGameId(1);
-        // Якщо потрібно очистити статистику перемог:
-        // localStorage.removeItem(WIN_COUNTS_KEY);
+        setGameId(prev => prev + 1);
     };
 
     const continueGame = () => {
         if (game && game.players) {
-            createGame(game.players as Player[], true);
+            const currentDealerId = game.dealerId;
+            createGame(
+                game.players.map(p => ({
+                    ...p,
+                    winCount: p.winCount,
+                })),
+                true,
+                true,
+                currentDealerId
+            );
         }
     };
+
+
 
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col items-center py-10">
