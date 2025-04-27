@@ -104,7 +104,7 @@ export default function App() {
     const addRound = () => {
         if (!game || winnerPlayer !== null) return;
         if (isAddDisabled) {
-            setError('Заповніть всі поля валідними значеннями (число, Б або ХВ).');
+            setError('Заповніть всі поля валідними значеннями (число, Б, ХВ або ВІС).');
             return;
         }
         const roundNumber = game.rounds.length + 1;
@@ -147,7 +147,7 @@ export default function App() {
         setWinnerPlayer(null);
         setError('');
         setHasHistoryShown(false);
-        setGameId(prev => prev + 1);
+        setGameId(1);
     };
 
     const continueGame = () => {
@@ -166,7 +166,7 @@ export default function App() {
                         targetScore={targetScore} setTargetScore={setTargetScore}
                     />
                     <div className="mt-6">
-                        <h2 className="text-lg font-medium mb-2 text-gray-700">Імена гравців</h2>
+                        <h2 className="text-lg font-medium mb-2 text-gray-700 text-center">Імена гравців</h2>
                         {names.map((n, idx) => (
                             <div key={idx} className="mb-3 flex items-center justify-between">
                                 <PlayerInput idx={idx} name={n} onChange={(value, i) => {
