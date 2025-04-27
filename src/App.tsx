@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Player, Round, Game } from './types';
 
 import GameSettings from './components/GameSettings';
@@ -9,6 +9,9 @@ import WinnerMessage from './components/WinnerMessage';
 import Header from './components/Header';
 import GameHistory from './components/GameHistory';
 import TotalScores from './components/TotalScores';
+import { isValidScore, loadWinCounts, parseScore, saveWinCounts } from './utils/gameHelpers';
+
+const GAME_ID = 'gameId';
 
 export default function App() {
     const [playerCount, setPlayerCount] = useState(2);
@@ -21,24 +24,13 @@ export default function App() {
     const [error, setError] = useState<string>('');
     const [hasHistoryShown, setHasHistoryShown] = useState(false);
 
-    const WIN_COUNTS_KEY = 'playerWinCounts';
-
-    const loadWinCounts = (): Record<string, number> => {
-        const stored = localStorage.getItem(WIN_COUNTS_KEY);
-        return stored ? JSON.parse(stored) : {};
-    };
-
-    const saveWinCounts = (counts: Record<string, number>) => {
-        localStorage.setItem(WIN_COUNTS_KEY, JSON.stringify(counts));
-    };
-
     const [gameId, setGameId] = useState(() => {
-        const storedGameId = localStorage.getItem('gameId');
-        return storedGameId ? parseInt(storedGameId, 10) : 1;
+        const stored = localStorage.getItem(GAME_ID);
+        return stored ? parseInt(stored, 10) : 1;
     });
 
     useEffect(() => {
-        localStorage.setItem('gameId', gameId.toString());
+        localStorage.setItem(GAME_ID, gameId.toString());
     }, [gameId]);
 
     useEffect(() => {
@@ -47,29 +39,22 @@ export default function App() {
 
     const createGame = (
         reusePlayers?: Player[],
-        showHistory: boolean = false,
-        preserveWinCounts: boolean = false,
+        showHistory = false,
+        preserveWinCounts = false,
         startingDealerId?: number
     ) => {
         const winCounts = loadWinCounts();
-
         const players: Player[] = reusePlayers || names.map((name, idx) => {
             const id = idx + 1;
-            return {
-                id,
-                name,
-                winCount: preserveWinCounts ? 0 : (winCounts[id] || 0),
-            };
+            return { id, name, winCount: preserveWinCounts ? 0 : winCounts[id] || 0 };
         });
-
         const newGame: Game = {
             id: gameId,
             createdAt: new Date().toISOString(),
             players,
             rounds: [],
-            dealerId: startingDealerId || players[dealerIndex].id, // ← використовуємо переданий dealerId
+            dealerId: startingDealerId ?? players[dealerIndex].id,
         };
-
         setGame(newGame);
         setWinnerPlayer(null);
         setScores(Object.fromEntries(players.map(p => [p.id.toString(), ''])));
@@ -78,60 +63,41 @@ export default function App() {
         setHasHistoryShown(showHistory);
     };
 
-
-    const isValidScore = (val: string | number): boolean => {
-        const trimmed = val?.toString().trim().toUpperCase();
-        if (!trimmed) return false;
-        if (/^\d+$/.test(trimmed)) return true;
-        return trimmed === 'Б' || trimmed === 'ХВ';
-    };
-
-    const isAddDisabled: boolean = game
+    const isAddDisabled = game
         ? game.players.some(p => !isValidScore(scores[p.id]))
         : true;
 
-    const parseScore = (value: string | number, pid: string, playerRounds: Round[]): number | string => {
-        if (typeof value === 'number') return value;
-        const trimmed = value.toString().trim().toUpperCase();
-        if (trimmed === 'ХВ') return -100;
-        if (trimmed === 'Б') {
-            const hadBBefore = playerRounds.some(r => r.scores[pid] === 'Б');
-            return hadBBefore ? -100 : 'Б';
-        }
-        const parsed = parseInt(trimmed);
-        return isNaN(parsed) ? 0 : parsed;
-    };
-
-    const updateWinner = (currentGame: Game) => {
+    const calculateTotals = (currentGame: Game) => {
         const totals: Record<number, number> = {};
-        currentGame.players.forEach(p => (totals[p.id] = 0));
+        currentGame.players.forEach(p => { totals[p.id] = 0; });
         currentGame.rounds.forEach((r, idx, arr) => {
             Object.entries(r.scores).forEach(([pid, val]) => {
-                const before = arr.slice(0, idx);
-                const score = parseScore(val, pid, before as Round[]);
+                const score = parseScore(val, pid, arr.slice(0, idx));
                 if (typeof score === 'number') totals[Number(pid)] += score;
             });
         });
-        const contenders = currentGame.players.filter(p => totals[p.id] >= targetScore);
-        if (contenders.length === 1) {
-            const winner = contenders[0].id;
-            setWinnerPlayer(winner);
-            const updatedPlayers = currentGame.players.map(p =>
-                p.id === winner ? { ...p, winCount: p.winCount + 1 } : p
-            );
-            const updatedGame = { ...currentGame, players: updatedPlayers };
-            setGame(updatedGame);
+        return totals;
+    };
 
-            const winCounts = loadWinCounts();
-            const winnerId = String(currentGame.players.find(p => p.id === winner)?.id);
-            if (winnerId) {
-                winCounts[winnerId] = (winCounts[winnerId] || 0) + 1;
-                saveWinCounts(winCounts);
-            }
-        } else if (contenders.length > 1) {
+    const updateWinner = (currentGame: Game) => {
+        const totals = calculateTotals(currentGame);
+        const contenders = currentGame.players.filter(p => totals[p.id] >= targetScore);
+        if (contenders.length > 0) {
             const maxScore = Math.max(...contenders.map(p => totals[p.id]));
             const winners = contenders.filter(p => totals[p.id] === maxScore);
-            setWinnerPlayer(winners.length === 1 ? winners[0].id : null);
+            if (winners.length === 1) {
+                const winner = winners[0];
+                setWinnerPlayer(winner.id);
+                const updatedPlayers = currentGame.players.map(p =>
+                    p.id === winner.id ? { ...p, winCount: p.winCount + 1 } : p
+                );
+                setGame({ ...currentGame, players: updatedPlayers });
+                const winCounts = loadWinCounts();
+                winCounts[winner.id] = (winCounts[winner.id] || 0) + 1;
+                saveWinCounts(winCounts);
+            } else {
+                setWinnerPlayer(null);
+            }
         }
     };
 
@@ -147,9 +113,12 @@ export default function App() {
             updatedScores[p.id] = parseScore(scores[p.id], p.id.toString(), game.rounds);
         });
         const newRound: Round = { id: roundNumber, number: roundNumber, scores: updatedScores };
-        const updatedRounds = [...game.rounds, newRound];
         const nextDealerIndex = (game.players.findIndex(p => p.id === game.dealerId) + 1) % game.players.length;
-        const updatedGame: Game = { ...game, rounds: updatedRounds, dealerId: game.players[nextDealerIndex].id };
+        const updatedGame: Game = {
+            ...game,
+            rounds: [...game.rounds, newRound],
+            dealerId: game.players[nextDealerIndex].id,
+        };
         setGame(updatedGame);
         setScores(Object.fromEntries(updatedGame.players.map(p => [p.id.toString(), ''])));
         setError('');
@@ -160,24 +129,16 @@ export default function App() {
         if (!game) return;
         const updatedRounds = game.rounds.map(r =>
             r.number === roundNumber
-                ? { ...r, scores: Object.fromEntries(Object.entries(newScores).map(([pid, val]) => [pid, val])) }
+                ? { ...r, scores: Object.fromEntries(Object.entries(newScores)) }
                 : r
         );
-        const updatedGame: Game = { ...game, rounds: updatedRounds };
+        const updatedGame = { ...game, rounds: updatedRounds };
         setGame(updatedGame);
         setError('');
         updateWinner(updatedGame);
     };
 
-    const totals: Record<number, number> = {};
-    game?.players.forEach(p => (totals[p.id] = 0));
-    game?.rounds.forEach((r, idx, arr) => {
-        Object.entries(r.scores).forEach(([pid, val]) => {
-            const before = arr.slice(0, idx);
-            const score = parseScore(val, pid, before as Round[]);
-            if (typeof score === 'number') totals[Number(pid)] += score;
-        });
-    });
+    const totals = useMemo(() => (game ? calculateTotals(game) : {}), [game]);
 
     const resetGame = () => {
         setGame(null);
@@ -190,27 +151,16 @@ export default function App() {
     };
 
     const continueGame = () => {
-        if (game && game.players) {
-            const currentDealerId = game.dealerId;
-            createGame(
-                game.players.map(p => ({
-                    ...p,
-                    winCount: p.winCount,
-                })),
-                true,
-                true,
-                currentDealerId
-            );
+        if (game) {
+            createGame(game.players, true, true, game.dealerId);
         }
     };
-
-
 
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col items-center py-10">
             {!game ? (
                 <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg">
-                    <Header gameId={gameId} targetScore={targetScore} dealerName={''} />
+                    <Header gameId={gameId} targetScore={targetScore} dealerName="" />
                     <GameSettings
                         playerCount={playerCount} setPlayerCount={setPlayerCount}
                         targetScore={targetScore} setTargetScore={setTargetScore}
@@ -223,31 +173,45 @@ export default function App() {
                                     const arr = [...names];
                                     arr[i] = value;
                                     setNames(arr);
-                                }}
-                                />
+                                }} />
                                 <label className="ml-2 text-sm">
-                                    <input type="radio" name="dealer" checked={dealerIndex===idx} onChange={()=>setDealerIndex(idx)} className="mr-1" />Роздає
+                                    <input
+                                        type="radio"
+                                        name="dealer"
+                                        checked={dealerIndex === idx}
+                                        onChange={() => setDealerIndex(idx)}
+                                        className="mr-1"
+                                    />
+                                    Роздає
                                 </label>
                             </div>
                         ))}
                     </div>
-                    <button onClick={() => createGame()}
-                            className={`mt-6 w-full py-3 text-white font-semibold rounded-md transition-colors ${names.every(n=>n.trim()) ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-400 cursor-not-allowed'}`}
-                            disabled={!names.every(n=>n.trim())}
-                    >Start the Game</button>
+                    <button
+                        onClick={() => createGame()}
+                        className={`mt-6 w-full py-3 text-white font-semibold rounded-md transition-colors ${
+                            names.every(n => n.trim()) ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-400 cursor-not-allowed'
+                        }`}
+                        disabled={!names.every(n => n.trim())}
+                    >
+                        Start the Game
+                    </button>
                 </div>
             ) : (
                 <div className="w-full max-w-4xl flex flex-col gap-6 px-4">
                     <div className="bg-white p-6 rounded-xl shadow-lg">
-                        <Header gameId={game.id} targetScore={targetScore}
-                                dealerName={game.players.find(p=>p.id===game.dealerId)?.name||''} />
+                        <Header
+                            gameId={game.id}
+                            targetScore={targetScore}
+                            dealerName={game.players.find(p => p.id === game.dealerId)?.name || ''}
+                        />
                         {hasHistoryShown && <GameHistory players={game.players} />}
                     </div>
                     <div className="bg-white p-6 rounded-xl shadow-lg">
                         <TotalScores players={game.players} totals={totals} />
                         {winnerPlayer !== null ? (
                             <WinnerMessage
-                                winnerName={game.players.find(p=>p.id===winnerPlayer)!.name}
+                                winnerName={game.players.find(p => p.id === winnerPlayer)!.name}
                                 onNewGame={resetGame}
                                 onContinue={continueGame}
                             />
@@ -255,10 +219,11 @@ export default function App() {
                             <>
                                 {error && <div className="text-red-600 mb-4 font-medium">{error}</div>}
                                 <RoundForm
-                                    players={game.players} scores={scores}
-                                    onScoreChange={(e,id)=>setScores({...scores,[id]:e.target.value})}
+                                    players={game.players}
+                                    scores={scores}
+                                    onScoreChange={(e, id) => setScores({ ...scores, [id]: e.target.value })}
                                     onAddRound={addRound}
-                                    roundNumber={game.rounds.length+1}
+                                    roundNumber={game.rounds.length + 1}
                                     isAddDisabled={isAddDisabled}
                                 />
                             </>
