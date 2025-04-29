@@ -69,13 +69,87 @@ export default function App() {
 
     const calculateTotals = (currentGame: Game) => {
         const totals: Record<number, number> = {};
-        currentGame.players.forEach(p => { totals[p.id] = 0; });
-        currentGame.rounds.forEach((r, idx, arr) => {
-            Object.entries(r.scores).forEach(([pid, val]) => {
-                const score = parseScore(val, pid, arr.slice(0, idx));
-                if (typeof score === 'number') totals[Number(pid)] += score;
-            });
+        const bCounts: Record<number, number> = {}; // к-сть Б для кожного гравця
+
+        currentGame.players.forEach(p => {
+            totals[p.id] = 0;
+            bCounts[p.id] = 0;
         });
+
+        const pendingVis: { playerId: number, roundIndex: number }[] = [];
+
+        currentGame.rounds.forEach((round, idx, allRounds) => {
+            const stillPendingVis = [...pendingVis];
+
+            stillPendingVis.forEach(({ playerId: visPlayerId, roundIndex }) => {
+                const prevRound = allRounds[roundIndex];
+                const hangingScore = Math.max(
+                    ...Object.values(prevRound.scores)
+                        .map(val => typeof val === 'number' ? val : 0)
+                );
+
+                const opponentEntriesPrev = Object.entries(prevRound.scores)
+                    .filter(([id]) => Number(id) !== visPlayerId)
+                    .map(([id, val]) => ({
+                        playerId: Number(id),
+                        score: typeof val === 'number' ? val : 0
+                    }));
+
+                const bestOpponentPrev = opponentEntriesPrev.reduce((best, curr) =>
+                    curr.score > best.score ? curr : best, { playerId: -1, score: -Infinity }
+                );
+
+                const visScore = typeof round.scores[visPlayerId] === 'number'
+                    ? round.scores[visPlayerId] as number
+                    : 0;
+
+                const opponentScore = typeof round.scores[bestOpponentPrev.playerId] === 'number'
+                    ? round.scores[bestOpponentPrev.playerId] as number
+                    : 0;
+
+                if (visScore > opponentScore) {
+                    // ВІСник виграв -> отримує підвішені очки
+                    totals[visPlayerId] += hangingScore;
+                } else {
+                    // ВІСник програв або нічия -> стає Б, суперник забирає підвіс
+                    prevRound.scores[visPlayerId] = 'Б';
+                    bCounts[visPlayerId] += 1;
+                    if (bCounts[visPlayerId] === 2) {
+                        totals[visPlayerId] -= 100;
+                    }
+
+                    totals[bestOpponentPrev.playerId] += opponentScore + hangingScore;
+                    round.scores[bestOpponentPrev.playerId] = opponentScore + hangingScore;
+                }
+
+                pendingVis.splice(pendingVis.findIndex(p => p.playerId === visPlayerId && p.roundIndex === roundIndex), 1);
+            });
+
+            // Обробка нових результатів цього раунду
+            for (const [pid, val] of Object.entries(round.scores)) {
+                const playerId = Number(pid);
+
+                if (val === 'Б') {
+                    bCounts[playerId] += 1;
+                    if (bCounts[playerId] === 2) {
+                        totals[playerId] -= 100;
+                    }
+                } else if (val === 'ВІС') {
+                    pendingVis.push({ playerId, roundIndex: idx });
+                }
+            }
+
+            for (const [pid, val] of Object.entries(round.scores)) {
+                const playerId = Number(pid);
+                const isPending = pendingVis.some(p => p.playerId === playerId);
+
+                if (!isPending) {
+                    const score = typeof val === 'number' ? val : 0;
+                    totals[playerId] += score;
+                }
+            }
+        });
+
         return totals;
     };
 
