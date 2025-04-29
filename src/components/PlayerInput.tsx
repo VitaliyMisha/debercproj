@@ -36,6 +36,7 @@ const PlayerInput: React.FC<PlayerInputProps> = ({ idx, name, onChange }) => {
                 placeholder={`Ім'я гравця ${idx + 1}`}
                 value={name}
                 onChange={handleChange}
+                maxLength={10}
             />
             {name && (
                 <button

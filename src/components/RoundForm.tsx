@@ -13,16 +13,18 @@ interface RoundFormProps {
 
 const RoundForm: React.FC<RoundFormProps> = ({ players, scores, onScoreChange, onAddRound, roundNumber, isAddDisabled }) => (
     <div className="mb-6">
-        <h2 className="font-semibold text-center mb-4">Раунд {roundNumber}</h2> {}
+        <h2 className="font-semibold text-center mb-6">Раунд {roundNumber}</h2> {}
         {players.map((p) => (
             <div key={p.id} className="flex items-center mb-4">
-                <span className="w-32 text-lg font-medium">{p.name}</span>
+                <span className="w-32 text-lg font-medium">{p.name} :</span>
                 <input
                     type="text"
                     value={scores[p.id] || ''}
                     onChange={(e) => onScoreChange(e, p.id)}
                     className="flex-1 p-2 border border-gray-300 rounded-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                     placeholder="Введіть рахунок"
+                    maxLength={4}
+                    min={1}
                 />
             </div>
         ))}

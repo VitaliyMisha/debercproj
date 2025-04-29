@@ -242,7 +242,7 @@ export default function App() {
                     <div className="mt-6">
                         <h2 className="text-lg font-medium mb-2 text-gray-700 text-center">Імена гравців</h2>
                         {names.map((n, idx) => (
-                            <div key={idx} className="mb-3 flex items-center justify-between">
+                            <div key={idx} className="mb-3 flex  justify-center-safe">
                                 <PlayerInput idx={idx} name={n} onChange={(value, i) => {
                                     const arr = [...names];
                                     arr[i] = value;
