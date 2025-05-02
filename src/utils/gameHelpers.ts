@@ -30,3 +30,8 @@ export const parseScore = (value: string | number, pid: string, playerRounds: Ro
     const parsed = parseInt(trimmed);
     return isNaN(parsed) ? 0 : parsed;
 };
+
+
+export function generateUniqueId(): number {
+    return Date.now() + Math.floor(Math.random() * 1000);
+}

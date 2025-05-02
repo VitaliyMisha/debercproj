@@ -9,7 +9,7 @@ import WinnerMessage from './components/WinnerMessage';
 import Header from './components/Header';
 import GameHistory from './components/GameHistory';
 import TotalScores from './components/TotalScores';
-import { isValidScore, loadWinCounts, parseScore, saveWinCounts } from './utils/gameHelpers';
+import {generateUniqueId, isValidScore, loadWinCounts, parseScore, saveWinCounts} from './utils/gameHelpers';
 
 const GAME_ID = 'gameId';
 
@@ -44,8 +44,8 @@ export default function App() {
         startingDealerId?: number
     ) => {
         const winCounts = loadWinCounts();
-        const players: Player[] = reusePlayers || names.map((name, idx) => {
-            const id = idx + 1;
+        const players: Player[] = reusePlayers || names.map((name) => {
+            const id = generateUniqueId();
             return { id, name, winCount: preserveWinCounts ? 0 : winCounts[id] || 0 };
         });
         const newGame: Game = {
