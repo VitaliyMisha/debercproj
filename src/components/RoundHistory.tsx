@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Player, Round } from '../types';
+import React, {useState} from 'react';
+import {Player, Round} from '../types';
 
 interface RoundHistoryProps {
     rounds: Round[];
@@ -7,7 +7,7 @@ interface RoundHistoryProps {
     onUpdateRound: (roundNumber: number, newScores: Record<string, string>) => void;
 }
 
-const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRound }) => {
+const RoundHistory: React.FC<RoundHistoryProps> = ({rounds, players, onUpdateRound}) => {
     const [editingRound, setEditingRound] = useState<number | null>(null);
     const [editScores, setEditScores] = useState<Record<string, string>>({});
 
@@ -37,7 +37,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
             <h2 className="text-xl font-semibold mb-2 text-center">Історія раундів</h2>
             <ul>
                 {rounds.map(r => (
-                    <li key={r.number} className="mb-4 p-3 border rounded-sm">
+                    <li key={r.number} className="mb-4 p-3 border rounded-sm text-center">
                         {editingRound === r.number ? (
                             <>
                                 <div className="grid grid-cols-2 gap-2 mb-3">
@@ -47,7 +47,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                                             type="text"
                                             className="p-2 border rounded-sm"
                                             value={editScores[p.id] || ''}
-                                            onChange={e => setEditScores({ ...editScores, [p.id]: e.target.value })}
+                                            onChange={e => setEditScores({...editScores, [p.id]: e.target.value})}
                                         />
                                     ))}
                                 </div>
@@ -55,28 +55,30 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                                     <button
                                         className="px-4 py-1 bg-green-500 text-white rounded-sm"
                                         onClick={saveEdit}
-                                    >Зберегти</button>
+                                    >Зберегти
+                                    </button>
                                     <button
                                         className="px-4 py-1 bg-gray-300 text-gray-700 rounded-sm"
                                         onClick={cancelEdit}
-                                    >Відмінити</button>
+                                    >Відмінити
+                                    </button>
                                 </div>
                             </>
                         ) : (
                             <>
                                 <div className="mb-2">
                                     <strong>Раунд {r.number}:</strong>{' '}
-                                    {players.map((p, i) => (
-                                        <span key={p.id}>
-                      {p.name} {r.scores[p.id]}
-                                            {i < players.length - 1 && ', '}
-                    </span>
-                                    ))}
+                                    <div>
+                                        {players.map((p, i) => (
+                                            <span key={p.id}>{p.name} = {r.scores[p.id]}
+                                                {i < players.length - 1 && ', '}</span>))}
+                                    </div>
                                 </div>
                                 <button
                                     className="text-blue-500 text-sm"
                                     onClick={() => startEditing(r)}
-                                >Редагувати</button>
+                                >Редагувати
+                                </button>
                             </>
                         )}
                     </li>
