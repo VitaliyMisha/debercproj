@@ -301,12 +301,10 @@ export default function App() {
     return (
         <div
             className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex flex-col items-center py-10 relative">
-            {/* Анімовані частинки для перемоги */}
             <ParticleEffect show={showCelebration}/>
 
             {!game ? (
                 <div className="w-full max-w-md relative">
-                    {/* Декоративні елементи навколо форми */}
                     <div
                         className="absolute -top-4 -left-4 w-24 h-24 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full opacity-20 animate-pulse"></div>
                     <div
@@ -314,12 +312,10 @@ export default function App() {
 
                     <div
                         className="bg-white/10 backdrop-blur-lg border border-white/20 p-8 rounded-3xl shadow-2xl relative overflow-hidden">
-                        {/* Світловий ефект */}
                         <div
                             className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 animate-pulse"></div>
 
-                        <div className="relative z-10">
-                            {/* Ігровий заголовок */}
+                        <div className="relative z-10 space-y-4">
                             <div className="text-center mb-8">
                                 <div
                                     className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mb-4 animate-bounce shadow-lg">
