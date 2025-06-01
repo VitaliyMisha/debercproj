@@ -1,5 +1,6 @@
 import React, {ChangeEvent} from 'react';
 import {Player} from "../types";
+import {Star} from "lucide-react";
 
 interface RoundFormProps {
     players: Player[];
@@ -26,6 +27,7 @@ const RoundForm: React.FC<RoundFormProps> = ({
                     {roundNumber}
                 </div>
                 Раунд
+                <Star className="w-6 h-6 mr-2 text-yellow-400"/>
             </h2>
         </div>
         <div className="p-6 space-y-4">

@@ -1,6 +1,6 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {Game, Player, Round} from './types';
-import {Award, Crown, PartyPopper, Sparkles, Star, Trophy, Users, Zap} from 'lucide-react';
+import {Award, Crown, PartyPopper, Sparkles, Trophy, Users, Zap} from 'lucide-react';
 
 import GameSettings from './components/GameSettings';
 import PlayerInput from './components/PlayerInput';
@@ -325,10 +325,6 @@ export default function App() {
                                     className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mb-4 animate-bounce shadow-lg">
                                     <Trophy className="w-10 h-10 text-white drop-shadow-lg"/>
                                 </div>
-                                {/*<h1 className="text-3xl font-bold bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent mb-2 drop-shadow-lg">*/}
-                                {/*    🎮 ДЕБЕРЦ 🎮*/}
-                                {/*</h1>*/}
-                                {/*<p className="text-white/80 font-medium">Гра #{gameId} • Готуйтеся до битви!</p>*/}
                             </div>
 
                             <Header gameId={gameId} targetScore={targetScore} dealerName=""/>
@@ -460,12 +456,6 @@ export default function App() {
                                             </div>
                                         </div>
                                     )}
-                                    <div className="mb-4">
-                                        <h3 className="text-xl font-bold text-white mb-4 flex items-center">
-                                            <Star className="w-6 h-6 mr-2 text-yellow-400"/>
-                                            Раунд {game.rounds.length + 1}
-                                        </h3>
-                                    </div>
                                     <RoundForm
                                         players={game.players}
                                         scores={scores}
