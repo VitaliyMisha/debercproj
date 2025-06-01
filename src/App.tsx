@@ -174,10 +174,8 @@ export default function App() {
                     : 0;
 
                 if (visScore > opponentScore) {
-                    // ВІСник виграв -> отримує підвішені очки
                     totals[visPlayerId] += hangingScore;
                 } else {
-                    // ВІСник програв або нічия -> стає Б, суперник забирає підвіс
                     prevRound.scores[visPlayerId] = 'Б';
                     bCounts[visPlayerId] += 1;
                     if (bCounts[visPlayerId] === 2) {
@@ -290,6 +288,7 @@ export default function App() {
         setHasHistoryShown(false);
         setShowCelebration(false);
         setGameId(1);
+        localStorage.clear();
     };
 
     const continueGame = () => {
