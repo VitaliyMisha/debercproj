@@ -39,11 +39,7 @@ const RoundForm: React.FC<RoundFormProps> = ({
                             <span className="text-lg">
                                 {(() => {
                                     const chars = Array.from(p.name);
-                                    const firstChar = chars[0];
-                                    if (p.name.startsWith('🐰') || p.name.startsWith('😸') || p.name.startsWith('🥷')) {
-                                        return firstChar;
-                                    }
-                                    return firstChar?.toUpperCase() || '';
+                                    return chars[0]?.toUpperCase() || '';
                                 })()}
                             </span>
                         </div>

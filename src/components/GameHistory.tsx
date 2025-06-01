@@ -25,7 +25,7 @@ const GameHistory: React.FC<GameHistoryProps> = ({ players }) => {
                 </div>
                 <h3 className="text-xl font-bold text-gray-800">Історія ігор</h3>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
+            <div className="flex flex-wrap justify-center gap-4">
                 {players.map((player, index) => {
                     const championsCount = players.filter(p => p.winCount === maxWins).length;
                     const isChampion = hasWins && player.winCount === maxWins && championsCount === 1;
@@ -75,7 +75,10 @@ const GameHistory: React.FC<GameHistoryProps> = ({ players }) => {
                                             ? 'bg-gradient-to-br from-gray-300 to-slate-400 text-gray-600'
                                             : 'bg-gradient-to-br from-blue-300 to-indigo-400 text-blue-800'
                             }`}>
-                                {player.name.charAt(0).toUpperCase()}
+                                {(() => {
+                                    const chars = Array.from(player.name);
+                                    return chars[0]?.toUpperCase() || '';
+                                })()}
                             </div>
                             <h4 className={`font-bold text-lg mb-2 ${
                                 isChampion ? 'text-yellow-800' : isTied ? 'text-orange-800' : 'text-gray-800'
@@ -91,9 +94,9 @@ const GameHistory: React.FC<GameHistoryProps> = ({ players }) => {
                                             ? 'bg-gray-300 text-gray-600'
                                             : 'bg-blue-300 text-blue-800'
                             }`}>
-                                <span className="mr-1">
-                                    {hasNoWins ? '💤' : isTied ? '🤝' : isChampion ? '🏆' : '🎯'}
-                                </span>
+                            <span className="mr-1">
+                                {hasNoWins ? '💤' : isTied ? '🤝' : isChampion ? '🏆' : '🎯'}
+                            </span>
                                 {player.winCount} {getVictoryLabel(player.winCount)}
                             </div>
                             {hasWins && (
