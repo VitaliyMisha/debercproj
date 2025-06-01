@@ -8,12 +8,11 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ gameId, targetScore, dealerName }) => (
     <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-6 rounded-lg shadow-lg text-center relative overflow-hidden">
-        {/* Декоративні елементи фону */}
         <div className="absolute top-0 left-0 w-full h-full opacity-10">
-            <div className="absolute top-4 left-4 text-6xl">♠</div>
-            <div className="absolute top-4 right-4 text-6xl">♥</div>
-            <div className="absolute bottom-4 left-4 text-6xl">♣</div>
-            <div className="absolute bottom-4 right-4 text-6xl">♦</div>
+            <div className="absolute top-2 left-2 text-5xl">♠</div>
+            <div className="absolute top-2 right-2 text-5xl">♥</div>
+            <div className="absolute bottom-2 left-2 text-5xl">♣</div>
+            <div className="absolute bottom-2 right-2 text-5xl">♦</div>
         </div>
 
         <div className="relative z-10">

@@ -8,7 +8,6 @@ interface WinnerMessageProps {
 
 const WinnerMessage: React.FC<WinnerMessageProps> = ({ winnerName, onNewGame, onContinue }) => (
     <div className="relative overflow-hidden bg-gradient-to-br from-yellow-100 via-orange-50 to-pink-100 rounded-2xl shadow-2xl border border-yellow-200">
-        {/* Decorative background elements */}
         <div className="absolute inset-0 opacity-10">
             <div className="absolute top-4 left-4 text-6xl animate-bounce">🎉</div>
             <div className="absolute top-4 right-4 text-6xl animate-bounce" style={{ animationDelay: '0.5s' }}>🎊</div>
@@ -17,12 +16,9 @@ const WinnerMessage: React.FC<WinnerMessageProps> = ({ winnerName, onNewGame, on
         </div>
 
         <div className="relative z-10 flex flex-col items-center justify-center text-center p-8">
-            {/* Trophy Icon */}
             <div className="mb-6 text-8xl animate-pulse">
                 🏆
             </div>
-
-            {/* Winner Announcement */}
             <div className="mb-8">
                 <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-600 to-orange-600 mb-2">
                     ПЕРЕМОЖЕЦЬ!
@@ -34,8 +30,6 @@ const WinnerMessage: React.FC<WinnerMessageProps> = ({ winnerName, onNewGame, on
                     </h2>
                 </div>
             </div>
-
-            {/* Congratulations Message */}
             <div className="mb-8 text-center">
                 <p className="text-lg text-gray-700 font-medium">
                     🎯 Чудова гра! 🎯
@@ -44,8 +38,6 @@ const WinnerMessage: React.FC<WinnerMessageProps> = ({ winnerName, onNewGame, on
                     Що будемо робити далі?
                 </p>
             </div>
-
-            {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
                 <button
                     onClick={onNewGame}
@@ -67,8 +59,6 @@ const WinnerMessage: React.FC<WinnerMessageProps> = ({ winnerName, onNewGame, on
                     Продовжити
                 </button>
             </div>
-
-            {/* Celebration particles effect */}
             <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-yellow-400 rounded-full animate-ping"></div>
                 <div className="absolute top-1/3 right-1/3 w-2 h-2 bg-pink-400 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>

@@ -19,18 +19,14 @@ const GameHistory: React.FC<GameHistoryProps> = ({ players }) => {
 
     return (
         <div className="bg-gradient-to-br from-slate-50 to-gray-100 p-6 rounded-xl shadow-lg mt-6 border border-gray-200">
-            {/* Заголовок з іконкою */}
             <div className="flex items-center justify-center mb-6">
                 <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-3 rounded-full mr-3 shadow-md">
                     <span className="text-2xl">🏆</span>
                 </div>
                 <h3 className="text-xl font-bold text-gray-800">Історія ігор</h3>
             </div>
-
-            {/* Сітка гравців */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
                 {players.map((player, index) => {
-                    // Перевіряємо скільки гравців мають максимальну кількість перемог
                     const championsCount = players.filter(p => p.winCount === maxWins).length;
                     const isChampion = hasWins && player.winCount === maxWins && championsCount === 1;
                     const isTied = hasWins && player.winCount === maxWins && championsCount > 1;
@@ -49,7 +45,6 @@ const GameHistory: React.FC<GameHistoryProps> = ({ players }) => {
                                             : 'bg-gradient-to-br from-blue-100 to-indigo-200 border-2 border-blue-300'
                             }`}
                         >
-                            {/* Корона для чемпіона або іконка нічиї */}
                             {isChampion && (
                                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                                     <div className="bg-yellow-400 p-2 rounded-full shadow-md border-2 border-yellow-500">
@@ -64,8 +59,6 @@ const GameHistory: React.FC<GameHistoryProps> = ({ players }) => {
                                     </div>
                                 </div>
                             )}
-
-                            {/* Позиція з урахуванням нічиї */}
                             {hasWins && (
                                 <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-gray-600 to-gray-800 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
                                     {isTied ? '=' : `#${index + 1}`}
@@ -84,15 +77,11 @@ const GameHistory: React.FC<GameHistoryProps> = ({ players }) => {
                             }`}>
                                 {player.name.charAt(0).toUpperCase()}
                             </div>
-
-                            {/* Ім'я гравця */}
                             <h4 className={`font-bold text-lg mb-2 ${
                                 isChampion ? 'text-yellow-800' : isTied ? 'text-orange-800' : 'text-gray-800'
                             }`}>
                                 {player.name}
                             </h4>
-
-                            {/* Статистика перемог */}
                             <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${
                                 isChampion
                                     ? 'bg-yellow-300 text-yellow-800'
@@ -107,8 +96,6 @@ const GameHistory: React.FC<GameHistoryProps> = ({ players }) => {
                                 </span>
                                 {player.winCount} {getVictoryLabel(player.winCount)}
                             </div>
-
-                            {/* Прогрес бар (візуалізація відносних результатів) */}
                             {hasWins && (
                                 <div className="mt-3">
                                     <div className="w-full bg-gray-300 rounded-full h-2">
@@ -131,8 +118,6 @@ const GameHistory: React.FC<GameHistoryProps> = ({ players }) => {
                     );
                 })}
             </div>
-
-            {/* Додаткова статистика */}
             {hasWins && (
                 <div className="mt-6 text-center text-sm text-gray-600 bg-white/50 rounded-lg p-3">
                     <p>

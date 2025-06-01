@@ -44,8 +44,6 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
     const isValidScore = (value: string): boolean => {
         return value === '' || (!isNaN(Number(value)) && Number(value) >= 0);
     };
-
-    // Функція для безпечного підрахунку суми
     const calculateRoundTotal = (scores: Record<string | number, string | number | undefined>): number => {
         return Object.values(scores).reduce((sum: number, score) => {
             if (score === undefined || score === null || score === '') {
@@ -59,7 +57,6 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
     if (rounds.length === 0) {
         return (
             <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 rounded-xl shadow-lg border border-gray-100">
-                {/* Декоративні елементи фону */}
                 <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-blue-200/30 to-transparent rounded-full -translate-x-16 -translate-y-16"></div>
                 <div className="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-tl from-purple-200/30 to-transparent rounded-full translate-x-12 translate-y-12"></div>
 
@@ -77,7 +74,6 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
 
     return (
         <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 rounded-xl shadow-lg border border-gray-100">
-            {/* Декоративні елементи фону */}
             <div className="absolute top-0 left-0 w-40 h-40 bg-gradient-to-br from-blue-200/20 to-transparent rounded-full -translate-x-20 -translate-y-20"></div>
             <div className="absolute top-1/4 right-0 w-32 h-32 bg-gradient-to-bl from-purple-200/20 to-transparent rounded-full translate-x-16"></div>
             <div className="absolute bottom-0 left-1/3 w-28 h-28 bg-gradient-to-tr from-indigo-200/20 to-transparent rounded-full translate-y-14"></div>
@@ -94,7 +90,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
 
                 <div className="space-y-4">
                     {rounds
-                        .sort((a, b) => b.number - a.number) // Показувати останні раунди першими
+                        .sort((a, b) => b.number - a.number)
                         .map(round => (
                             <div
                                 key={round.number}

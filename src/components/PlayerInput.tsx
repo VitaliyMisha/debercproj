@@ -35,12 +35,9 @@ const PlayerInput: React.FC<PlayerInputProps> = ({ idx, name, onChange }) => {
 
     return (
         <div className="relative mb-6 group">
-            {/* Player Number Badge */}
             <div className="absolute -left-2 -top-2 z-10 w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg">
                 {idx + 1}
             </div>
-
-            {/* Input Container */}
             <div className="relative">
                 <input
                     type="text"
@@ -53,8 +50,6 @@ const PlayerInput: React.FC<PlayerInputProps> = ({ idx, name, onChange }) => {
                     onChange={handleChange}
                     maxLength={15}
                 />
-
-                {/* Clear Button */}
                 {name && (
                     <button
                         type="button"
@@ -79,8 +74,6 @@ const PlayerInput: React.FC<PlayerInputProps> = ({ idx, name, onChange }) => {
                         </svg>
                     </button>
                 )}
-
-                {/* Character Counter */}
                 <div className="absolute -bottom-6 right-0 text-xs text-gray-400">
                     {name.length}/15
                 </div>

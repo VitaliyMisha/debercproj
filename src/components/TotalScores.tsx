@@ -5,12 +5,10 @@ interface TotalScoresProps {
     totals: Record<string, number>;
 }
 
-// Функція для форматування чисел з пробілами
 const formatScore = (score: number): string => {
     return score.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 };
 
-// Функція для визначення кольору рахунку
 const getScoreColor = (score: number): string => {
     if (score < 0) return 'text-red-600';
     if (score >= 400) return 'text-green-600';
@@ -18,15 +16,12 @@ const getScoreColor = (score: number): string => {
 };
 
 const TotalScores: React.FC<TotalScoresProps> = ({ players, totals }) => {
-    // Сортуємо гравців за рахунком (найбільший рахунок першим)
     const sortedPlayers = [...players].sort((a, b) => (totals[b.id] || 0) - (totals[a.id] || 0));
     const maxScore = Math.max(...players.map(p => totals[p.id] || 0));
     const minScore = Math.min(...players.map(p => totals[p.id] || 0));
 
-    // Перевіряємо, чи є справжній лідер (не всі мають однаковий рахунок)
     const hasRealLeader = maxScore > minScore;
 
-    // Функція для визначення кількості стовпців залежно від кількості гравців
     const getGridCols = (playerCount: number) => {
         if (playerCount === 1) return 'grid-cols-1';
         if (playerCount === 2) return 'grid-cols-2';
@@ -63,8 +58,6 @@ const TotalScores: React.FC<TotalScoresProps> = ({ players, totals }) => {
                     </div>
                 ))}
             </div>
-
-            {/* Десктопна версія - горизонтальний layout */}
             <div className="hidden sm:block">
                 <div className={`grid ${getGridCols(sortedPlayers.length)} gap-4 justify-items-center max-w-4xl mx-auto`}>
                     {sortedPlayers.map((player, index) => (
@@ -91,8 +84,6 @@ const TotalScores: React.FC<TotalScoresProps> = ({ players, totals }) => {
                     ))}
                 </div>
             </div>
-
-            {/* Додаткова інформація */}
             {players.length > 0 && hasRealLeader && (
                 <div className="mt-4 text-sm text-gray-500">
                     <p>Лідер: {sortedPlayers[0]?.name} з {formatScore(totals[sortedPlayers[0]?.id] || 0)} очками</p>
