@@ -31,9 +31,8 @@ const TotalScores: React.FC<TotalScoresProps> = ({ players, totals }) => {
 
     return (
         <div className="text-center mb-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-700">Загалом</h2>
+            <h2 className="text-xl font-semibold mb-4 text-white">Загалом</h2>
 
-            {/* Мобільна версія - вертикальний стек */}
             <div className="block sm:hidden space-y-3">
                 {sortedPlayers.map((player, index) => (
                     <div
@@ -85,7 +84,7 @@ const TotalScores: React.FC<TotalScoresProps> = ({ players, totals }) => {
                 </div>
             </div>
             {players.length > 0 && hasRealLeader && (
-                <div className="mt-4 text-sm text-gray-500">
+                <div className="mt-4 text-sm text-white">
                     <p>Лідер: {sortedPlayers[0]?.name} з {formatScore(totals[sortedPlayers[0]?.id] || 0)} очками</p>
                 </div>
             )}
