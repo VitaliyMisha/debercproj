@@ -86,7 +86,8 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                 <div className="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-tl from-purple-200/30 to-transparent rounded-full translate-x-12 translate-y-12"></div>
 
                 <div className="relative z-10 p-6">
-                    <h2 className="text-xl font-semibold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-4">
+                    <h2 className="text-xl font-semibold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-4 text-center" >
+
                         Історія раундів
                     </h2>
                     <p className="text-gray-500 text-center py-8">

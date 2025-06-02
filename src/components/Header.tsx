@@ -4,9 +4,10 @@ interface HeaderProps {
     gameId: number;
     targetScore: number;
     dealerName?: string;
+    onNewGame?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ gameId, targetScore, dealerName }) => (
+const Header: React.FC<HeaderProps> = ({ gameId, targetScore, dealerName, onNewGame }) => (
     <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-6 rounded-lg shadow-lg text-center relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full opacity-70">
             <div className="absolute top-2 left-2 text-5xl text-gray-900 drop-shadow-lg">♠</div>
@@ -33,8 +34,21 @@ const Header: React.FC<HeaderProps> = ({ gameId, targetScore, dealerName }) => (
                     </div>
                     <div className="text-left">
                         <div className="text-sm font-medium opacity-90">Дилер цього раунду</div>
-                        <div className="text-lg font-bold">{dealerName}</div>
+                        <div className="text-lg font-bold text-center">{dealerName}</div>
                     </div>
+                </div>
+            )}
+            {onNewGame && (
+                <div className="mt-4 flex justify-center">
+                    <button
+                        onClick={onNewGame}
+                        className="px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-xl
+                                 hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105
+                                 shadow-lg hover:shadow-xl active:scale-95 flex items-center justify-center gap-2"
+                    >
+                        <span className="text-xl">🎮</span>
+                        Нова гра
+                    </button>
                 </div>
             )}
         </div>

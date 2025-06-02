@@ -397,6 +397,7 @@ export default function App() {
                                 gameId={game.id}
                                 targetScore={targetScore}
                                 dealerName={game.players.find(p => p.id === game.dealerId)?.name || ''}
+                                onNewGame={resetGame}
                             />
                             {hasHistoryShown && <GameHistory players={game.players}/>}
                         </div>
