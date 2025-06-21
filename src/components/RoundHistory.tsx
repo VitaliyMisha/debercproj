@@ -66,7 +66,11 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
     };
 
     const isValidScore = (value: string): boolean => {
-        return value === '' || (!isNaN(Number(value)) && Number(value) >= 0);
+        if (value === '' || value === 'Б' || value === 'ХВ' || value === 'ВІС') {
+            return true;
+        }
+        const numValue = parseFloat(value);
+        return !isNaN(numValue) && numValue >= 0;
     };
 
     const calculateRoundTotal = (scores: Record<string | number, string | number | undefined>): number => {
@@ -196,8 +200,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                                                                     {player.name}
                                                                 </label>
                                                                 <input
-                                                                    type="number"
-                                                                    min="0"
+                                                                    type="text" // Змінено з "number" на "text"
                                                                     value={editScores[String(player.id)] || ''}
                                                                     onChange={(e) => handleScoreChange(player.id, e.target.value)}
                                                                     className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition-colors ${
@@ -205,7 +208,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                                                                             ? 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
                                                                             : 'border-red-300 focus:ring-red-500 focus:border-red-500'
                                                                     }`}
-                                                                    placeholder="0"
+                                                                    placeholder="0, Б, ХВ або ВІС"
                                                                 />
                                                                 {!isValidScore(editScores[String(player.id)] || '') && (
                                                                     <p className="text-sm text-red-600">

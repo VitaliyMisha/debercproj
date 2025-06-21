@@ -102,6 +102,12 @@ export default function App() {
         setNames(Array(playerCount).fill(''));
     }, [playerCount]);
 
+    useEffect(() => {
+        if (game) {
+            console.log('Game updated:', game.id, 'rounds:', game.rounds.length);
+        }
+    }, [game]);
+
     const createGame = (
         reusePlayers?: Player[],
         showHistory = false,
@@ -266,18 +272,39 @@ export default function App() {
 
     const updateRound = (roundNumber: number, newScores: Record<string, string>) => {
         if (!game) return;
+
+        console.log('Updating round:', roundNumber, 'with scores:', newScores);
+
+        // Використовуємо parseScore для правильної конвертації
+        const convertedScores: Record<string, number | string> = {};
+        Object.entries(newScores).forEach(([playerId, scoreStr]) => {
+            convertedScores[playerId] = parseScore(scoreStr, playerId, game.rounds);
+        });
+
+        // Створюємо повністю новий об'єкт гри
         const updatedRounds = game.rounds.map(r =>
             r.number === roundNumber
-                ? {...r, scores: Object.fromEntries(Object.entries(newScores))}
+                ? { ...r, scores: convertedScores }
                 : r
         );
-        const updatedGame = {...game, rounds: updatedRounds};
+
+        const updatedGame: Game = {
+            ...game,
+            rounds: updatedRounds
+        };
+
+        console.log('Updated game:', updatedGame);
+
         setGame(updatedGame);
         setError('');
         updateWinner(updatedGame);
     };
 
-    const totals = useMemo(() => (game ? calculateTotals(game) : {}), [game]);
+    const totals = useMemo(() => {
+        if (!game) return {};
+        console.log('Recalculating totals for game:', game.id, 'rounds:', game.rounds.length);
+        return calculateTotals(game);
+    }, [game]);
 
     const resetGame = () => {
         setGame(null);
