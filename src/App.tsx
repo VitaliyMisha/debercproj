@@ -10,9 +10,20 @@ import WinnerMessage from './components/WinnerMessage';
 import Header from './components/Header';
 import GameHistory from './components/GameHistory';
 import TotalScores from './components/TotalScores';
+import PlayerStatistics from './components/PlayerStatistics';
+import GameRules, { GameRulesConfig } from './components/GameRules';
 import {generateUniqueId, isValidScore, loadWinCounts, parseScore, saveWinCounts} from './utils/gameHelpers';
 
 const GAME_ID = 'gameId';
+const GAME_RULES_KEY = 'gameRules';
+
+const defaultGameRules: GameRulesConfig = {
+    secondBPenalty: -100,
+    hvPenalty: -100,
+    allowVis: true,
+    customTargetScore: false,
+    targetScoreOptions: [510, 1020]
+};
 
 const ParticleEffect = ({show}: { show: boolean }) => {
     if (!show) return null;
@@ -36,6 +47,7 @@ const ParticleEffect = ({show}: { show: boolean }) => {
         </div>
     );
 };
+
 const GameButton = ({
                         onClick,
                         disabled,
@@ -88,6 +100,12 @@ export default function App() {
     const [error, setError] = useState<string>('');
     const [hasHistoryShown, setHasHistoryShown] = useState(false);
     const [showCelebration, setShowCelebration] = useState(false);
+    const [showStatistics, setShowStatistics] = useState(false);
+
+    const [gameRules, setGameRules] = useState<GameRulesConfig>(() => {
+        const stored = localStorage.getItem(GAME_RULES_KEY);
+        return stored ? JSON.parse(stored) : defaultGameRules;
+    });
 
     const [gameId, setGameId] = useState(() => {
         const stored = localStorage.getItem(GAME_ID);
@@ -97,6 +115,10 @@ export default function App() {
     useEffect(() => {
         localStorage.setItem(GAME_ID, gameId.toString());
     }, [gameId]);
+
+    useEffect(() => {
+        localStorage.setItem(GAME_RULES_KEY, JSON.stringify(gameRules));
+    }, [gameRules]);
 
     useEffect(() => {
         setNames(Array(playerCount).fill(''));
@@ -133,15 +155,16 @@ export default function App() {
         setError('');
         setHasHistoryShown(showHistory);
         setShowCelebration(false);
+        setShowStatistics(false);
     };
 
     const isAddDisabled = game
-        ? game.players.some(p => !isValidScore(scores[p.id]))
+        ? game.players.some(p => !isValidScore(scores[p.id], gameRules))
         : true;
 
     const calculateTotals = (currentGame: Game) => {
         const totals: Record<number, number> = {};
-        const bCounts: Record<number, number> = {}; // к-сть Б для кожного гравця
+        const bCounts: Record<number, number> = {};
 
         currentGame.players.forEach(p => {
             totals[p.id] = 0;
@@ -185,7 +208,7 @@ export default function App() {
                     prevRound.scores[visPlayerId] = 'Б';
                     bCounts[visPlayerId] += 1;
                     if (bCounts[visPlayerId] === 2) {
-                        totals[visPlayerId] -= 100;
+                        totals[visPlayerId] += gameRules.secondBPenalty;
                     }
 
                     totals[bestOpponentPrev.playerId] += opponentScore + hangingScore;
@@ -194,15 +217,16 @@ export default function App() {
 
                 pendingVis.splice(pendingVis.findIndex(p => p.playerId === visPlayerId && p.roundIndex === roundIndex), 1);
             });
+
             for (const [pid, val] of Object.entries(round.scores)) {
                 const playerId = Number(pid);
 
                 if (val === 'Б') {
                     bCounts[playerId] += 1;
                     if (bCounts[playerId] === 2) {
-                        totals[playerId] -= 100;
+                        totals[playerId] += gameRules.secondBPenalty;
                     }
-                } else if (val === 'ВІС') {
+                } else if (val === 'ВІС' && gameRules.allowVis) {
                     pendingVis.push({playerId, roundIndex: idx});
                 }
             }
@@ -249,13 +273,13 @@ export default function App() {
     const addRound = () => {
         if (!game || winnerPlayer !== null) return;
         if (isAddDisabled) {
-            setError('Заповніть всі поля валідними значеннями (число, Б, ХВ або ВІС).');
+            setError('Заповніть всі поля валідними значеннями (число, Б, ХВ' + (gameRules.allowVis ? ' або ВІС' : '') + ').');
             return;
         }
         const roundNumber = game.rounds.length + 1;
         const updatedScores: Record<string, number | string> = {};
         game.players.forEach(p => {
-            updatedScores[p.id] = parseScore(scores[p.id], p.id.toString(), game.rounds);
+            updatedScores[p.id] = parseScore(scores[p.id], p.id.toString(), game.rounds, gameRules);
         });
         const newRound: Round = {id: roundNumber, number: roundNumber, scores: updatedScores};
         const nextDealerIndex = (game.players.findIndex(p => p.id === game.dealerId) + 1) % game.players.length;
@@ -275,13 +299,11 @@ export default function App() {
 
         console.log('Updating round:', roundNumber, 'with scores:', newScores);
 
-        // Використовуємо parseScore для правильної конвертації
         const convertedScores: Record<string, number | string> = {};
         Object.entries(newScores).forEach(([playerId, scoreStr]) => {
-            convertedScores[playerId] = parseScore(scoreStr, playerId, game.rounds);
+            convertedScores[playerId] = parseScore(scoreStr, playerId, game.rounds, gameRules);
         });
 
-        // Створюємо повністю новий об'єкт гри
         const updatedRounds = game.rounds.map(r =>
             r.number === roundNumber
                 ? { ...r, scores: convertedScores }
@@ -304,7 +326,7 @@ export default function App() {
         if (!game) return {};
         console.log('Recalculating totals for game:', game.id, 'rounds:', game.rounds.length);
         return calculateTotals(game);
-    }, [game]);
+    }, [game, gameRules]);
 
     const resetGame = () => {
         setGame(null);
@@ -314,8 +336,9 @@ export default function App() {
         setError('');
         setHasHistoryShown(false);
         setShowCelebration(false);
+        setShowStatistics(false);
         setGameId(1);
-        localStorage.clear();
+        localStorage.removeItem(GAME_ID);
     };
 
     const continueGame = () => {
@@ -326,7 +349,7 @@ export default function App() {
 
     return (
         <div
-            className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex flex-col items-center py-10 relative">
+            className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex flex-col items-center py-4 sm:py-10 relative px-2 sm:px-4">
             <ParticleEffect show={showCelebration}/>
 
             {!game ? (
@@ -337,15 +360,15 @@ export default function App() {
                         className="absolute -bottom-4 -right-4 w-32 h-32 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full opacity-20 animate-pulse animation-delay-1000"></div>
 
                     <div
-                        className="bg-white/10 backdrop-blur-lg border border-white/20 p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+                        className="bg-white/10 backdrop-blur-lg border border-white/20 p-4 sm:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
                         <div
                             className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 animate-pulse"></div>
 
                         <div className="relative z-10 space-y-4">
-                            <div className="text-center mb-8">
+                            <div className="text-center mb-4 sm:mb-8">
                                 <div
-                                    className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mb-4 animate-bounce shadow-lg">
-                                    <Trophy className="w-10 h-10 text-white drop-shadow-lg"/>
+                                    className="inline-flex items-center justify-center w-16 sm:w-20 h-16 sm:h-20 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mb-4 animate-bounce shadow-lg">
+                                    <Trophy className="w-8 sm:w-10 h-8 sm:h-10 text-white drop-shadow-lg"/>
                                 </div>
                             </div>
 
@@ -357,6 +380,12 @@ export default function App() {
                                     setPlayerCount={setPlayerCount}
                                     targetScore={targetScore}
                                     setTargetScore={setTargetScore}
+                                    gameRules={gameRules}
+                                />
+
+                                <GameRules
+                                    rules={gameRules}
+                                    onRulesChange={setGameRules}
                                 />
 
                                 <div className="mt-6">
@@ -387,7 +416,7 @@ export default function App() {
                                                 />
                                                 <Crown
                                                     className={`w-5 h-5 transition-all duration-300 ${dealerIndex === idx ? 'text-yellow-400 animate-pulse' : 'text-white/70'}`}/>
-                                                <span className="ml-1 text-sm font-medium">Роздає</span>
+                                                <span className="ml-1 text-xs sm:text-sm font-medium">Роздає</span>
                                             </label>
                                         </div>
                                     ))}
@@ -396,9 +425,9 @@ export default function App() {
                                 <GameButton
                                     onClick={() => createGame()}
                                     disabled={!names.every(n => n.trim())}
-                                    className="w-full text-lg py-4"
+                                    className="w-full text-base sm:text-lg py-3 sm:py-4"
                                 >
-                                    <Zap className="w-6 h-6"/>
+                                    <Zap className="w-5 sm:w-6 h-5 sm:h-6"/>
                                     <span>🚀 Почати епічну гру!</span>
                                 </GameButton>
                             </div>
@@ -406,16 +435,14 @@ export default function App() {
                     </div>
                 </div>
             ) : (
-                <div className="w-full max-w-4xl flex flex-col gap-6 px-4 relative">
-                    {/* Декоративні елементи для ігрового режиму */}
+                <div className="w-full max-w-4xl flex flex-col gap-4 sm:gap-6 relative">
                     <div
                         className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full opacity-10 animate-pulse"></div>
                     <div
                         className="absolute top-20 right-10 w-24 h-24 bg-gradient-to-r from-pink-400 to-red-500 rounded-full opacity-10 animate-pulse animation-delay-2000"></div>
 
                     <div
-                        className="bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-3xl shadow-2xl relative overflow-hidden">
-                        {/* Анімований фон */}
+                        className="bg-white/10 backdrop-blur-lg border border-white/20 p-4 sm:p-6 rounded-3xl shadow-2xl relative overflow-hidden">
                         <div
                             className="absolute inset-0 bg-gradient-to-r from-indigo-600/5 via-purple-600/5 to-pink-600/5 animate-pulse"></div>
 
@@ -431,33 +458,47 @@ export default function App() {
                     </div>
 
                     <div
-                        className="bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-3xl shadow-2xl relative overflow-hidden">
+                        className="bg-white/10 backdrop-blur-lg border border-white/20 p-4 sm:p-6 rounded-3xl shadow-2xl relative overflow-hidden">
                         <div
                             className="absolute inset-0 bg-gradient-to-r from-green-600/5 via-blue-600/5 to-purple-600/5 animate-pulse"></div>
 
                         <div className="relative z-10">
                             <TotalScores players={game.players} totals={totals}/>
+
+                            {game.rounds.length > 0 && (
+                                <div className="mt-4 text-center">
+                                    <button
+                                        onClick={() => {
+                                            console.log('Toggle statistics:', !showStatistics);
+                                            setShowStatistics(!showStatistics);
+                                        }}
+                                        className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-all duration-200 text-sm sm:text-base"
+                                    >
+                                        {showStatistics ? 'Приховати статистику' : 'Показати статистику'}
+                                    </button>
+                                </div>
+                            )}
+
                             {winnerPlayer !== null ? (
-                                <div className="text-center py-8 relative">
-                                    {/* Святкові елементи */}
+                                <div className="text-center py-4 sm:py-8 relative">
                                     <div
                                         className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-500/20 rounded-2xl animate-pulse"></div>
 
                                     <div className="relative z-10">
-                                        <div className="animate-bounce mb-6">
-                                            <PartyPopper className="w-20 h-20 text-yellow-400 mx-auto drop-shadow-2xl"/>
+                                        <div className="animate-bounce mb-4 sm:mb-6">
+                                            <PartyPopper className="w-16 sm:w-20 h-16 sm:h-20 text-yellow-400 mx-auto drop-shadow-2xl"/>
                                         </div>
-                                        <div className="mb-6">
-                                            <h2 className="text-4xl font-bold bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent mb-2">
+                                        <div className="mb-4 sm:mb-6">
+                                            <h2 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent mb-2">
                                                 🎉 ПЕРЕМОЖЕЦЬ! 🎉
                                             </h2>
-                                            <p className="text-2xl text-white font-bold">
+                                            <p className="text-xl sm:text-2xl text-white font-bold">
                                                 {game.players.find(p => p.id === winnerPlayer)!.name}
                                             </p>
                                             <div className="flex items-center justify-center mt-4 space-x-2">
-                                                <Award className="w-8 h-8 text-yellow-400"/>
-                                                <span className="text-white/80 text-lg">Вітаємо з перемогою!</span>
-                                                <Award className="w-8 h-8 text-yellow-400"/>
+                                                <Award className="w-6 sm:w-8 h-6 sm:h-8 text-yellow-400"/>
+                                                <span className="text-white/80 text-base sm:text-lg">Вітаємо з перемогою!</span>
+                                                <Award className="w-6 sm:w-8 h-6 sm:h-8 text-yellow-400"/>
                                             </div>
                                         </div>
 
@@ -472,9 +513,9 @@ export default function App() {
                                 <>
                                     {error && (
                                         <div
-                                            className="bg-red-500/20 border border-red-400/50 text-red-200 px-4 py-3 rounded-xl mb-6 backdrop-blur-sm">
-                                            <div className="flex items-center">
-                                                <Zap className="w-5 h-5 mr-2"/>
+                                            className="bg-red-500/20 border border-red-400/50 text-red-200 px-3 sm:px-4 py-2 sm:py-3 rounded-xl mb-4 sm:mb-6 backdrop-blur-sm">
+                                            <div className="flex items-center text-sm sm:text-base">
+                                                <Zap className="w-4 sm:w-5 h-4 sm:h-5 mr-2"/>
                                                 {error}
                                             </div>
                                         </div>
@@ -486,6 +527,7 @@ export default function App() {
                                         onAddRound={addRound}
                                         roundNumber={game.rounds.length + 1}
                                         isAddDisabled={isAddDisabled}
+                                        gameRules={gameRules}
                                     />
                                 </>
                             )}
@@ -493,7 +535,7 @@ export default function App() {
                     </div>
 
                     <div
-                        className="bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-3xl shadow-2xl relative overflow-hidden">
+                        className="bg-white/10 backdrop-blur-lg border border-white/20 p-4 sm:p-6 rounded-3xl shadow-2xl relative overflow-hidden">
                         <div
                             className="absolute inset-0 bg-gradient-to-r from-purple-600/5 via-pink-600/5 to-red-600/5 animate-pulse"></div>
 
@@ -502,9 +544,18 @@ export default function App() {
                                 rounds={game.rounds}
                                 players={game.players}
                                 onUpdateRound={updateRound}
+                                gameRules={gameRules}
                             />
                         </div>
                     </div>
+
+                    {showStatistics && game.rounds.length > 0 && (
+                        <PlayerStatistics
+                            game={game}
+                            players={game.players}
+                            gameRules={gameRules}
+                        />
+                    )}
                 </div>
             )}
         </div>

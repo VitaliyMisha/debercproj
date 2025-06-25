@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { GameRulesConfig } from './GameRules';
 
 interface GameSettingsProps {
     playerCount: number;
     setPlayerCount: (count: number) => void;
     targetScore: number;
     setTargetScore: (score: number) => void;
+    gameRules?: GameRulesConfig;
 }
 
 const GameSettings: React.FC<GameSettingsProps> = ({
@@ -13,8 +15,13 @@ const GameSettings: React.FC<GameSettingsProps> = ({
                                                        setPlayerCount,
                                                        targetScore,
                                                        setTargetScore,
+                                                       gameRules
                                                    }) => {
     const [isExpanded, setIsExpanded] = useState(false);
+
+    const targetScoreOptions = gameRules?.customTargetScore && gameRules.targetScoreOptions.length > 0
+        ? gameRules.targetScoreOptions
+        : [510, 1020];
 
     return (
         <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
@@ -105,7 +112,7 @@ const GameSettings: React.FC<GameSettingsProps> = ({
                                     value={targetScore}
                                     onChange={(e) => setTargetScore(Number(e.target.value))}
                                 >
-                                    {[510, 1020].map((score) => (
+                                    {targetScoreOptions.map((score) => (
                                         <option key={score} value={score}>
                                             {score} очків
                                         </option>
@@ -122,6 +129,7 @@ const GameSettings: React.FC<GameSettingsProps> = ({
                                     <span className="text-base">⏱️</span>
                                     {targetScore === 510 && "Швидка гра (~15-20 хвилин)"}
                                     {targetScore === 1020 && "Довга гра (~30-40 хвилин)"}
+                                    {!targetScoreOptions.includes(targetScore) && "Користувацький рахунок"}
                                 </p>
                             </div>
                         </div>
