@@ -21,7 +21,7 @@ const GameSettings: React.FC<GameSettingsProps> = ({
 
     const targetScoreOptions = gameRules?.customTargetScore && gameRules.targetScoreOptions.length > 0
         ? gameRules.targetScoreOptions
-        : [510, 1020];
+        : [1020, 510];
 
     return (
         <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">

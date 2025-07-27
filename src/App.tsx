@@ -12,7 +12,7 @@ import GameHistory from './components/GameHistory';
 import TotalScores from './components/TotalScores';
 import PlayerStatistics from './components/PlayerStatistics';
 import GameRules, { GameRulesConfig } from './components/GameRules';
-import {generateUniqueId, isValidScore, loadWinCounts, parseScore, saveWinCounts} from './utils/gameHelpers';
+import {generateUniqueId, isValidScore, loadWinCounts, parseScore, saveWinCounts, calculateGameTotals} from './utils/gameHelpers';
 
 const GAME_ID = 'gameId';
 const GAME_RULES_KEY = 'gameRules';
@@ -91,7 +91,7 @@ const GameButton = ({
 
 export default function App() {
     const [playerCount, setPlayerCount] = useState(2);
-    const [targetScore, setTargetScore] = useState(510);
+    const [targetScore, setTargetScore] = useState(1020);
     const [names, setNames] = useState<string[]>(Array(2).fill(''));
     const [dealerIndex, setDealerIndex] = useState(0);
     const [game, setGame] = useState<Game | null>(null);
@@ -111,6 +111,19 @@ export default function App() {
         const stored = localStorage.getItem(GAME_ID);
         return stored ? parseInt(stored, 10) : 1;
     });
+
+    useEffect(() => {
+        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+            event.preventDefault();
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, []);
+
 
     useEffect(() => {
         localStorage.setItem(GAME_ID, gameId.toString());
@@ -162,91 +175,8 @@ export default function App() {
         ? game.players.some(p => !isValidScore(scores[p.id], gameRules))
         : true;
 
-    const calculateTotals = (currentGame: Game) => {
-        const totals: Record<number, number> = {};
-        const bCounts: Record<number, number> = {};
-
-        currentGame.players.forEach(p => {
-            totals[p.id] = 0;
-            bCounts[p.id] = 0;
-        });
-
-        const pendingVis: { playerId: number, roundIndex: number }[] = [];
-
-        currentGame.rounds.forEach((round, idx, allRounds) => {
-            const stillPendingVis = [...pendingVis];
-
-            stillPendingVis.forEach(({playerId: visPlayerId, roundIndex}) => {
-                const prevRound = allRounds[roundIndex];
-                const hangingScore = Math.max(
-                    ...Object.values(prevRound.scores)
-                        .map(val => typeof val === 'number' ? val : 0)
-                );
-
-                const opponentEntriesPrev = Object.entries(prevRound.scores)
-                    .filter(([id]) => Number(id) !== visPlayerId)
-                    .map(([id, val]) => ({
-                        playerId: Number(id),
-                        score: typeof val === 'number' ? val : 0
-                    }));
-
-                const bestOpponentPrev = opponentEntriesPrev.reduce((best, curr) =>
-                    curr.score > best.score ? curr : best, {playerId: -1, score: -Infinity}
-                );
-
-                const visScore = typeof round.scores[visPlayerId] === 'number'
-                    ? round.scores[visPlayerId] as number
-                    : 0;
-
-                const opponentScore = typeof round.scores[bestOpponentPrev.playerId] === 'number'
-                    ? round.scores[bestOpponentPrev.playerId] as number
-                    : 0;
-
-                if (visScore > opponentScore) {
-                    totals[visPlayerId] += hangingScore;
-                } else {
-                    prevRound.scores[visPlayerId] = 'Б';
-                    bCounts[visPlayerId] += 1;
-                    if (bCounts[visPlayerId] === 2) {
-                        totals[visPlayerId] += gameRules.secondBPenalty;
-                    }
-
-                    totals[bestOpponentPrev.playerId] += opponentScore + hangingScore;
-                    round.scores[bestOpponentPrev.playerId] = opponentScore + hangingScore;
-                }
-
-                pendingVis.splice(pendingVis.findIndex(p => p.playerId === visPlayerId && p.roundIndex === roundIndex), 1);
-            });
-
-            for (const [pid, val] of Object.entries(round.scores)) {
-                const playerId = Number(pid);
-
-                if (val === 'Б') {
-                    bCounts[playerId] += 1;
-                    if (bCounts[playerId] === 2) {
-                        totals[playerId] += gameRules.secondBPenalty;
-                    }
-                } else if (val === 'ВІС' && gameRules.allowVis) {
-                    pendingVis.push({playerId, roundIndex: idx});
-                }
-            }
-
-            for (const [pid, val] of Object.entries(round.scores)) {
-                const playerId = Number(pid);
-                const isPending = pendingVis.some(p => p.playerId === playerId);
-
-                if (!isPending) {
-                    const score = typeof val === 'number' ? val : 0;
-                    totals[playerId] += score;
-                }
-            }
-        });
-
-        return totals;
-    };
-
     const updateWinner = (currentGame: Game) => {
-        const totals = calculateTotals(currentGame);
+        const totals = calculateGameTotals(currentGame, gameRules);
         const contenders = currentGame.players.filter(p => totals[p.id] >= targetScore);
         if (contenders.length > 0) {
             const maxScore = Math.max(...contenders.map(p => totals[p.id]));
@@ -325,7 +255,7 @@ export default function App() {
     const totals = useMemo(() => {
         if (!game) return {};
         console.log('Recalculating totals for game:', game.id, 'rounds:', game.rounds.length);
-        return calculateTotals(game);
+        return calculateGameTotals(game, gameRules);
     }, [game, gameRules]);
 
     const resetGame = () => {

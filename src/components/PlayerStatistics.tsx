@@ -2,6 +2,7 @@ import React from 'react';
 import { Game, Player } from '../types';
 import { BarChart3, TrendingDown, TrendingUp, Activity, Award } from 'lucide-react';
 import { GameRulesConfig } from './GameRules';
+import { calculateGameTotals } from '../utils/gameHelpers';
 
 interface PlayerStatisticsProps {
     game: Game;
@@ -23,92 +24,6 @@ interface PlayerStats {
 }
 
 const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, gameRules }) => {
-    // Використовуємо ту ж логіку підрахунку, що і в основному компоненті
-    const calculateTotals = () => {
-        const totals: Record<number, number> = {};
-        const bCounts: Record<number, number> = {};
-
-        const secondBPenalty = gameRules?.secondBPenalty || -100;
-
-        players.forEach(p => {
-            totals[p.id] = 0;
-            bCounts[p.id] = 0;
-        });
-
-        const pendingVis: { playerId: number, roundIndex: number }[] = [];
-
-        game.rounds.forEach((round, idx, allRounds) => {
-            const stillPendingVis = [...pendingVis];
-
-            stillPendingVis.forEach(({playerId: visPlayerId, roundIndex}) => {
-                const prevRound = allRounds[roundIndex];
-                const hangingScore = Math.max(
-                    ...Object.values(prevRound.scores)
-                        .map(val => typeof val === 'number' ? val : 0)
-                );
-
-                const opponentEntriesPrev = Object.entries(prevRound.scores)
-                    .filter(([id]) => Number(id) !== visPlayerId)
-                    .map(([id, val]) => ({
-                        playerId: Number(id),
-                        score: typeof val === 'number' ? val : 0
-                    }));
-
-                const bestOpponentPrev = opponentEntriesPrev.reduce((best, curr) =>
-                    curr.score > best.score ? curr : best, {playerId: -1, score: -Infinity}
-                );
-
-                const visScore = typeof round.scores[visPlayerId] === 'number'
-                    ? round.scores[visPlayerId] as number
-                    : 0;
-
-                const opponentScore = typeof round.scores[bestOpponentPrev.playerId] === 'number'
-                    ? round.scores[bestOpponentPrev.playerId] as number
-                    : 0;
-
-                if (visScore > opponentScore) {
-                    totals[visPlayerId] += hangingScore;
-                } else {
-                    prevRound.scores[visPlayerId] = 'Б';
-                    bCounts[visPlayerId] += 1;
-                    if (bCounts[visPlayerId] === 2) {
-                        totals[visPlayerId] += secondBPenalty;
-                    }
-
-                    totals[bestOpponentPrev.playerId] += opponentScore + hangingScore;
-                    round.scores[bestOpponentPrev.playerId] = opponentScore + hangingScore;
-                }
-
-                pendingVis.splice(pendingVis.findIndex(p => p.playerId === visPlayerId && p.roundIndex === roundIndex), 1);
-            });
-
-            for (const [pid, val] of Object.entries(round.scores)) {
-                const playerId = Number(pid);
-
-                if (val === 'Б') {
-                    bCounts[playerId] += 1;
-                    if (bCounts[playerId] === 2) {
-                        totals[playerId] += secondBPenalty;
-                    }
-                } else if (val === 'ВІС' && gameRules?.allowVis !== false) {
-                    pendingVis.push({playerId, roundIndex: idx});
-                }
-            }
-
-            for (const [pid, val] of Object.entries(round.scores)) {
-                const playerId = Number(pid);
-                const isPending = pendingVis.some(p => p.playerId === playerId);
-
-                if (!isPending) {
-                    const score = typeof val === 'number' ? val : 0;
-                    totals[playerId] += score;
-                }
-            }
-        });
-
-        return totals;
-    };
-
     const calculatePlayerStats = (playerId: number): PlayerStats => {
         let bCount = 0;
         let hvCount = 0;
@@ -197,7 +112,7 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
         });
 
         // Отримуємо загальний рахунок з правильної функції
-        const gameTotals = calculateTotals();
+        const gameTotals = calculateGameTotals(game, gameRules!);
         const totalScore = gameTotals[playerId] || 0;
 
         // Рахуємо середнє

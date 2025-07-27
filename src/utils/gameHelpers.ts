@@ -1,4 +1,4 @@
-import { Round } from '../types';
+import {Round, Game} from '../types';
 import { GameRulesConfig } from '../components/GameRules';
 
 const WIN_COUNTS_KEY = 'playerWinCounts';
@@ -52,3 +52,86 @@ export const parseScore = (
 export function generateUniqueId(): number {
     return Date.now() + Math.floor(Math.random() * 1000);
 }
+
+export const calculateGameTotals = (game: Game, gameRules: GameRulesConfig): Record<number, number> => {
+    const totals: Record<number, number> = {};
+    const bCounts: Record<number, number> = {};
+
+    game.players.forEach(p => {
+        totals[p.id] = 0;
+        bCounts[p.id] = 0;
+    });
+
+    const pendingVis: { playerId: number; roundIndex: number }[] = [];
+
+    game.rounds.forEach((round, idx, allRounds) => {
+        const stillPendingVis = [...pendingVis];
+
+        stillPendingVis.forEach(({ playerId: visPlayerId, roundIndex }) => {
+            const prevRound = allRounds[roundIndex];
+            const hangingScore = Math.max(
+                ...Object.values(prevRound.scores)
+                    .map(val => typeof val === 'number' ? val : 0)
+            );
+
+            const opponentEntriesPrev = Object.entries(prevRound.scores)
+                .filter(([id]) => Number(id) !== visPlayerId)
+                .map(([id, val]) => ({
+                    playerId: Number(id),
+                    score: typeof val === 'number' ? val : 0
+                }));
+
+            const bestOpponentPrev = opponentEntriesPrev.reduce((best, curr) =>
+                curr.score > best.score ? curr : best, { playerId: -1, score: -Infinity }
+            );
+
+            const visScore = typeof round.scores[visPlayerId] === 'number'
+                ? round.scores[visPlayerId] as number
+                : 0;
+
+            const opponentScore = typeof round.scores[bestOpponentPrev.playerId] === 'number'
+                ? round.scores[bestOpponentPrev.playerId] as number
+                : 0;
+
+            if (visScore > opponentScore) {
+                totals[visPlayerId] += hangingScore;
+            } else {
+                prevRound.scores[visPlayerId] = 'Б';
+                bCounts[visPlayerId] += 1;
+                if (bCounts[visPlayerId] === 2) {
+                    totals[visPlayerId] += gameRules.secondBPenalty;
+                }
+
+                totals[bestOpponentPrev.playerId] += opponentScore + hangingScore;
+                round.scores[bestOpponentPrev.playerId] = opponentScore + hangingScore;
+            }
+
+            pendingVis.splice(pendingVis.findIndex(p => p.playerId === visPlayerId && p.roundIndex === roundIndex), 1);
+        });
+
+        for (const [pid, val] of Object.entries(round.scores)) {
+            const playerId = Number(pid);
+
+            if (val === 'Б') {
+                bCounts[playerId] += 1;
+                if (bCounts[playerId] === 2) {
+                    totals[playerId] += gameRules.secondBPenalty;
+                }
+            } else if (val === 'ВІС' && gameRules.allowVis) {
+                pendingVis.push({ playerId, roundIndex: idx });
+            }
+        }
+
+        for (const [pid, val] of Object.entries(round.scores)) {
+            const playerId = Number(pid);
+            const isPending = pendingVis.some(p => p.playerId === playerId);
+
+            if (!isPending) {
+                const score = typeof val === 'number' ? val : 0;
+                totals[playerId] += score;
+            }
+        }
+    });
+
+    return totals;
+};
