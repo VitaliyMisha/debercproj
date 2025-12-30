@@ -6,7 +6,7 @@
   ::before,
   ::backdrop{
     -webkit-tap-highlight-color: transparent;
-  },
+  }
   ::file-selector-button {
     border-color: var(--color-gray-200, currentcolor);
   }

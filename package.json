@@ -3,9 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "dev": "node_modules/.bin/vite",
-    "build": "node_modules/.bin/vite build",
-    "preview": "node_modules/.bin/vite preview"
+    "dev": "bun x vite",
+    "build": "bun x vite build",
+    "preview": "bun x vite preview"
   },
   "dependencies": {
     "axios": "^1.13.2",
