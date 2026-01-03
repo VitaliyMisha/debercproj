@@ -36,19 +36,14 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
 
         const hvPenalty = gameRules?.hvPenalty || -100;
         const secondBPenalty = gameRules?.secondBPenalty || -100;
-
-        // Проходимо по всіх раундах і рахуємо статистику
         game.rounds.forEach((round) => {
             const score = round.scores[playerId];
             let effectiveRoundScore = 0;
             let shouldAddToRoundScores = true;
-
-            // Логування для діагностики
             console.log(`Player ${playerId}, Round score:`, score, 'Type:', typeof score);
 
             if (score === 'Б') {
                 bCount++;
-                // Тільки друга Б дає штраф в очках
                 if (bCount === 2) {
                     effectiveRoundScore = secondBPenalty;
                     negativeRounds++;
@@ -57,31 +52,25 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
                 }
             } else if (score === 'ВІС') {
                 visCount++;
-                // ВІС не додається до статистики раундів
                 shouldAddToRoundScores = false;
             } else if (typeof score === 'number') {
                 effectiveRoundScore = score;
 
-                // Перевіряємо чи це ХВ за значенням
                 if (score === hvPenalty) {
                     hvCount++;
                 }
-
-                // Рахуємо позитивні/негативні раунди
                 if (score > 0) {
                     positiveRounds++;
                 } else if (score < 0) {
                     negativeRounds++;
                 }
             } else{
-                // Обробка інших рядкових значень
                 const upperScore = score.toUpperCase();
                 if (upperScore === 'ХВ') {
                     hvCount++;
                     effectiveRoundScore = hvPenalty;
                     negativeRounds++;
                 } else {
-                    // Спробуємо розпарсити як число
                     const numValue = parseInt(score);
                     if (!isNaN(numValue)) {
                         effectiveRoundScore = numValue;
@@ -96,12 +85,8 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
                     }
                 }
             }
-
-            // Додаємо до масиву раундів для розрахунку середнього
             if (shouldAddToRoundScores) {
                 roundScores.push(effectiveRoundScore);
-
-                // Оновлюємо кращий/гірший раунди
                 if (effectiveRoundScore > bestRound) {
                     bestRound = effectiveRoundScore;
                 }
@@ -110,12 +95,8 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
                 }
             }
         });
-
-        // Отримуємо загальний рахунок з правильної функції
         const gameTotals = calculateGameTotals(game, gameRules!);
         const totalScore = gameTotals[playerId] || 0;
-
-        // Рахуємо середнє
         const averageScore = roundScores.length > 0
             ? roundScores.reduce((sum, s) => sum + s, 0) / roundScores.length
             : 0;
@@ -149,7 +130,7 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
 
     return (
         <div className="bg-white/10 backdrop-blur-lg border border-white/20 p-4 sm:p-6 rounded-3xl shadow-2xl relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-purple-600/5 to-pink-600/5 animate-pulse"></div>
+            <div className="absolute inset-0 bg-linear-to-r from-blue-600/5 via-purple-600/5 to-pink-600/5 animate-pulse"></div>
 
             <div className="relative z-10">
                 <div className="flex items-center justify-center mb-4 sm:mb-6">

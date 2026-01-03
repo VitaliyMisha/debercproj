@@ -14,7 +14,7 @@ export const saveWinCounts = (counts: Record<string, number>) => {
 
 export const isValidScore = (val: string | number, gameRules?: GameRulesConfig): boolean => {
     const trimmed = val.toString().trim().toUpperCase();
-    const allowVis = gameRules?.allowVis !== false; // За замовчуванням дозволено
+    const allowVis = gameRules?.allowVis !== false;
 
     return /^\d+$/.test(trimmed) ||
         trimmed === 'Б' ||
@@ -65,45 +65,36 @@ export const calculateGameTotals = (game: Game, gameRules: GameRulesConfig): Rec
     const pendingVis: { playerId: number; roundIndex: number }[] = [];
 
     game.rounds.forEach((round, idx, allRounds) => {
-        const stillPendingVis = [...pendingVis];
+        const currentRoundBonuses: Record<number, number> = {};
 
+        const stillPendingVis = [...pendingVis];
         stillPendingVis.forEach(({ playerId: visPlayerId, roundIndex }) => {
             const prevRound = allRounds[roundIndex];
             const hangingScore = Math.max(
                 ...Object.values(prevRound.scores)
                     .map(val => typeof val === 'number' ? val : 0)
             );
-
-            const opponentEntriesPrev = Object.entries(prevRound.scores)
+            const opponentEntriesCurrent = Object.entries(round.scores)
                 .filter(([id]) => Number(id) !== visPlayerId)
                 .map(([id, val]) => ({
                     playerId: Number(id),
                     score: typeof val === 'number' ? val : 0
                 }));
 
-            const bestOpponentPrev = opponentEntriesPrev.reduce((best, curr) =>
+            const bestOpponentCurrent = opponentEntriesCurrent.reduce((best, curr) =>
                 curr.score > best.score ? curr : best, { playerId: -1, score: -Infinity }
             );
 
-            const visScore = typeof round.scores[visPlayerId] === 'number'
-                ? round.scores[visPlayerId] as number
-                : 0;
+            const visScore = typeof round.scores[visPlayerId] === 'number' ? round.scores[visPlayerId] as number : 0;
 
-            const opponentScore = typeof round.scores[bestOpponentPrev.playerId] === 'number'
-                ? round.scores[bestOpponentPrev.playerId] as number
-                : 0;
-
-            if (visScore > opponentScore) {
+            if (visScore > bestOpponentCurrent.score) {
                 totals[visPlayerId] += hangingScore;
             } else {
-                prevRound.scores[visPlayerId] = 'Б';
                 bCounts[visPlayerId] += 1;
                 if (bCounts[visPlayerId] === 2) {
                     totals[visPlayerId] += gameRules.secondBPenalty;
                 }
-
-                totals[bestOpponentPrev.playerId] += opponentScore + hangingScore;
-                round.scores[bestOpponentPrev.playerId] = opponentScore + hangingScore;
+                currentRoundBonuses[bestOpponentCurrent.playerId] = (currentRoundBonuses[bestOpponentCurrent.playerId] || 0) + hangingScore;
             }
 
             pendingVis.splice(pendingVis.findIndex(p => p.playerId === visPlayerId && p.roundIndex === roundIndex), 1);
@@ -111,7 +102,6 @@ export const calculateGameTotals = (game: Game, gameRules: GameRulesConfig): Rec
 
         for (const [pid, val] of Object.entries(round.scores)) {
             const playerId = Number(pid);
-
             if (val === 'Б') {
                 bCounts[playerId] += 1;
                 if (bCounts[playerId] === 2) {
@@ -121,14 +111,18 @@ export const calculateGameTotals = (game: Game, gameRules: GameRulesConfig): Rec
                 pendingVis.push({ playerId, roundIndex: idx });
             }
         }
-
         for (const [pid, val] of Object.entries(round.scores)) {
             const playerId = Number(pid);
-            const isPending = pendingVis.some(p => p.playerId === playerId);
+            const isCurrentlyPending = pendingVis.some(p => p.playerId === playerId && p.roundIndex === idx);
 
-            if (!isPending) {
-                const score = typeof val === 'number' ? val : 0;
-                totals[playerId] += score;
+            if (!isCurrentlyPending) {
+                let roundScore = 0;
+                if (typeof val === 'number') {
+                    roundScore = val;
+                } else if (val === 'ХВ') {
+                    roundScore = gameRules.hvPenalty;
+                }
+                totals[playerId] += roundScore + (currentRoundBonuses[playerId] || 0);
             }
         }
     });

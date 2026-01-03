@@ -5,13 +5,14 @@
   "scripts": {
     "dev": "bun x vite",
     "build": "bun x vite build",
+    "test": "vitest run",
     "preview": "bun x vite preview"
   },
   "dependencies": {
     "axios": "^1.13.2",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "npm-check-updates": "^19.2.0"
+    "npm-check-updates": "^19.2.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",
@@ -23,6 +24,7 @@
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "vite": "^7.3.0",
-    "vite-plugin-pwa": "^1.2.0"
+    "vite-plugin-pwa": "^1.2.0",
+    "vitest": "^4.0.16"
   }
 }
