@@ -44,7 +44,7 @@ const GameRules: React.FC<GameRulesProps> = ({ rules, onRulesChange }) => {
         <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden mt-4">
             <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-600 px-6 py-4 hover:from-purple-600 hover:to-pink-700 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-purple-200"
+                className="w-full bg-linear-to-r from-purple-500 to-pink-600 px-6 py-4 hover:from-purple-600 hover:to-pink-700 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-purple-200"
             >
                 <div className="flex items-center justify-between">
                     <h3 className="text-xl font-bold text-white flex items-center gap-2">
@@ -65,7 +65,7 @@ const GameRules: React.FC<GameRulesProps> = ({ rules, onRulesChange }) => {
             </button>
 
             <div className={`transition-all duration-300 ease-in-out ${
-                isExpanded ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'
+                isExpanded ? 'max-h-200 opacity-100' : 'max-h-0 opacity-0'
             } overflow-hidden`}>
                 <div className="p-6 space-y-6">
                     {/* Штраф за другу Б */}
@@ -134,7 +134,7 @@ const GameRules: React.FC<GameRulesProps> = ({ rules, onRulesChange }) => {
                                     onChange={(e) => handleChange('allowVis', e.target.checked)}
                                     className="sr-only peer"
                                 />
-                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
                                 <span className="ml-3 text-gray-700">
                                     {rules.allowVis ? 'Дозволено' : 'Заборонено'}
                                 </span>
@@ -160,7 +160,7 @@ const GameRules: React.FC<GameRulesProps> = ({ rules, onRulesChange }) => {
                                     onChange={(e) => handleChange('customTargetScore', e.target.checked)}
                                     className="sr-only peer"
                                 />
-                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
                                 <span className="ml-3 text-gray-700">
                                     {rules.customTargetScore ? 'Увімкнено' : 'Вимкнено'}
                                 </span>
@@ -195,7 +195,7 @@ const GameRules: React.FC<GameRulesProps> = ({ rules, onRulesChange }) => {
                     </div>
 
                     {/* Зведення правил */}
-                    <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
+                    <div className="mt-6 p-4 bg-linear-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
                         <h4 className="text-lg font-semibold text-gray-800 mb-2">Поточні правила:</h4>
                         <ul className="space-y-1 text-sm text-gray-700">
                             <li>• Друга "Б": <span className="font-semibold text-red-600">{rules.secondBPenalty} очок</span></li>

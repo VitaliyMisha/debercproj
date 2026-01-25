@@ -28,7 +28,7 @@ const GameSettings: React.FC<GameSettingsProps> = ({
             {/* Заголовок з кнопкою згортання/розгортання */}
             <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4 hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-200"
+                className="w-full bg-linear-to-r from-indigo-500 to-purple-600 px-6 py-4 hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-200"
             >
                 <div className="flex items-center justify-between">
                     <h3 className="text-xl font-bold text-white text-center flex items-center justify-center gap-2">
@@ -50,10 +50,8 @@ const GameSettings: React.FC<GameSettingsProps> = ({
                     </div>
                 </div>
             </button>
-
-            {/* Згортуваний контент */}
             <div className={`transition-all duration-300 ease-in-out ${
-                isExpanded ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
+                isExpanded ? 'max-h-150 opacity-100' : 'max-h-0 opacity-0'
             } overflow-hidden`}>
                 <div className="p-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -134,7 +132,7 @@ const GameSettings: React.FC<GameSettingsProps> = ({
                             </div>
                         </div>
                     </div>
-                    <div className="mt-6 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-4 border border-gray-200">
+                    <div className="mt-6 bg-linear-to-r from-gray-50 to-blue-50 rounded-lg p-4 border border-gray-200">
                         <div className="text-center">
                             <h4 className="text-lg font-semibold text-gray-800 mb-2">Готові до гри?</h4>
                             <p className="text-gray-600">

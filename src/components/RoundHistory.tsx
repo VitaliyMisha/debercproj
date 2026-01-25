@@ -86,12 +86,12 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
 
     if (rounds.length === 0) {
         return (
-            <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 rounded-xl shadow-lg border border-gray-100">
-                <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-blue-200/30 to-transparent rounded-full -translate-x-16 -translate-y-16"></div>
-                <div className="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-tl from-purple-200/30 to-transparent rounded-full translate-x-12 translate-y-12"></div>
+            <div className="relative overflow-hidden bg-linear-to-br from-blue-50 via-white to-purple-50 rounded-xl shadow-lg border border-gray-100">
+                <div className="absolute top-0 left-0 w-32 h-32 bg-linear-to-br from-blue-200/30 to-transparent rounded-full -translate-x-16 -translate-y-16"></div>
+                <div className="absolute bottom-0 right-0 w-24 h-24 bg-linear-to-tl from-purple-200/30 to-transparent rounded-full translate-x-12 translate-y-12"></div>
 
                 <div className="relative z-10 p-4 sm:p-6">
-                    <h2 className="text-lg sm:text-xl font-semibold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-4 text-center">
+                    <h2 className="text-lg sm:text-xl font-semibold bg-linear-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-4 text-center">
                         Історія раундів
                     </h2>
                     <p className="text-gray-500 text-center py-6 sm:py-8 text-sm sm:text-base">
@@ -103,14 +103,14 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
     }
 
     return (
-        <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 rounded-xl shadow-lg border border-gray-100">
-            <div className="absolute top-0 left-0 w-40 h-40 bg-gradient-to-br from-blue-200/20 to-transparent rounded-full -translate-x-20 -translate-y-20"></div>
-            <div className="absolute top-1/4 right-0 w-32 h-32 bg-gradient-to-bl from-purple-200/20 to-transparent rounded-full translate-x-16"></div>
-            <div className="absolute bottom-0 left-1/3 w-28 h-28 bg-gradient-to-tr from-indigo-200/20 to-transparent rounded-full translate-y-14"></div>
+        <div className="relative overflow-hidden bg-linear-to-br from-blue-50 via-white to-purple-50 rounded-xl shadow-lg border border-gray-100">
+            <div className="absolute top-0 left-0 w-40 h-40 bg-linear-to-br from-blue-200/20 to-transparent rounded-full -translate-x-20 -translate-y-20"></div>
+            <div className="absolute top-1/4 right-0 w-32 h-32 bg-linear-to-bl from-purple-200/20 to-transparent rounded-full translate-x-16"></div>
+            <div className="absolute bottom-0 left-1/3 w-28 h-28 bg-linear-to-tr from-indigo-200/20 to-transparent rounded-full translate-y-14"></div>
 
             <div className="relative z-10 p-4 sm:p-6">
                 <div className="flex items-center justify-between mb-4 sm:mb-6">
-                    <h2 className="text-lg sm:text-xl font-semibold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                    <h2 className="text-lg sm:text-xl font-semibold bg-linear-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
                         Історія раундів
                     </h2>
                     <div className="flex items-center space-x-2 sm:space-x-3">
@@ -119,7 +119,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                         </span>
                         <button
                             onClick={toggleAllRounds}
-                            className="px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium text-blue-600 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg hover:from-blue-100 hover:to-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+                            className="px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium text-blue-600 bg-linear-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg hover:from-blue-100 hover:to-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
                         >
                             {allCollapsed ? 'Розгорнути всі' : 'Згорнути всі'}
                         </button>
@@ -144,7 +144,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                                             <button
                                                 onClick={() => toggleRoundCollapse(round.number)}
                                                 disabled={isEditing}
-                                                className="flex items-center justify-center w-6 sm:w-8 h-6 sm:h-8 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className="flex items-center justify-center w-6 sm:w-8 h-6 sm:h-8 rounded-full bg-linear-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
                                                 <svg
                                                     className={`w-3 sm:w-4 h-3 sm:h-4 text-gray-600 transition-transform duration-200 ${
@@ -162,7 +162,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                                                     />
                                                 </svg>
                                             </button>
-                                            <h3 className="text-base sm:text-lg font-medium bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                                            <h3 className="text-base sm:text-lg font-medium bg-linear-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
                                                 Раунд {round.number}
                                             </h3>
                                         </div>
@@ -170,7 +170,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                                         <div className="flex items-center space-x-2 sm:space-x-3">
                                             {isCollapsed && !isEditing && (
                                                 <div className="text-xs sm:text-sm text-gray-600 bg-white/50 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full border border-gray-200/50">
-                                                    Сума: <span className="font-semibold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                                                    Сума: <span className="font-semibold bg-linear-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
                                                         {calculateRoundTotal(round.scores)}
                                                     </span>
                                                 </div>
@@ -178,7 +178,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                                             {!isCollapsed && !isEditing && (
                                                 <button
                                                     onClick={() => startEditing(round)}
-                                                    className="px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium text-blue-600 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg hover:from-blue-100 hover:to-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+                                                    className="px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium text-blue-600 bg-linear-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg hover:from-blue-100 hover:to-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
                                                 >
                                                     Редагувати
                                                 </button>
@@ -188,7 +188,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
 
                                     {/* Контент раунду */}
                                     <div className={`transition-all duration-300 ease-in-out ${
-                                        isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[1000px] opacity-100'
+                                        isCollapsed ? 'max-h-0 opacity-0' : 'max-h-250 opacity-100'
                                     } overflow-hidden`}>
                                         <div className="p-3 sm:p-4">
                                             {isEditing ? (
@@ -241,12 +241,12 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                                                         {players.map(player => (
                                                             <div
                                                                 key={player.id}
-                                                                className="flex justify-between items-center p-2 sm:p-3 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-lg border border-gray-200/50"
+                                                                className="flex justify-between items-center p-2 sm:p-3 bg-linear-to-r from-gray-50 to-gray-100/50 rounded-lg border border-gray-200/50"
                                                             >
                                                                 <span className="font-medium text-gray-700 text-sm sm:text-base">
                                                                     {player.name}
                                                                 </span>
-                                                                <span className="text-base sm:text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                                                                <span className="text-base sm:text-lg font-semibold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                                                                     {round.scores[player.id] ?? 0}
                                                                 </span>
                                                             </div>
@@ -255,7 +255,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
 
                                                     <div className="pt-2 border-t border-gray-200/50">
                                                         <div className="text-xs sm:text-sm text-gray-600 text-right bg-white/50 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full border border-gray-200/50 w-fit ml-auto">
-                                                            Загальна сума: <span className="font-semibold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                                                            Загальна сума: <span className="font-semibold bg-linear-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
                                                                 {calculateRoundTotal(round.scores)}
                                                             </span>
                                                         </div>

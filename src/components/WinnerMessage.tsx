@@ -7,7 +7,7 @@ interface WinnerMessageProps {
 }
 
 const WinnerMessage: React.FC<WinnerMessageProps> = ({ winnerName, onNewGame, onContinue }) => (
-    <div className="relative overflow-hidden bg-gradient-to-br from-yellow-100 via-orange-50 to-pink-100 rounded-2xl shadow-2xl border border-yellow-200">
+    <div className="relative overflow-hidden bg-linear-to-br from-yellow-100 via-orange-50 to-pink-100 rounded-2xl shadow-2xl border border-yellow-200">
         <div className="absolute inset-0 opacity-10">
             <div className="absolute top-4 left-4 text-6xl animate-bounce">🎉</div>
             <div className="absolute top-4 right-4 text-6xl animate-bounce" style={{ animationDelay: '0.5s' }}>🎊</div>
@@ -20,12 +20,12 @@ const WinnerMessage: React.FC<WinnerMessageProps> = ({ winnerName, onNewGame, on
                 🏆
             </div>
             <div className="mb-8">
-                <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-600 to-orange-600 mb-2">
+                <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-linear-to-r from-yellow-600 to-orange-600 mb-2">
                     ПЕРЕМОЖЕЦЬ!
                 </h1>
                 <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-yellow-300">
                     <p className="text-lg text-gray-600 mb-2">Вітаємо гравця</p>
-                    <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-blue-600">
+                    <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-green-600 to-blue-600">
                         {winnerName}
                     </h2>
                 </div>
@@ -41,7 +41,7 @@ const WinnerMessage: React.FC<WinnerMessageProps> = ({ winnerName, onNewGame, on
             <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
                 <button
                     onClick={onNewGame}
-                    className="flex-1 px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-xl
+                    className="flex-1 px-6 py-4 bg-linear-to-r from-blue-500 to-purple-600 text-white font-bold rounded-xl
                              hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105
                              shadow-lg hover:shadow-xl active:scale-95 flex items-center justify-center gap-2"
                 >
@@ -51,7 +51,7 @@ const WinnerMessage: React.FC<WinnerMessageProps> = ({ winnerName, onNewGame, on
 
                 <button
                     onClick={onContinue}
-                    className="flex-1 px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl
+                    className="flex-1 px-6 py-4 bg-linear-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl
                              hover:from-green-600 hover:to-emerald-700 transition-all duration-300 transform hover:scale-105
                              shadow-lg hover:shadow-xl active:scale-95 flex items-center justify-center gap-2"
                 >

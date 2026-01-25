@@ -35,7 +35,7 @@ const PlayerInput: React.FC<PlayerInputProps> = ({ idx, name, onChange }) => {
 
     return (
         <div className="relative mb-6 group">
-            <div className="absolute -left-2 -top-2 z-10 w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg">
+            <div className="absolute -left-2 -top-2 z-10 w-8 h-8 bg-linear-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg">
                 {idx + 1}
             </div>
             <div className="relative">

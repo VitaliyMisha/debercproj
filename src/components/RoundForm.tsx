@@ -27,7 +27,7 @@ const RoundForm: React.FC<RoundFormProps> = ({
     return (
         <div className="mb-4 sm:mb-8 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-4 sm:px-6 py-3 sm:py-4">
+            <div className="bg-linear-to-r from-blue-500 to-purple-600 px-4 sm:px-6 py-3 sm:py-4">
                 <h2 className="text-lg sm:text-xl font-bold text-white text-center flex items-center justify-center gap-2">
                     <div className="w-6 sm:w-8 h-6 sm:h-8 bg-white/20 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold">
                         {roundNumber}
@@ -43,7 +43,7 @@ const RoundForm: React.FC<RoundFormProps> = ({
                         className="group relative bg-gray-50 hover:bg-blue-50 rounded-lg p-3 sm:p-4 transition-all duration-200 hover:shadow-md border border-transparent hover:border-blue-200"
                     >
                         <div className="flex items-center gap-3 sm:gap-4">
-                            <div className="flex-shrink-0 w-8 sm:w-10 h-8 sm:h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold shadow-md">
+                            <div className="shrink-0 w-8 sm:w-10 h-8 sm:h-10 bg-linear-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold shadow-md">
                                 <span className="text-sm sm:text-lg">
                                     {(() => {
                                         const chars = Array.from(p.name);
@@ -56,7 +56,7 @@ const RoundForm: React.FC<RoundFormProps> = ({
                                     {p.name}
                                 </span>
                             </div>
-                            <div className="flex-shrink-0 w-24 sm:w-28">
+                            <div className="shrink-0 w-24 sm:w-28">
                                 <input
                                     type="text"
                                     value={scores[p.id] || ''}
@@ -80,7 +80,7 @@ const RoundForm: React.FC<RoundFormProps> = ({
                     className={`w-full py-3 sm:py-4 px-4 sm:px-6 rounded-lg font-semibold text-base sm:text-lg transition-all duration-200 transform
                               ${isAddDisabled
                         ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-green-500 to-blue-500 text-white hover:from-green-600 hover:to-blue-600 hover:scale-[1.02] shadow-lg hover:shadow-xl active:scale-[0.98]'
+                        : 'bg-linear-to-r from-green-500 to-blue-500 text-white hover:from-green-600 hover:to-blue-600 hover:scale-[1.02] shadow-lg hover:shadow-xl active:scale-[0.98]'
                     }`}
                 >
                     {isAddDisabled ? '⏳ Заповніть всі поля' : '✅ Додати раунд'}
