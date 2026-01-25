@@ -1,5 +1,3 @@
-// README.md
-
 # Deberc Score App
 
 Это веб-приложение для ведения счета в карточной игре Деберц. Поддерживает игру на 2, 3 и 4 человек.
@@ -17,10 +15,10 @@
 1. Установи зависимости:
 
 ```bash
-  npm install
+  bun install
 ```
 
-1. Создай `.env` файл и укажи URL API:
+2. Создай `.env` файл и укажи URL API:
 
 ```
 VITE_API_URL=https://your-api-url.com
@@ -29,13 +27,13 @@ VITE_API_URL=https://your-api-url.com
 3. Запусти локально:
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 ## 💼 Билд
 
 ```bash
-npm run build
+bun run build
 ```
 
 
