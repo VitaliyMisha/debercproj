@@ -3,20 +3,24 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "type-check": "tsc --noEmit",
     "dev": "bun x vite",
     "build": "bun x vite build",
     "test": "vitest run",
     "preview": "bun x vite preview"
   },
   "dependencies": {
-    "axios": "^1.13.3",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3",
-    "npm-check-updates": "^19.3.1"
+    "axios": "^1.13.4",
+    "biome": "^0.3.3",
+    "npm-check-updates": "^19.3.2",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",
-    "@types/react": "^19.2.9",
+    "@types/react": "^19.2.10",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
     "lucide-react": "^0.563.0",
