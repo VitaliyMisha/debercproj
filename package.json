@@ -12,20 +12,20 @@
     "preview": "bun x vite preview"
   },
   "dependencies": {
-    "axios": "^1.13.4",
+    "axios": "^1.13.5",
     "biome": "^0.3.3",
-    "npm-check-updates": "^19.3.2",
+    "npm-check-updates": "^19.5.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.18",
-    "@types/react": "^19.2.10",
+    "@tailwindcss/postcss": "^4.2.1",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.2",
-    "lucide-react": "^0.563.0",
+    "@vitejs/plugin-react": "^5.1.4",
+    "lucide-react": "^0.575.0",
     "postcss": "^8.5.6",
-    "tailwindcss": "^4.1.18",
+    "tailwindcss": "^4.2.1",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vite-plugin-pwa": "^1.2.0",
