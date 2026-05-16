@@ -1,7 +1,6 @@
 import React, {ChangeEvent} from 'react';
-import {Player} from "../types";
+import {Player, GameRulesConfig} from "../types";
 import {Star} from "lucide-react";
-import { GameRulesConfig } from './GameRules';
 
 interface RoundFormProps {
     players: Player[];

@@ -17,3 +17,11 @@ export interface Game {
     rounds: Round[];
     dealerId: number;
 }
+
+export interface GameRulesConfig {
+  secondBPenalty: number;
+  hvPenalty: number;
+  allowVis: boolean;
+  customTargetScore: boolean;
+  targetScoreOptions: number[];
+}

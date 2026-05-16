@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Player, Round } from '../types';
-import { GameRulesConfig } from './GameRules';
+import { Player, Round, GameRulesConfig } from '../types';
 import { isValidScore } from '../utils/gameHelpers';
 
 interface RoundHistoryProps {

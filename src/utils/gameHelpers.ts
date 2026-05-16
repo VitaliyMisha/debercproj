@@ -1,5 +1,4 @@
-import {Round, Game} from '../types';
-import { GameRulesConfig } from '../components/GameRules';
+import {Round, Game, GameRulesConfig} from '../types';
 
 const WIN_COUNTS_KEY = 'playerWinCounts';
 

@@ -1,7 +1,6 @@
 import React from 'react';
-import { Game, Player } from '../types';
+import { Game, Player, GameRulesConfig } from '../types';
 import { BarChart3, TrendingDown, TrendingUp, Activity, Award } from 'lucide-react';
-import { GameRulesConfig } from './GameRules';
 import { calculateGameTotals } from '../utils/gameHelpers';
 
 interface PlayerStatisticsProps {
@@ -40,7 +39,6 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
             const score = round.scores[playerId];
             let effectiveRoundScore = 0;
             let shouldAddToRoundScores = true;
-            console.log(`Player ${playerId}, Round score:`, score, 'Type:', typeof score);
 
             if (score === 'Б') {
                 bCount++;
@@ -100,14 +98,6 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
         const averageScore = roundScores.length > 0
             ? roundScores.reduce((sum, s) => sum + s, 0) / roundScores.length
             : 0;
-
-        console.log(`Player ${playerId} stats:`, {
-            bCount,
-            hvCount,
-            visCount,
-            totalScore,
-            roundScores
-        });
 
         return {
             totalScore,
