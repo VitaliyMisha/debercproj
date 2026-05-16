@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent } from 'react';
 import { Player } from '../types';
 import { GameRulesConfig } from '../types';
 
@@ -31,15 +31,13 @@ const RoundForm: React.FC<RoundFormProps> = ({
   isAddDisabled,
   gameRules,
 }) => {
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const allowVis = gameRules?.allowVis !== false;
   const placeholder = allowVis ? '0, Б, ХВ, ВІС' : '0, Б, ХВ';
   const validTokens = allowVis ? TOKEN_HINTS : (['Б', 'ХВ'] as const);
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>, playerId: number) => {
-    setTouched((prev) => ({ ...prev, [String(playerId)]: true }));
     const val = e.target.value.trim().toUpperCase();
-    if (['Б', 'ХВ', 'ВІС'].includes(val)) {
+    if ((validTokens as readonly string[]).includes(val)) {
       const syntheticEvent = { ...e, target: { ...e.target, value: val } } as ChangeEvent<HTMLInputElement>;
       onScoreChange(syntheticEvent, playerId);
     }
@@ -90,6 +88,7 @@ const RoundForm: React.FC<RoundFormProps> = ({
                   onChange={(e) => onScoreChange(e, p.id)}
                   onBlur={(e) => handleBlur(e, p.id)}
                   placeholder={placeholder}
+                  aria-label={`Рахунок для ${p.name}`}
                   className={`w-full px-3 py-2 rounded-xl text-center text-base font-semibold
                     bg-felt border transition-all duration-150
                     focus:outline-none focus:ring-2 focus:ring-gold-from/40
