@@ -1,9 +1,8 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {Game, Player, Round} from './types';
-import {Award, Crown, PartyPopper, Sparkles, Trophy, Users, Zap} from 'lucide-react';
+import {Game, GameRulesConfig, Player, Round} from './types';
+import {Award, PartyPopper, Sparkles, Zap} from 'lucide-react';
 
-import GameSettings from './components/GameSettings';
-import PlayerInput from './components/PlayerInput';
+import SetupScreen from './components/SetupScreen';
 import RoundForm from './components/RoundForm';
 import RoundHistory from './components/RoundHistory';
 import WinnerMessage from './components/WinnerMessage';
@@ -11,7 +10,6 @@ import Header from './components/Header';
 import GameHistory from './components/GameHistory';
 import TotalScores from './components/TotalScores';
 import PlayerStatistics from './components/PlayerStatistics';
-import GameRules, { GameRulesConfig } from './components/GameRules';
 import {generateUniqueId, isValidScore, loadWinCounts, parseScore, saveWinCounts, calculateGameTotals} from './utils/gameHelpers';
 
 const GAME_ID = 'gameId';
@@ -132,10 +130,6 @@ export default function App() {
     useEffect(() => {
         localStorage.setItem(GAME_RULES_KEY, JSON.stringify(gameRules));
     }, [gameRules]);
-
-    useEffect(() => {
-        setNames(Array(playerCount).fill(''));
-    }, [playerCount]);
 
     useEffect(() => {
         if (game) {
@@ -278,99 +272,27 @@ export default function App() {
     };
 
     return (
-        <div
-            className="min-h-screen bg-linear-to-br from-purple-900 via-blue-900 to-indigo-900 flex flex-col items-center py-4 sm:py-10 relative px-2 sm:px-4">
+        <div className="felt-bg min-h-dvh">
             <ParticleEffect show={showCelebration}/>
 
             {!game ? (
-                <div className="w-full max-w-md relative">
-                    <div
-                        className="absolute -top-4 -left-4 w-24 h-24 bg-linear-to-r from-yellow-400 to-orange-500 rounded-full opacity-20 animate-pulse"></div>
-                    <div
-                        className="absolute -bottom-4 -right-4 w-32 h-32 bg-linear-to-r from-pink-400 to-purple-500 rounded-full opacity-20 animate-pulse animation-delay-1000"></div>
-
-                    <div
-                        className="bg-white/10 backdrop-blur-lg border border-white/20 p-4 sm:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
-                        <div
-                            className="absolute inset-0 bg-linear-to-r from-blue-600/10 to-purple-600/10 animate-pulse"></div>
-
-                        <div className="relative z-10 space-y-4">
-                            <div className="text-center mb-4 sm:mb-8">
-                                <div
-                                    className="inline-flex items-center justify-center w-16 sm:w-20 h-16 sm:h-20 bg-linear-to-r from-yellow-400 to-orange-500 rounded-full mb-4 animate-bounce shadow-lg">
-                                    <Trophy className="w-8 sm:w-10 h-8 sm:h-10 text-white drop-shadow-lg"/>
-                                </div>
-                            </div>
-
-                            <Header gameId={gameId} targetScore={targetScore} dealerName=""/>
-
-                            <div className="space-y-6">
-                                <GameSettings
-                                    playerCount={playerCount}
-                                    setPlayerCount={setPlayerCount}
-                                    targetScore={targetScore}
-                                    setTargetScore={setTargetScore}
-                                    gameRules={gameRules}
-                                />
-
-                                <GameRules
-                                    rules={gameRules}
-                                    onRulesChange={setGameRules}
-                                />
-
-                                <div className="mt-6">
-                                    <h2 className="text-lg font-medium mb-4 text-white text-center flex items-center justify-center">
-                                        <Users className="w-5 h-5 mr-2"/>
-                                        Імена гравців
-                                    </h2>
-                                    {names.map((n, idx) => (
-                                        <div key={idx}
-                                             className="mb-4 flex justify-center items-center space-x-3 p-3 bg-white/5 rounded-xl border border-white/10">
-                                            <PlayerInput
-                                                idx={idx}
-                                                name={n}
-                                                onChange={(value, i) => {
-                                                    const arr = [...names];
-                                                    arr[i] = value;
-                                                    setNames(arr);
-                                                }}
-                                            />
-                                            <label
-                                                className="flex items-center text-white/90 cursor-pointer hover:text-white transition-colors">
-                                                <input
-                                                    type="radio"
-                                                    name="dealer"
-                                                    checked={dealerIndex === idx}
-                                                    onChange={() => setDealerIndex(idx)}
-                                                    className="w-4 h-4 text-yellow-600 bg-transparent border-2 border-white/50 focus:ring-yellow-500 focus:ring-2 mr-2"
-                                                />
-                                                <Crown
-                                                    className={`w-5 h-5 transition-all duration-300 ${dealerIndex === idx ? 'text-yellow-400 animate-pulse' : 'text-white/70'}`}/>
-                                                <span className="ml-1 text-xs sm:text-sm font-medium">Роздає</span>
-                                            </label>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <GameButton
-                                    onClick={() => createGame()}
-                                    disabled={!names.every(n => n.trim())}
-                                    className="w-full text-base sm:text-lg py-3 sm:py-4"
-                                >
-                                    <Zap className="w-5 sm:w-6 h-5 sm:h-6"/>
-                                    <span>🚀 Почати епічну гру!</span>
-                                </GameButton>
-                            </div>
-                        </div>
-                    </div>
+                <div className="flex items-center justify-center min-h-dvh py-4 px-4">
+                    <SetupScreen
+                        playerCount={playerCount}
+                        onPlayerCountChange={setPlayerCount}
+                        targetScore={targetScore}
+                        onTargetScoreChange={setTargetScore}
+                        names={names}
+                        onNamesChange={setNames}
+                        dealerIndex={dealerIndex}
+                        onDealerIndexChange={setDealerIndex}
+                        gameRules={gameRules}
+                        onRulesChange={setGameRules}
+                        onStart={() => createGame()}
+                    />
                 </div>
             ) : (
-                <div className="w-full max-w-4xl flex flex-col gap-4 sm:gap-6 relative">
-                    <div
-                        className="absolute top-0 left-0 w-32 h-32 bg-linear-to-r from-blue-400 to-purple-500 rounded-full opacity-10 animate-pulse"></div>
-                    <div
-                        className="absolute top-20 right-10 w-24 h-24 bg-linear-to-r from-pink-400 to-red-500 rounded-full opacity-10 animate-pulse animation-delay-2000"></div>
-
+                <div className="w-full max-w-4xl mx-auto flex flex-col gap-4 sm:gap-6 p-4">
                     <div
                         className="bg-white/10 backdrop-blur-lg border border-white/20 p-4 sm:p-6 rounded-3xl shadow-2xl relative overflow-hidden">
                         <div
