@@ -8,7 +8,7 @@ import RoundHistory from './components/RoundHistory';
 import WinnerMessage from './components/WinnerMessage';
 import GameHeader from './components/GameHeader';
 import GameHistory from './components/GameHistory';
-import TotalScores from './components/TotalScores';
+import ScoreBoard from './components/ScoreBoard';
 import PlayerStatistics from './components/PlayerStatistics';
 import {generateUniqueId, isValidScore, loadWinCounts, parseScore, saveWinCounts, calculateGameTotals} from './utils/gameHelpers';
 
@@ -315,7 +315,12 @@ export default function App() {
                             className="absolute inset-0 bg-linear-to-r from-green-600/5 via-blue-600/5 to-purple-600/5 animate-pulse"></div>
 
                         <div className="relative z-10">
-                            <TotalScores players={game.players} totals={totals}/>
+                            <ScoreBoard
+                                players={game.players}
+                                totals={totals}
+                                targetScore={targetScore}
+                                snapshotActive={false}
+                            />
 
                             {game.rounds.length > 0 && (
                                 <div className="mt-4 text-center">
