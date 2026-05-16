@@ -6,7 +6,7 @@ import SetupScreen from './components/SetupScreen';
 import RoundForm from './components/RoundForm';
 import RoundHistory from './components/RoundHistory';
 import WinnerMessage from './components/WinnerMessage';
-import Header from './components/Header';
+import GameHeader from './components/GameHeader';
 import GameHistory from './components/GameHistory';
 import TotalScores from './components/TotalScores';
 import PlayerStatistics from './components/PlayerStatistics';
@@ -299,7 +299,7 @@ export default function App() {
                             className="absolute inset-0 bg-linear-to-r from-indigo-600/5 via-purple-600/5 to-pink-600/5 animate-pulse"></div>
 
                         <div className="relative z-10">
-                            <Header
+                            <GameHeader
                                 gameId={game.id}
                                 targetScore={targetScore}
                                 dealerName={game.players.find(p => p.id === game.dealerId)?.name || ''}
