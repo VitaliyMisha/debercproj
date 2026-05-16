@@ -5,6 +5,7 @@ import {Award, PartyPopper, Sparkles, Zap} from 'lucide-react';
 import SetupScreen from './components/SetupScreen';
 import RoundForm from './components/RoundForm';
 import RoundHistory from './components/RoundHistory';
+import RoundTimeline from './components/RoundTimeline';
 import WinnerMessage from './components/WinnerMessage';
 import GameHeader from './components/GameHeader';
 import GameHistory from './components/GameHistory';
@@ -99,6 +100,7 @@ export default function App() {
     const [hasHistoryShown, setHasHistoryShown] = useState(false);
     const [showCelebration, setShowCelebration] = useState(false);
     const [showStatistics, setShowStatistics] = useState(false);
+    const [snapshotRound, setSnapshotRound] = useState<number | null>(null);
 
     const [gameRules, setGameRules] = useState<GameRulesConfig>(() => {
         const stored = localStorage.getItem(GAME_RULES_KEY);
@@ -213,6 +215,7 @@ export default function App() {
             dealerId: game.players[nextDealerIndex].id,
         };
         setGame(updatedGame);
+        setSnapshotRound(null);
         setScores(Object.fromEntries(updatedGame.players.map(p => [p.id.toString(), ''])));
         setError('');
         updateWinner(updatedGame);
@@ -251,6 +254,12 @@ export default function App() {
         console.log('Recalculating totals for game:', game.id, 'rounds:', game.rounds.length);
         return calculateGameTotals(game, gameRules);
     }, [game, gameRules]);
+
+    const displayTotals = useMemo((): Record<string, number> => {
+        if (!game || snapshotRound === null) return totals;
+        const snapshotGame = { ...game, rounds: game.rounds.slice(0, snapshotRound) };
+        return calculateGameTotals(snapshotGame, gameRules) as Record<string, number>;
+    }, [game, gameRules, snapshotRound, totals]);
 
     const resetGame = () => {
         setGame(null);
@@ -315,11 +324,21 @@ export default function App() {
                             className="absolute inset-0 bg-linear-to-r from-green-600/5 via-blue-600/5 to-purple-600/5 animate-pulse"></div>
 
                         <div className="relative z-10">
+                            {game.rounds.length > 0 && (
+                                <RoundTimeline
+                                    totalRounds={game.rounds.length + (winnerPlayer !== null ? 0 : 1)}
+                                    currentRound={game.rounds.length + (winnerPlayer !== null ? 0 : 1)}
+                                    snapshotRound={snapshotRound}
+                                    onSelectRound={(r) => setSnapshotRound(r)}
+                                    onExitSnapshot={() => setSnapshotRound(null)}
+                                />
+                            )}
+
                             <ScoreBoard
                                 players={game.players}
-                                totals={totals}
+                                totals={displayTotals}
                                 targetScore={targetScore}
-                                snapshotActive={false}
+                                snapshotActive={snapshotRound !== null}
                             />
 
                             {game.rounds.length > 0 && (
@@ -368,24 +387,28 @@ export default function App() {
                                 </div>
                             ) : (
                                 <>
-                                    {error && (
-                                        <div
-                                            className="bg-red-500/20 border border-red-400/50 text-red-200 px-3 sm:px-4 py-2 sm:py-3 rounded-xl mb-4 sm:mb-6 backdrop-blur-sm">
-                                            <div className="flex items-center text-sm sm:text-base">
-                                                <Zap className="w-4 sm:w-5 h-4 sm:h-5 mr-2"/>
-                                                {error}
-                                            </div>
-                                        </div>
+                                    {snapshotRound === null && (
+                                        <>
+                                            {error && (
+                                                <div
+                                                    className="bg-red-500/20 border border-red-400/50 text-red-200 px-3 sm:px-4 py-2 sm:py-3 rounded-xl mb-4 sm:mb-6 backdrop-blur-sm">
+                                                    <div className="flex items-center text-sm sm:text-base">
+                                                        <Zap className="w-4 sm:w-5 h-4 sm:h-5 mr-2"/>
+                                                        {error}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <RoundForm
+                                                players={game.players}
+                                                scores={scores}
+                                                onScoreChange={(e, id) => setScores({...scores, [id]: e.target.value})}
+                                                onAddRound={addRound}
+                                                roundNumber={game.rounds.length + 1}
+                                                isAddDisabled={isAddDisabled}
+                                                gameRules={gameRules}
+                                            />
+                                        </>
                                     )}
-                                    <RoundForm
-                                        players={game.players}
-                                        scores={scores}
-                                        onScoreChange={(e, id) => setScores({...scores, [id]: e.target.value})}
-                                        onAddRound={addRound}
-                                        roundNumber={game.rounds.length + 1}
-                                        isAddDisabled={isAddDisabled}
-                                        gameRules={gameRules}
-                                    />
                                 </>
                             )}
                         </div>
