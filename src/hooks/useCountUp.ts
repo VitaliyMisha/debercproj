@@ -21,6 +21,7 @@ export function useCountUp(target: number, duration = 300): number {
       if (progress < 1) {
         rafRef.current = requestAnimationFrame(animate);
       } else {
+        setDisplayed(target);
         prevRef.current = target;
       }
     };
