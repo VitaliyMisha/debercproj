@@ -425,6 +425,7 @@ export default function App() {
                                 players={game.players}
                                 onUpdateRound={updateRound}
                                 gameRules={gameRules}
+                                snapshotRound={snapshotRound}
                             />
                         </div>
                     </div>
