@@ -26,6 +26,7 @@ export function ChipGroup<T extends string | number>({
           <button
             key={String(opt.value)}
             type="button"
+            aria-pressed={active}
             onClick={() => onChange(opt.value)}
             className={`
               px-4 py-2 rounded-full text-sm font-semibold border transition-all duration-150
