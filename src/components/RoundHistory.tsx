@@ -9,9 +9,10 @@ interface RoundHistoryProps {
   onUpdateRound: (roundNumber: number, newScores: Record<string, string>) => void;
   gameRules?: GameRulesConfig;
   snapshotRound?: number | null;
+  dealerByRound?: number[];
 }
 
-const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRound, gameRules, snapshotRound }) => {
+const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRound, gameRules, snapshotRound, dealerByRound }) => {
   const [editingRound, setEditingRound] = useState<number | null>(null);
   const [editScores, setEditScores] = useState<Record<string, string>>({});
   const prevLengthRef = useRef(rounds.length);
@@ -73,6 +74,8 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
           const isEditing = editingRound === round.number;
           const isSnapshot = round.number === snapshotRound;
           const isNew = round.number === newRoundId;
+          const dealerId = dealerByRound?.[round.number - 1];
+          const dealerName = dealerId !== undefined ? players.find((p) => p.id === dealerId)?.name : undefined;
 
           return (
             <div
@@ -84,10 +87,15 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
             >
               {/* Header row */}
               <div className="flex items-center justify-between px-4 py-3">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className={`text-sm font-semibold ${isSnapshot ? 'text-gold-to' : 'text-white/60'}`}>
                     Раунд {round.number}
                   </span>
+                  {dealerName && (
+                    <span className="text-xs bg-primary/20 border border-primary/40 text-score-pos px-2 py-0.5 rounded-full leading-none">
+                      Д: {dealerName}
+                    </span>
+                  )}
                   {isSnapshot && (
                     <span className="text-xs text-gold-from bg-gold-from/10 border border-gold-from/30 px-2 py-0.5 rounded-full">
                       перегляд

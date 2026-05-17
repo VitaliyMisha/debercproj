@@ -162,6 +162,18 @@ export default function App() {
     return calculateGameTotals(game, gameRules);
   }, [game, gameRules]);
 
+  const dealerByRound = useMemo(() => {
+    if (!game) return [];
+    const n = game.players.length;
+    const currentDealerIdx = game.players.findIndex((p) => p.id === game.dealerId);
+    return game.rounds.map((_, i) => {
+      const roundNumber = i + 1;
+      const stepsBack = game.rounds.length - roundNumber + 1;
+      const idx = ((currentDealerIdx - stepsBack) % n + n) % n;
+      return game.players[idx].id;
+    });
+  }, [game]);
+
   const displayTotals = useMemo((): Record<string, number> => {
     if (!game || snapshotRound === null) return totals;
     const snapshotGame = { ...game, rounds: game.rounds.slice(0, snapshotRound) };
@@ -229,6 +241,7 @@ export default function App() {
             players={game.players}
             totals={displayTotals}
             targetScore={targetScore}
+            dealerId={game.dealerId}
             snapshotActive={snapshotRound !== null}
           />
 
@@ -270,6 +283,7 @@ export default function App() {
             onUpdateRound={updateRound}
             gameRules={gameRules}
             snapshotRound={snapshotRound}
+            dealerByRound={dealerByRound}
           />
 
           {game.rounds.length > 0 && (

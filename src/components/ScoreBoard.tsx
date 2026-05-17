@@ -6,6 +6,7 @@ interface ScoreBoardProps {
   players: Player[];
   totals: Record<string, number>;
   targetScore: number;
+  dealerId?: number;
   snapshotActive?: boolean;
 }
 
@@ -14,10 +15,11 @@ interface PlayerCardProps {
   score: number;
   targetScore: number;
   isLeader: boolean;
+  isDealer: boolean;
   snapshotActive: boolean;
 }
 
-const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isLeader, snapshotActive }) => {
+const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isLeader, isDealer, snapshotActive }) => {
   const displayScore = useCountUp(score, snapshotActive ? 0 : 300);
   const progress = Math.min(Math.max(score / targetScore, 0), 1) * 100;
   const initial = Array.from(player.name.trim())[0]?.toUpperCase() || '?';
@@ -40,7 +42,14 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
           {initial}
         </div>
         <span className="text-white/80 font-sans text-sm font-medium truncate">{player.name}</span>
-        {isLeader && <span className="ml-auto text-gold-to text-xs">👑</span>}
+        <div className="ml-auto flex items-center gap-1">
+          {isDealer && (
+            <span className="text-xs bg-primary/20 border border-primary/50 text-score-pos px-1.5 py-0.5 rounded-full leading-none">
+              Д
+            </span>
+          )}
+          {isLeader && <span className="text-gold-to text-xs">👑</span>}
+        </div>
       </div>
 
       {/* Score */}
@@ -69,7 +78,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
   );
 };
 
-export const ScoreBoard: React.FC<ScoreBoardProps> = ({ players, totals, targetScore, snapshotActive = false }) => {
+export const ScoreBoard: React.FC<ScoreBoardProps> = ({ players, totals, targetScore, dealerId, snapshotActive = false }) => {
   const sorted = [...players].sort((a, b) => (totals[String(b.id)] ?? 0) - (totals[String(a.id)] ?? 0));
   const maxScore = Math.max(...players.map((p) => totals[String(p.id)] ?? 0));
   const hasLeader = players.some((p) => (totals[String(p.id)] ?? 0) === maxScore) && players.length > 1;
@@ -92,6 +101,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ players, totals, targetS
             score={totals[String(player.id)] ?? 0}
             targetScore={targetScore}
             isLeader={hasLeader && (totals[String(player.id)] ?? 0) === maxScore}
+            isDealer={player.id === dealerId}
             snapshotActive={snapshotActive}
           />
         ))}
