@@ -91,8 +91,11 @@ export default function App() {
   const visCount = game
     ? Object.values(scores).filter((v) => String(v).toUpperCase() === 'ВІС').length
     : 0;
+  const bCount = game
+    ? Object.values(scores).filter((v) => String(v).toUpperCase() === 'Б').length
+    : 0;
   const isAddDisabled = game
-    ? visCount > 1 || game.players.some((p) => !isValidScore(scores[String(p.id)], gameRules))
+    ? visCount > 1 || bCount > 1 || game.players.some((p) => !isValidScore(scores[String(p.id)], gameRules))
     : true;
 
   const updateWinner = (currentGame: Game) => {
@@ -119,6 +122,10 @@ export default function App() {
 
   const addRound = () => {
     if (!game || winnerPlayer !== null) return;
+    if (bCount > 1) {
+      setError('Лише один гравець може отримати Б за раунд.');
+      return;
+    }
     if (visCount > 1) {
       setError('Лише один гравець може грати ВіС за раунд.');
       return;

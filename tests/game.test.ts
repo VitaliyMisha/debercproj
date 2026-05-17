@@ -175,6 +175,38 @@ describe('Game Helpers Unit Tests', () => {
     });
 });
 
+// ─── One Б / one ВіС per round (UI rule) ─────────────────────────────────────
+//
+// Game rule: only one player can receive Б per round, only one can play ВіС.
+// The UI prevents submitting such rounds via isAddDisabled + error message.
+// These tests verify the engine still handles correctly any stored data and
+// that each player's Б counter remains independent.
+
+describe('single Б per round — engine behaviour', () => {
+    const rules = mkRules();
+    const [p1, p2] = mkPlayers('Alice', 'Bob');
+
+    it('two players with Б in same round: each has independent counter, no penalty for first', () => {
+        const g = mkGame([p1, p2], [
+            mkRound(1, { '1': 'Б', '2': 'Б' }),
+        ]);
+        const totals = calculateGameTotals(g, rules);
+        expect(totals[1]).toBe(0);
+        expect(totals[2]).toBe(0);
+    });
+
+    it('second Б in later round: each player accumulates independently', () => {
+        const g = mkGame([p1, p2], [
+            mkRound(1, { '1': 'Б', '2': 50 }),
+            mkRound(2, { '1': 50,  '2': 'Б' }),
+            mkRound(3, { '1': 'Б', '2': 'Б' }),  // both hit 2nd Б → penalty each
+        ]);
+        const totals = calculateGameTotals(g, rules);
+        expect(totals[1]).toBe(50 - 100);   // 0 + 50 + penalty
+        expect(totals[2]).toBe(50 - 100);   // 50 + 0  + penalty
+    });
+});
+
 // ─── Undo last round (handleUndoLastRound) ────────────────────────────────────
 //
 // handleUndoLastRound removes game.rounds.slice(0,-1) and restores dealerId.

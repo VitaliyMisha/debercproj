@@ -43,21 +43,29 @@ const RoundForm: React.FC<RoundFormProps> = ({
   const placeholder = allowVis ? '0, Б, ХВ, ВІС' : '0, Б, ХВ';
   const validTokens = allowVis ? TOKEN_HINTS : (['Б', 'ХВ'] as const);
 
+  const isBToken = (v: string | number) => String(v).toUpperCase() === 'Б';
   const isVisToken = (v: string | number) => String(v).toUpperCase() === 'ВІС';
 
-  const visAlreadyTakenFor = (playerId: number) =>
-    allowVis && Object.entries(scores).some(([id, v]) => id !== String(playerId) && isVisToken(v));
+  const tokenAlreadyTakenFor = (playerId: number, token: string): boolean => {
+    if (token === 'Б') {
+      return Object.entries(scores).some(([id, v]) => id !== String(playerId) && isBToken(v));
+    }
+    if (token === 'ВІС') {
+      return allowVis && Object.entries(scores).some(([id, v]) => id !== String(playerId) && isVisToken(v));
+    }
+    return false;
+  };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>, playerId: number) => {
     const val = e.target.value.trim().toUpperCase();
     if ((validTokens as readonly string[]).includes(val)) {
-      if (val === 'ВІС' && visAlreadyTakenFor(playerId)) return;
+      if (tokenAlreadyTakenFor(playerId, val)) return;
       onScoreChange({ target: { value: val } } as ChangeEvent<HTMLInputElement>, playerId);
     }
   };
 
   const fillToken = (playerId: number, token: string) => {
-    if (token === 'ВІС' && visAlreadyTakenFor(playerId)) return;
+    if (tokenAlreadyTakenFor(playerId, token)) return;
     onScoreChange({ target: { value: token } } as ChangeEvent<HTMLInputElement>, playerId);
   };
 
@@ -117,7 +125,7 @@ const RoundForm: React.FC<RoundFormProps> = ({
                 {validTokens.map((token) => {
                   const chip = CHIP_STYLES[token];
                   const isActive = isTokenActive(val, token);
-                  const isDisabled = token === 'ВІС' && visAlreadyTakenFor(p.id);
+                  const isDisabled = tokenAlreadyTakenFor(p.id, token);
                   return (
                     <button
                       key={token}
