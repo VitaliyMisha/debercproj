@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface ChipOption<T> {
   label: string;
   value: T;

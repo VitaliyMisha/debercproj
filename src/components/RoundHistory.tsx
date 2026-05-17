@@ -26,6 +26,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
       return () => clearTimeout(timer);
     }
     prevLengthRef.current = rounds.length;
+    return undefined;
   }, [rounds.length]);
 
   const startEditing = (round: Round) => {

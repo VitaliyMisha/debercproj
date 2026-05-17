@@ -22,7 +22,8 @@
       "Bash(node *)",
       "Bash(convert --version)",
       "Bash(sips --help)",
-      "Bash(bun add *)"
+      "Bash(bun add *)",
+      "Bash(bun x *)"
     ]
   }
 }

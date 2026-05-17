@@ -1,135 +1,111 @@
 import React from 'react';
+import { Trophy } from 'lucide-react';
 import { Player } from '../types';
 
 interface GameHistoryProps {
-    players: Player[];
+  players: Player[];
 }
 
-const getVictoryLabel = (count: number): string => {
-    if (count === 1) return 'перемога';
-    if (count >= 2 && count <= 4) return 'перемоги';
-    return 'перемог';
+const victoryLabel = (n: number): string => {
+  if (n === 1) return 'перемога';
+  if (n >= 2 && n <= 4) return 'перемоги';
+  return 'перемог';
 };
 
 const GameHistory: React.FC<GameHistoryProps> = ({ players }) => {
-    if (players.length === 0) return null;
+  if (players.length === 0) return null;
 
-    const maxWins = Math.max(...players.map(p => p.winCount));
-    const hasWins = maxWins > 0;
+  const maxWins = Math.max(...players.map((p) => p.winCount));
+  const totalGames = players.reduce((s, p) => s + p.winCount, 0);
+  const hasWins = maxWins > 0;
 
-    return (
-        <div className="bg-linear-to-br from-slate-50 to-gray-100 p-6 rounded-xl shadow-lg mt-6 border border-gray-200">
-            <div className="flex items-center justify-center mb-6">
-                <div className="bg-linear-to-r from-purple-500 to-indigo-600 p-3 rounded-full mr-3 shadow-md">
-                    <span className="text-2xl">🏆</span>
+  const champions = players.filter((p) => p.winCount === maxWins && hasWins);
+  const isSharedLead = champions.length > 1;
+
+  const sorted = [...players].sort((a, b) => b.winCount - a.winCount);
+
+  const gamesLabel = totalGames === 1 ? 'гра' : totalGames < 5 ? 'гри' : 'ігор';
+
+  return (
+    <div className="bg-card-bg rounded-2xl border border-white/8 overflow-hidden">
+      <div className="px-4 py-3 border-b border-white/8 flex items-center gap-2">
+        <Trophy className="w-4 h-4 text-gold-from shrink-0" />
+        <h2 className="text-muted text-xs font-semibold uppercase tracking-widest flex-1">Історія ігор</h2>
+        {hasWins && (
+          <span className="text-muted text-xs bg-white/5 px-2 py-0.5 rounded-full">
+            {totalGames} {gamesLabel}
+          </span>
+        )}
+      </div>
+
+      <div className="divide-y divide-white/5">
+        {sorted.map((player, idx) => {
+          const isLeader = hasWins && player.winCount === maxWins;
+          const isChampion = isLeader && !isSharedLead;
+          const isTied = isLeader && isSharedLead;
+          const progress = hasWins ? (player.winCount / maxWins) * 100 : 0;
+          const initial = Array.from(player.name.trim())[0]?.toUpperCase() || String(idx + 1);
+
+          return (
+            <div key={player.id} className="flex items-center gap-3 px-4 py-3">
+              {/* Rank */}
+              <span className={`w-5 text-xs font-semibold text-center tabular-nums shrink-0 ${
+                isChampion ? 'text-gold-to' : isTied ? 'text-gold-from' : 'text-muted'
+              }`}>
+                {isChampion || isTied ? '—' : `#${idx + 1}`}
+              </span>
+
+              {/* Avatar */}
+              <div
+                className={`w-9 h-9 rounded-full flex items-center justify-center font-display text-base shrink-0 ${
+                  isChampion ? 'ring-2 ring-gold-from' : ''
+                }`}
+                style={{
+                  background: isChampion
+                    ? 'linear-gradient(135deg, #78350F, #D97706)'
+                    : isTied
+                      ? 'linear-gradient(135deg, #92400E, #F59E0B)'
+                      : 'linear-gradient(135deg, #15803D, #166534)',
+                }}
+              >
+                {isChampion ? '👑' : initial}
+              </div>
+
+              {/* Name + bar */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <span className={`text-sm font-semibold truncate ${
+                    isChampion ? 'text-gold-to' : isTied ? 'text-gold-from' : 'text-white/80'
+                  }`}>
+                    {player.name}
+                  </span>
+                  <span className={`font-score text-sm font-bold shrink-0 ${
+                    isChampion ? 'text-gold-to' : isTied ? 'text-gold-from' : 'text-white/50'
+                  }`}>
+                    {player.winCount} {victoryLabel(player.winCount)}
+                  </span>
                 </div>
-                <h3 className="text-xl font-bold text-gray-800">Історія ігор</h3>
-            </div>
-            <div className="flex flex-wrap justify-center gap-4">
-                {players.map((player, index) => {
-                    const championsCount = players.filter(p => p.winCount === maxWins).length;
-                    const isChampion = hasWins && player.winCount === maxWins && championsCount === 1;
-                    const isTied = hasWins && player.winCount === maxWins && championsCount > 1;
-                    const hasNoWins = player.winCount === 0;
 
-                    return (
-                        <div
-                            key={player.id}
-                            className={`relative p-5 rounded-xl text-center w-full max-w-48 transition-all duration-300 hover:scale-105 hover:shadow-xl ${
-                                isChampion
-                                    ? 'bg-linear-to-br from-yellow-100 to-amber-200 border-2 border-yellow-400 shadow-lg'
-                                    : isTied
-                                        ? 'bg-linear-to-br from-orange-100 to-yellow-200 border-2 border-orange-400 shadow-lg'
-                                        : hasNoWins
-                                            ? 'bg-linear-to-br from-gray-100 to-slate-200 border-2 border-gray-300'
-                                            : 'bg-linear-to-br from-blue-100 to-indigo-200 border-2 border-blue-300'
-                            }`}
-                        >
-                            {isChampion && (
-                                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                                    <div className="bg-yellow-400 p-2 rounded-full shadow-md border-2 border-yellow-500">
-                                        <span className="text-lg">👑</span>
-                                    </div>
-                                </div>
-                            )}
-                            {isTied && (
-                                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                                    <div className="bg-orange-400 p-2 rounded-full shadow-md border-2 border-orange-500">
-                                        <span className="text-lg">🤝</span>
-                                    </div>
-                                </div>
-                            )}
-                            {hasWins && (
-                                <div className="absolute -top-2 -right-2 w-8 h-8 bg-linear-to-br from-gray-600 to-gray-800 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
-                                    {isTied ? '=' : `#${index + 1}`}
-                                </div>
-                            )}
-
-                            {/* Аватар гравця */}
-                            <div className={`w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center text-2xl font-bold shadow-md ${
-                                isChampion
-                                    ? 'bg-linear-to-br from-yellow-300 to-amber-400 text-yellow-800'
-                                    : isTied
-                                        ? 'bg-linear-to-br from-orange-300 to-yellow-400 text-orange-800'
-                                        : hasNoWins
-                                            ? 'bg-linear-to-br from-gray-300 to-slate-400 text-gray-600'
-                                            : 'bg-linear-to-br from-blue-300 to-indigo-400 text-blue-800'
-                            }`}>
-                                {(() => {
-                                    const chars = Array.from(player.name);
-                                    return chars[0]?.toUpperCase() || '';
-                                })()}
-                            </div>
-                            <h4 className={`font-bold text-lg mb-2 ${
-                                isChampion ? 'text-yellow-800' : isTied ? 'text-orange-800' : 'text-gray-800'
-                            }`}>
-                                {player.name}
-                            </h4>
-                            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${
-                                isChampion
-                                    ? 'bg-yellow-300 text-yellow-800'
-                                    : isTied
-                                        ? 'bg-orange-300 text-orange-800'
-                                        : hasNoWins
-                                            ? 'bg-gray-300 text-gray-600'
-                                            : 'bg-blue-300 text-blue-800'
-                            }`}>
-                            <span className="mr-1">
-                                {hasNoWins ? '💤' : isTied ? '🤝' : isChampion ? '🏆' : '🎯'}
-                            </span>
-                                {player.winCount} {getVictoryLabel(player.winCount)}
-                            </div>
-                            {hasWins && (
-                                <div className="mt-3">
-                                    <div className="w-full bg-gray-300 rounded-full h-2">
-                                        <div
-                                            className={`h-2 rounded-full transition-all duration-500 ${
-                                                isChampion
-                                                    ? 'bg-linear-to-r from-yellow-400 to-amber-500'
-                                                    : isTied
-                                                        ? 'bg-linear-to-r from-orange-400 to-yellow-500'
-                                                        : 'bg-linear-to-r from-blue-400 to-indigo-500'
-                                            }`}
-                                            style={{
-                                                width: `${(player.winCount / maxWins) * 100}%`
-                                            }}
-                                        ></div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
+                {hasWins && (
+                  <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: `${progress}%`,
+                        background: isChampion || isTied
+                          ? 'linear-gradient(90deg, var(--color-gold-from), var(--color-gold-to))'
+                          : 'var(--color-primary)',
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
-            {hasWins && (
-                <div className="mt-6 text-center text-sm text-gray-600 bg-white/50 rounded-lg p-3">
-                    <p>
-                        Всього зіграно ігор: <span className="font-semibold">{players.reduce((sum, p) => sum + p.winCount, 0)}</span>
-                    </p>
-                </div>
-            )}
-        </div>
-    );
+          );
+        })}
+      </div>
+    </div>
+  );
 };
 
 export default GameHistory;
