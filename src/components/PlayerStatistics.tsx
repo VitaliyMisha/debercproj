@@ -6,7 +6,7 @@ import { calculateGameTotals, getVisDisplayValue } from '../utils/gameHelpers';
 interface PlayerStatisticsProps {
   game: Game;
   players: Player[];
-  gameRules?: GameRulesConfig;
+  gameRules: GameRulesConfig;
 }
 
 interface PlayerStats {
@@ -97,7 +97,7 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
       }
     });
 
-    const totals = calculateGameTotals(game, gameRules!);
+    const totals = calculateGameTotals(game, gameRules);
     const avg = roundScores.length > 0
       ? roundScores.reduce((s, v) => s + v, 0) / roundScores.length
       : 0;

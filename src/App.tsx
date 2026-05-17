@@ -88,8 +88,11 @@ export default function App() {
     setShowStatistics(false);
   };
 
+  const visCount = game
+    ? Object.values(scores).filter((v) => String(v).toUpperCase() === 'ВІС').length
+    : 0;
   const isAddDisabled = game
-    ? game.players.some((p) => !isValidScore(scores[p.id], gameRules))
+    ? visCount > 1 || game.players.some((p) => !isValidScore(scores[String(p.id)], gameRules))
     : true;
 
   const updateWinner = (currentGame: Game) => {
@@ -116,6 +119,10 @@ export default function App() {
 
   const addRound = () => {
     if (!game || winnerPlayer !== null) return;
+    if (visCount > 1) {
+      setError('Лише один гравець може грати ВіС за раунд.');
+      return;
+    }
     if (isAddDisabled) {
       setError('Заповніть всі поля валідними значеннями (число, Б, ХВ' + (gameRules.allowVis ? ' або ВІС' : '') + ').');
       return;
@@ -123,7 +130,7 @@ export default function App() {
     const roundNumber = game.rounds.length + 1;
     const updatedScores: Record<string, number | string> = {};
     game.players.forEach((p) => {
-      updatedScores[p.id] = parseScore(scores[p.id], p.id.toString(), game.rounds, gameRules);
+      updatedScores[p.id] = parseScore(scores[String(p.id)], p.id.toString(), game.rounds, gameRules);
     });
     const newRound: Round = { id: roundNumber, number: roundNumber, scores: updatedScores, dealerId: game.dealerId };
     const nextDealerIndex = (game.players.findIndex((p) => p.id === game.dealerId) + 1) % game.players.length;
@@ -142,8 +149,10 @@ export default function App() {
   const updateRound = (roundNumber: number, newScores: Record<string, string>) => {
     if (!game) return;
     const convertedScores: Record<string, number | string> = {};
+    // Exclude the round being edited so its own prior Б doesn't affect parseScore.
+    const roundsExcludingCurrent = game.rounds.filter((r) => r.number !== roundNumber);
     Object.entries(newScores).forEach(([playerId, scoreStr]) => {
-      convertedScores[playerId] = parseScore(scoreStr, playerId, game.rounds, gameRules);
+      convertedScores[playerId] = parseScore(scoreStr, playerId, roundsExcludingCurrent, gameRules);
     });
     const updatedRounds = game.rounds.map((r) =>
       r.number === roundNumber ? { ...r, scores: convertedScores } : r,
@@ -158,6 +167,11 @@ export default function App() {
     if (!game) return {};
     return calculateGameTotals(game, gameRules);
   }, [game, gameRules]);
+
+  const winnerObj = useMemo(
+    () => (game && winnerPlayer !== null ? (game.players.find((p) => p.id === winnerPlayer) ?? null) : null),
+    [game, winnerPlayer],
+  );
 
   const displayTotals = useMemo((): Record<string, number> => {
     if (!game || snapshotRound === null) return totals;
@@ -269,9 +283,9 @@ export default function App() {
             snapshotActive={snapshotRound !== null}
           />
 
-          {winnerPlayer !== null ? (
+          {winnerObj ? (
             <WinnerScreen
-              winner={game.players.find((p) => p.id === winnerPlayer)!}
+              winner={winnerObj}
               players={game.players}
               totals={totals}
               roundCount={game.rounds.length}
@@ -307,7 +321,7 @@ export default function App() {
             onUpdateRound={updateRound}
             gameRules={gameRules}
             snapshotRound={snapshotRound}
-            onUndoLastRound={winnerPlayer === null ? handleUndoLastRound : undefined}
+            onUndoLastRound={winnerObj === null ? handleUndoLastRound : undefined}
           />
 
           {game.rounds.length > 0 && (

@@ -43,17 +43,22 @@ const RoundForm: React.FC<RoundFormProps> = ({
   const placeholder = allowVis ? '0, Б, ХВ, ВІС' : '0, Б, ХВ';
   const validTokens = allowVis ? TOKEN_HINTS : (['Б', 'ХВ'] as const);
 
+  const isVisToken = (v: string | number) => String(v).toUpperCase() === 'ВІС';
+
+  const visAlreadyTakenFor = (playerId: number) =>
+    allowVis && Object.entries(scores).some(([id, v]) => id !== String(playerId) && isVisToken(v));
+
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>, playerId: number) => {
     const val = e.target.value.trim().toUpperCase();
     if ((validTokens as readonly string[]).includes(val)) {
-      const syntheticEvent = { ...e, target: { ...e.target, value: val } } as ChangeEvent<HTMLInputElement>;
-      onScoreChange(syntheticEvent, playerId);
+      if (val === 'ВІС' && visAlreadyTakenFor(playerId)) return;
+      onScoreChange({ target: { value: val } } as ChangeEvent<HTMLInputElement>, playerId);
     }
   };
 
   const fillToken = (playerId: number, token: string) => {
-    const syntheticEvent = { target: { value: token } } as ChangeEvent<HTMLInputElement>;
-    onScoreChange(syntheticEvent, playerId);
+    if (token === 'ВІС' && visAlreadyTakenFor(playerId)) return;
+    onScoreChange({ target: { value: token } } as ChangeEvent<HTMLInputElement>, playerId);
   };
 
   return (
@@ -69,7 +74,7 @@ const RoundForm: React.FC<RoundFormProps> = ({
       {/* Player inputs */}
       <div className="p-4 space-y-4">
         {players.map((p) => {
-          const val = String(scores[p.id] ?? '');
+          const val = String(scores[String(p.id)] ?? '');
           const activeToken = validTokens.find((t) => isTokenActive(val, t));
 
           return (
@@ -112,13 +117,15 @@ const RoundForm: React.FC<RoundFormProps> = ({
                 {validTokens.map((token) => {
                   const chip = CHIP_STYLES[token];
                   const isActive = isTokenActive(val, token);
+                  const isDisabled = token === 'ВІС' && visAlreadyTakenFor(p.id);
                   return (
                     <button
                       key={token}
                       type="button"
                       onClick={() => fillToken(p.id, token)}
+                      disabled={isDisabled}
                       aria-label={`Встановити ${token} для ${p.name}`}
-                      className="h-7 px-2.5 rounded-full text-xs font-bold transition-all duration-150 active:scale-[0.93]"
+                      className="h-7 px-2.5 rounded-full text-xs font-bold transition-all duration-150 active:scale-[0.93] disabled:opacity-30 disabled:cursor-not-allowed"
                       style={{
                         background: isActive
                           ? `radial-gradient(circle at 35% 35%, ${chip.accent}dd, ${chip.bg})`

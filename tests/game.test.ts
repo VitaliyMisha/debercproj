@@ -181,6 +181,44 @@ describe('Game Helpers Unit Tests', () => {
 // These tests verify calculateGameTotals produces correct results after that
 // slice, covering all score-token combinations that can appear in the last round.
 
+// ─── parseScore — Б editing regression ──────────────────────────────────────
+//
+// Bug: updateRound passed game.rounds (including the round being edited) to
+// parseScore. When round N stored 'Б' (first Б, free), re-saving the same
+// value found its own 'Б' and returned secondBPenalty instead of 'Б'.
+// Fix: updateRound now passes roundsExcludingCurrent.
+
+describe('parseScore — Б editing regression', () => {
+    const rules = mkRules();
+
+    it('first Б is free when no prior rounds', () => {
+        expect(parseScore('Б', '1', [], rules)).toBe('Б');
+    });
+
+    it('second Б in a different round triggers penalty', () => {
+        const r1 = mkRound(1, { '1': 'Б' });
+        expect(parseScore('Б', '1', [r1], rules)).toBe(rules.secondBPenalty);
+    });
+
+    it('re-saving round 1 Б: must exclude that round from history or penalty fires incorrectly', () => {
+        const round1WithB = mkRound(1, { '1': 'Б', '2': 50 });
+
+        // Old (buggy) call — includes the round being edited → finds own Б → penalty
+        const bugResult = parseScore('Б', '1', [round1WithB], rules);
+        expect(bugResult).toBe(rules.secondBPenalty);
+
+        // Fixed call — excludes the round being edited → no prior Б → free
+        const fixedResult = parseScore('Б', '1', [], rules);
+        expect(fixedResult).toBe('Б');
+    });
+});
+
+// ─── Undo last round (handleUndoLastRound) ────────────────────────────────────
+//
+// handleUndoLastRound removes game.rounds.slice(0,-1) and restores dealerId.
+// These tests verify calculateGameTotals produces correct results after that
+// slice, covering all score-token combinations that can appear in the last round.
+
 describe('undo last round — calculateGameTotals after rounds.slice(0,-1)', () => {
     const rules = mkRules();
     const [p1, p2] = mkPlayers('Alice', 'Bob');

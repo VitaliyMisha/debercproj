@@ -44,7 +44,7 @@ export const parseScore = (
         return 'ВІС';
     }
 
-    const parsed = parseInt(trimmed);
+    const parsed = parseInt(trimmed, 10);
     return isNaN(parsed) ? 0 : parsed;
 };
 
@@ -71,8 +71,8 @@ export const getVisDisplayValue = (
   let resolveIdx = roundIndex + 1;
   while (resolveIdx < rounds.length) {
     const resolveRound = rounds[resolveIdx];
-    const visScore =
-      typeof resolveRound.scores[pid] === 'number' ? (resolveRound.scores[pid] as number) : 0;
+    const resolveVal = resolveRound.scores[pid];
+    const visScore = typeof resolveVal === 'number' ? resolveVal : 0;
     const bestOpponent = Object.entries(resolveRound.scores)
       .filter(([id]) => id !== pid)
       .reduce((max, [, v]) => Math.max(max, typeof v === 'number' ? v : 0), -Infinity);
@@ -96,8 +96,8 @@ export const getVisDisplayValue = (
       let prevResolveIdx = i + 1;
       while (prevResolveIdx < roundIndex) {
         const prevResRound = rounds[prevResolveIdx];
-        const prevVisScore =
-          typeof prevResRound.scores[pid] === 'number' ? (prevResRound.scores[pid] as number) : 0;
+        const prevResVal = prevResRound.scores[pid];
+        const prevVisScore = typeof prevResVal === 'number' ? prevResVal : 0;
         const prevBestOpp = Object.entries(prevResRound.scores)
           .filter(([id]) => id !== pid)
           .reduce((max, [, v]) => Math.max(max, typeof v === 'number' ? v : 0), -Infinity);
@@ -147,7 +147,8 @@ export const calculateGameTotals = (game: Game, gameRules: GameRulesConfig): Rec
                 curr.score > best.score ? curr : best, { playerId: -1, score: -Infinity }
             );
 
-            const visScore = typeof round.scores[visPlayerId] === 'number' ? round.scores[visPlayerId] as number : 0;
+            const rawVisVal = round.scores[visPlayerId];
+            const visScore = typeof rawVisVal === 'number' ? rawVisVal : 0;
 
             if (visScore > bestOpponentCurrent.score) {
                 // WIN: ВіС player earns the hanging score (their round score is counted below).

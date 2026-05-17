@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 interface Suit {
   char: string;
@@ -13,13 +13,17 @@ const SUITS = ['♠', '♥', '♦', '♣'];
 export const CardSuitsRain: React.FC = () => {
   const [visible, setVisible] = useState(true);
 
-  const suits: Suit[] = Array.from({ length: 20 }, (_, i) => ({
-    char: SUITS[i % 4],
-    x: Math.random() * 100,
-    delay: Math.random() * 2,
-    duration: 1.5 + Math.random() * 1.5,
-    red: i % 4 === 1 || i % 4 === 2,
-  }));
+  const suits = useMemo<Suit[]>(
+    () =>
+      Array.from({ length: 20 }, (_, i) => ({
+        char: SUITS[i % 4],
+        x: Math.random() * 100,
+        delay: Math.random() * 2,
+        duration: 1.5 + Math.random() * 1.5,
+        red: i % 4 === 1 || i % 4 === 2,
+      })),
+    [],
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => setVisible(false), 4000);

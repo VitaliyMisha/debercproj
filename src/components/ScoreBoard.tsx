@@ -93,8 +93,9 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
 
 export const ScoreBoard: React.FC<ScoreBoardProps> = ({ players, totals, targetScore, dealerId, snapshotActive = false }) => {
   const sorted = [...players].sort((a, b) => (totals[String(b.id)] ?? 0) - (totals[String(a.id)] ?? 0));
-  const maxScore = Math.max(...players.map((p) => totals[String(p.id)] ?? 0));
-  const hasLeader = players.some((p) => (totals[String(p.id)] ?? 0) === maxScore) && players.length > 1;
+  const maxScore = players.length > 0 ? Math.max(...players.map((p) => totals[String(p.id)] ?? 0)) : 0;
+  // Only highlight a leader once at least one score is non-zero (game has started).
+  const hasLeader = players.length > 1 && players.some((p) => (totals[String(p.id)] ?? 0) !== 0);
 
   const gridClass =
     players.length === 2

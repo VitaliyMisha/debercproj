@@ -29,11 +29,18 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
     return undefined;
   }, [rounds.length]);
 
+  useEffect(() => {
+    if (editingRound !== null && !rounds.some((r) => r.number === editingRound)) {
+      setEditingRound(null);
+      setEditScores({});
+    }
+  }, [rounds, editingRound]);
+
   const startEditing = (round: Round) => {
     setEditingRound(round.number);
     const initial: Record<string, string> = {};
     players.forEach((p) => {
-      const s = round.scores[p.id];
+      const s = round.scores[String(p.id)];
       initial[String(p.id)] = s !== undefined ? String(s) : '';
     });
     setEditScores(initial);
@@ -183,7 +190,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                     {players.map((player) => {
                       const displayVal = gameRules
                         ? getVisDisplayValue(round.number - 1, player.id, rounds, gameRules)
-                        : (round.scores[player.id] ?? 0);
+                        : (round.scores[String(player.id)] ?? 0);
                       const isNeg = typeof displayVal === 'number' && displayVal < 0;
                       const isVis = displayVal === 'ВіС';
                       const isB = displayVal === 'Б';
