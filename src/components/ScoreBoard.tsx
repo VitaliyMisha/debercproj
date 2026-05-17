@@ -24,14 +24,21 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
   const progress = Math.min(Math.max(score / targetScore, 0), 1) * 100;
   const initial = Array.from(player.name.trim())[0]?.toUpperCase() || '?';
 
+  const leaderStyle = isLeader ? {
+    background: 'linear-gradient(#192134, #192134) padding-box, linear-gradient(135deg, #78350F, #FCD34D 45%, #D97706 55%, #78350F) border-box',
+    border: '1.5px solid transparent',
+    boxShadow: '0 4px 24px rgba(120, 53, 15, 0.28), inset 0 0 0 0 transparent',
+    animation: 'goldPulse 5s ease-in-out infinite',
+  } : undefined;
+
   return (
     <div
-      className={`relative flex flex-col gap-2 p-4 rounded-2xl border transition-all duration-300
+      className={`relative flex flex-col gap-2 p-4 rounded-2xl transition-all duration-300
         ${isLeader
-          ? 'bg-card-bg border-gold-from'
-          : 'bg-card-bg/60 border-white/8'
+          ? 'bg-card-bg'
+          : 'bg-card-bg/60 border border-white/8'
         }`}
-      style={isLeader ? { animation: 'goldPulse 3s ease-in-out infinite' } : undefined}
+      style={leaderStyle}
     >
       {/* Avatar + name */}
       <div className="flex items-center gap-2">
@@ -52,23 +59,29 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
         </div>
       </div>
 
-      {/* Score */}
+      {/* Score — Share Tech Mono for mechanical vintage feel */}
       <div
-        className={`font-display text-3xl text-center transition-all duration-300
+        className={`text-3xl text-center transition-all duration-300
           ${score < 0 ? 'text-score-neg' : 'text-score-pos'}`}
-        style={{ animation: snapshotActive ? 'none' : 'countUp 300ms ease-out' }}
+        style={{
+          fontFamily: "'Share Tech Mono', monospace",
+          animation: snapshotActive ? 'none' : 'countUp 300ms ease-out',
+        }}
       >
         {displayScore}
       </div>
 
-      {/* Progress bar */}
-      <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+      {/* Progress bar — inset / embossed into the felt */}
+      <div
+        className="h-1.5 bg-black/40 rounded-full overflow-hidden"
+        style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.7)' }}
+      >
         <div
           className="h-full rounded-full transition-all duration-600"
           style={{
             width: `${progress}%`,
             background: isLeader
-              ? 'linear-gradient(90deg, var(--color-gold-from), var(--color-gold-to))'
+              ? 'linear-gradient(90deg, #92400E, #FCD34D)'
               : 'var(--color-primary)',
             animation: snapshotActive ? 'none' : 'progressFill 600ms ease',
           }}

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Player, Round } from '../types';
 import { GameRulesConfig } from '../types';
-import { isValidScore } from '../utils/gameHelpers';
+import { isValidScore, getVisDisplayValue } from '../utils/gameHelpers';
 
 interface RoundHistoryProps {
   rounds: Round[];
@@ -9,9 +9,10 @@ interface RoundHistoryProps {
   onUpdateRound: (roundNumber: number, newScores: Record<string, string>) => void;
   gameRules?: GameRulesConfig;
   snapshotRound?: number | null;
+  onUndoLastRound?: () => void;
 }
 
-const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRound, gameRules, snapshotRound }) => {
+const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRound, gameRules, snapshotRound, onUndoLastRound }) => {
   const [editingRound, setEditingRound] = useState<number | null>(null);
   const [editScores, setEditScores] = useState<Record<string, string>>({});
   const prevLengthRef = useRef(rounds.length);
@@ -65,7 +66,19 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
     <div className="bg-card-bg rounded-2xl border border-white/8 overflow-hidden">
       <div className="px-4 py-3 border-b border-white/8 flex items-center justify-between">
         <h2 className="text-muted text-xs font-semibold uppercase tracking-widest">Історія раундів</h2>
-        <span className="text-muted text-xs bg-white/5 px-2 py-0.5 rounded-full">Всього: {rounds.length}</span>
+        <div className="flex items-center gap-2">
+          {onUndoLastRound && (
+            <button
+              type="button"
+              onClick={onUndoLastRound}
+              className="text-muted text-xs hover:text-score-neg transition-colors px-2 py-0.5 rounded-lg hover:bg-score-neg/10"
+              title="Скасувати останній раунд"
+            >
+              ↩ Undo
+            </button>
+          )}
+          <span className="text-muted text-xs bg-white/5 px-2 py-0.5 rounded-full">Всього: {rounds.length}</span>
+        </div>
       </div>
 
       <div className="divide-y divide-white/5">
@@ -164,14 +177,24 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                 ) : (
                   <div className="grid grid-cols-2 gap-2">
                     {players.map((player) => {
-                      const val = round.scores[player.id];
-                      const isNeg = typeof val === 'number' && val < 0;
-                      const isToken = val === 'Б' || val === 'ВІС';
+                      const displayVal = gameRules
+                        ? getVisDisplayValue(round.number - 1, player.id, rounds, gameRules)
+                        : (round.scores[player.id] ?? 0);
+                      const isNeg = typeof displayVal === 'number' && displayVal < 0;
+                      const isVis = displayVal === 'ВіС';
+                      const isB = displayVal === 'Б';
+                      const colorClass = isNeg
+                        ? 'text-score-neg'
+                        : isB
+                          ? 'text-token-b'
+                          : isVis
+                            ? 'text-token-vis'
+                            : 'text-score-chalk';
                       return (
                         <div key={player.id} className="flex justify-between items-center px-2 py-1.5 rounded-lg bg-white/3">
-                          <span className="text-white/60 text-xs">{player.name}</span>
-                          <span className={`text-sm font-semibold ${isNeg ? 'text-score-neg' : isToken ? 'text-token-b' : 'text-score-pos'}`}>
-                            {val ?? 0}
+                          <span className="text-white/50 text-xs">{player.name}</span>
+                          <span className={`text-sm font-semibold ${colorClass}`}>
+                            {displayVal}
                           </span>
                         </div>
                       );

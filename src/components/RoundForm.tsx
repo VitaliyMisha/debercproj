@@ -13,10 +13,18 @@ interface RoundFormProps {
 }
 
 const TOKEN_HINTS = ['Б', 'ХВ', 'ВІС'] as const;
+
 const TOKEN_COLORS: Record<string, string> = {
   Б: 'text-token-b border-token-b/60 bg-token-b/10',
   ХВ: 'text-score-neg border-score-neg/60 bg-score-neg/10',
   ВІС: 'text-token-vis border-token-vis/60 bg-token-vis/10',
+};
+
+/* Колір чіпа-кнопки */
+const CHIP_STYLES: Record<string, { bg: string; accent: string; textColor: string }> = {
+  Б:   { bg: '#78350F', accent: '#D97706', textColor: '#FCD34D' },
+  ХВ:  { bg: '#7F1D1D', accent: '#DC2626', textColor: '#FCA5A5' },
+  ВІС: { bg: '#3B0764', accent: '#7C3AED', textColor: '#C4B5FD' },
 };
 
 const isTokenActive = (value: string, token: string): boolean =>
@@ -43,6 +51,11 @@ const RoundForm: React.FC<RoundFormProps> = ({
     }
   };
 
+  const fillToken = (playerId: number, token: string) => {
+    const syntheticEvent = { target: { value: token } } as ChangeEvent<HTMLInputElement>;
+    onScoreChange(syntheticEvent, playerId);
+  };
+
   return (
     <div className="bg-card-bg rounded-2xl border border-white/8 overflow-hidden">
       {/* Header */}
@@ -51,53 +64,75 @@ const RoundForm: React.FC<RoundFormProps> = ({
           {roundNumber}
         </div>
         <span className="text-white font-sans font-semibold">Раунд</span>
-
-        {/* Token hint chips */}
-        <div className="flex gap-1.5 ml-auto">
-          {validTokens.map((token) => (
-            <span
-              key={token}
-              className={`px-2 py-0.5 rounded-full text-xs border font-semibold ${TOKEN_COLORS[token]}`}
-            >
-              {token}
-            </span>
-          ))}
-        </div>
       </div>
 
       {/* Player inputs */}
-      <div className="p-4 space-y-3">
+      <div className="p-4 space-y-4">
         {players.map((p) => {
           const val = String(scores[p.id] ?? '');
           const activeToken = validTokens.find((t) => isTokenActive(val, t));
 
           return (
-            <div key={p.id} className="flex items-center gap-3">
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-display shrink-0"
-                style={{ background: 'linear-gradient(135deg, #15803D, #166534)' }}
-              >
-                {Array.from(p.name.trim())[0]?.toUpperCase() || '?'}
-              </div>
-              <span className="flex-1 text-white/80 font-sans text-sm truncate">{p.name}</span>
+            <div key={p.id} className="space-y-2">
+              {/* Player row: avatar + name + input */}
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-display shrink-0"
+                  style={{ background: 'linear-gradient(135deg, #15803D, #166534)' }}
+                >
+                  {Array.from(p.name.trim())[0]?.toUpperCase() || '?'}
+                </div>
+                <span className="flex-1 text-white/80 font-sans text-sm truncate">{p.name}</span>
 
-              <div className="relative shrink-0 w-28">
-                <input
-                  type="text"
-                  value={val}
-                  onChange={(e) => onScoreChange(e, p.id)}
-                  onBlur={(e) => handleBlur(e, p.id)}
-                  placeholder={placeholder}
-                  aria-label={`Рахунок для ${p.name}`}
-                  className={`w-full px-3 py-2 rounded-xl text-center text-base font-semibold
-                    bg-felt border transition-all duration-150
-                    focus:outline-none focus:ring-2 focus:ring-gold-from/40
-                    text-white
-                    ${activeToken
-                      ? TOKEN_COLORS[activeToken].split(' ').filter((c) => c.startsWith('border')).join(' ')
-                      : 'border-white/15'
-                    }`}
-                />
+                <div className="relative shrink-0 w-28">
+                  <input
+                    type="text"
+                    value={val}
+                    onChange={(e) => onScoreChange(e, p.id)}
+                    onBlur={(e) => handleBlur(e, p.id)}
+                    placeholder={placeholder}
+                    aria-label={`Рахунок для ${p.name}`}
+                    className={`w-full px-3 py-2 rounded-xl text-center text-base font-semibold
+                      bg-felt border transition-all duration-150
+                      focus:outline-none focus:ring-2 focus:ring-gold-from/40
+                      text-white
+                      ${activeToken
+                        ? TOKEN_COLORS[activeToken].split(' ').filter((c) => c.startsWith('border')).join(' ')
+                        : 'border-white/15'
+                      }`}
+                  />
+                </div>
+              </div>
+
+              {/* Token quick-fill chips for this player */}
+              <div className="flex gap-1.5 pl-11">
+                {validTokens.map((token) => {
+                  const chip = CHIP_STYLES[token];
+                  const isActive = isTokenActive(val, token);
+                  return (
+                    <button
+                      key={token}
+                      type="button"
+                      onClick={() => fillToken(p.id, token)}
+                      aria-label={`Встановити ${token} для ${p.name}`}
+                      className="h-7 px-2.5 rounded-full text-xs font-bold transition-all duration-150 active:scale-[0.93]"
+                      style={{
+                        background: isActive
+                          ? `radial-gradient(circle at 35% 35%, ${chip.accent}dd, ${chip.bg})`
+                          : `${chip.bg}88`,
+                        color: chip.textColor,
+                        border: `1px solid ${isActive ? chip.accent : chip.accent + '55'}`,
+                        boxShadow: isActive
+                          ? `inset 0 1px 2px rgba(255,255,255,0.15), inset 0 -1px 3px rgba(0,0,0,0.5), 0 3px 8px rgba(0,0,0,0.6)`
+                          : 'none',
+                        outline: isActive ? `2px dashed ${chip.accent}50` : 'none',
+                        outlineOffset: '2px',
+                      }}
+                    >
+                      {token}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           );

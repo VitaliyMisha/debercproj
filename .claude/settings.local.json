@@ -16,7 +16,13 @@
       "Bash(echo \"EXIT: $?\")",
       "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
       "Bash(git -C /Users/vitaliymisha/WebstormProjects/debercproj add src/components/RoundForm.tsx)",
-      "Bash(git -C /Users/vitaliymisha/WebstormProjects/debercproj commit -m ' *)"
+      "Bash(git -C /Users/vitaliymisha/WebstormProjects/debercproj commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(xxd)",
+      "Bash(node *)",
+      "Bash(convert --version)",
+      "Bash(sips --help)",
+      "Bash(bun add *)"
     ]
   }
 }

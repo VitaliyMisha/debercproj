@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## ⚡ Token Optimization (CRITICAL)
+- **Session Start**: ЗАБОРОНЕНО сканувати весь проект. Читай `PROGRESS.md` та цей файл першими.
+- **Context Limits**: Ігноруй `node_modules`, `.next`, `public/assets`, `dist` та `mcp_config.json`.
+- **Selective Reading**: Використовуй `@writing-plans` для визначення лише необхідних файлів перед їх читанням.
+
 ## Commands
 
 ```bash
@@ -21,18 +26,19 @@ Run a single test file: `bun x vitest run tests/game.test.ts`
 Single-page React app for scoring the Ukrainian card game Деберц (Deberc). No routing, no server — all state lives in `App.tsx` and persists to `localStorage`.
 
 **Core data flow:**
-- `src/types.ts` — `Player`, `Round`, `Game` interfaces (source of truth for shape)
-- `src/components/GameRules.tsx` — also exports the `GameRulesConfig` interface (imported widely)
-- `src/utils/gameHelpers.ts` — all pure game logic: `calculateGameTotals`, `parseScore`, `isValidScore`, `loadWinCounts`, `saveWinCounts`, `generateUniqueId`
+- `src/types.ts` — `Player`, `Round`, `Game`, `GameRulesConfig` interfaces (source of truth for shape)
+- `src/utils/gameHelpers.ts` — all pure game logic: `calculateGameTotals`, `parseScore`, `isValidScore`, `getVisDisplayValue`, `loadWinCounts`, `saveWinCounts`, `generateUniqueId`
 - `src/App.tsx` — owns all game state, orchestrates components, calls helpers
 
-**Score entry values:**
-- Number → plain points
-- `Б` — first occurrence stored as string `'Б'`; second occurrence triggers `secondBPenalty`
-- `ХВ` — immediately converted to `hvPenalty` (number, default -100)
-- `ВІС` — deferred: resolved the *next* round; if the ВІС player wins that round they earn the pending points, otherwise they take a `Б` penalty
+**Score entry values (stored in `Round.scores` as `Record<string, number | string>`):**
+- Number → plain points (negative allowed)
+- `'Б'` — first occurrence stored as string `'Б'` (worth 0); every subsequent Б adds `secondBPenalty` (-100)
+- `ХВ` — converted by `parseScore` to `hvPenalty` (number, default -100) before storage
+- `'ВІС'` — stored as uppercase string `'ВІС'` (U+0406); deferred until the next round. Win (own score > best opponent) → earn `hangingScore` bonus. Tie (equal) → carry forward another round. Loss (own score < best opponent) → take a Б (counted in bCounts).
 
 `calculateGameTotals` iterates rounds in order, tracks `bCounts` and `pendingVis`, and returns `Record<playerId, totalScore>`.
+
+`getVisDisplayValue` resolves what to show in the history for a ВіС cell — returns `'ВіС'` (lowercase U+0456, display token) when won/pending/tied, `'Б'` on first loss, or penalty number on subsequent losses. Accepts both `'ВіС'` and `'ВІС'` via `.toUpperCase()` normalization.
 
 **localStorage keys:**
 - `gameId` — auto-incrementing game counter
@@ -51,9 +57,10 @@ Linter/formatter: **Biome** (not ESLint/Prettier). Config in `biome.json`:
 
 ## Guidelines & Skills
 - **UI/UX**: Викликай skill `ui-ux-pro-max` для складних дизайн-рішень.
-- **Logic**: Дотримуйся TDD для бізнес-логіки в `src/lib/` (Vitest).
+- **Logic**: Дотримуйся TDD для бізнес-логіки в `src/utils/` (Vitest). Повний набір тестів у `tests/helpers.test.ts`.
+- **Rules**: Джерело правди для правил гри — `docs/GAME_RULES.md`.
 - **Linting**: `bun run lint` (Biome) — обов'язково перед commit.
 
 ## Continuity
-- **Session Start**: Читай `PROGRESS.md` — там поточний стан, блокери та next steps.
-- **Session End**: Оновлюй `PROGRESS.md` — виконані задачі, нові блокери, плани.
+- **Session Start**: Читай `PROGRESS.md` (якщо існує) — там поточний стан та next steps.
+- **Session End**: Оновлюй або створюй `PROGRESS.md` — виконані задачі, нові блокери, плани.

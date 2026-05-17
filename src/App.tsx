@@ -186,8 +186,39 @@ export default function App() {
     }
   };
 
+  /**
+   * Removes the last submitted round and rolls back all derived state.
+   *
+   * Dealer rotation: each Round stores the dealerId that was active when it was
+   * submitted, so restoring game.dealerId to lastRound.dealerId correctly undoes
+   * the rotation that happened in addRound().
+   *
+   * winnerPlayer is always cleared because the undone round might have been the
+   * one that triggered a win.
+   */
+  const handleUndoLastRound = () => {
+    if (!game || game.rounds.length === 0) return;
+    const lastRound = game.rounds[game.rounds.length - 1];
+    const updatedGame: Game = {
+      ...game,
+      rounds: game.rounds.slice(0, -1),
+      dealerId: lastRound.dealerId ?? game.dealerId,
+    };
+    setGame(updatedGame);
+    setWinnerPlayer(null);
+    setScores(Object.fromEntries(updatedGame.players.map((p) => [p.id.toString(), ''])));
+    setError('');
+  };
+
   return (
     <div className="felt-bg min-h-dvh">
+      {/* Corner card suit silhouettes — decorative table atmosphere */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
+        <span className="absolute -top-4 -left-4 text-[22vw] opacity-[0.035] text-white leading-none select-none">♠</span>
+        <span className="absolute -top-4 -right-4 text-[22vw] opacity-[0.035] text-white leading-none select-none">♥</span>
+        <span className="absolute -bottom-4 -left-4 text-[22vw] opacity-[0.035] text-white leading-none select-none">♣</span>
+        <span className="absolute -bottom-4 -right-4 text-[22vw] opacity-[0.035] text-white leading-none select-none">♦</span>
+      </div>
       {!game ? (
         <div className="flex items-center justify-center min-h-dvh py-4 px-4">
           <SetupScreen
@@ -275,6 +306,7 @@ export default function App() {
             onUpdateRound={updateRound}
             gameRules={gameRules}
             snapshotRound={snapshotRound}
+            onUndoLastRound={winnerPlayer === null ? handleUndoLastRound : undefined}
           />
 
           {game.rounds.length > 0 && (

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Game, Player, GameRulesConfig } from '../types';
 import { BarChart3, TrendingDown, TrendingUp, Activity, Award } from 'lucide-react';
-import { calculateGameTotals } from '../utils/gameHelpers';
+import { calculateGameTotals, getVisDisplayValue } from '../utils/gameHelpers';
 
 interface PlayerStatisticsProps {
     game: Game;
@@ -42,15 +42,22 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
 
             if (score === 'Б') {
                 bCount++;
-                if (bCount === 2) {
+                if (bCount >= 2) {
                     effectiveRoundScore = secondBPenalty;
                     negativeRounds++;
                 } else {
                     effectiveRoundScore = 0;
                 }
-            } else if (score === 'ВІС') {
+            } else if (typeof score === 'string' && score.toUpperCase() === 'ВІС') {
                 visCount++;
                 shouldAddToRoundScores = false;
+                if (gameRules) {
+                    const roundIdx = game.rounds.findIndex((r) => r.id === round.id);
+                    const resolved = getVisDisplayValue(roundIdx, playerId, game.rounds, gameRules);
+                    if (resolved === 'Б' || (typeof resolved === 'number' && resolved < 0)) {
+                        bCount++;
+                    }
+                }
             } else if (typeof score === 'number') {
                 effectiveRoundScore = score;
 

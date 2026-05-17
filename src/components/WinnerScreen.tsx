@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Player } from '../types';
 import { CardSuitsRain } from './CardSuitsRain';
 import { Button } from './Button';
 import { GoldDivider } from './GoldDivider';
+import { useSound } from '../hooks/useSound';
 
 interface WinnerScreenProps {
   winner: Player;
@@ -21,6 +22,11 @@ export const WinnerScreen: React.FC<WinnerScreenProps> = ({
   onNewGame,
   onContinue,
 }) => {
+  const { fanfare } = useSound();
+
+  useEffect(() => {
+    fanfare();
+  }, [fanfare]);
   const maxScore = Math.max(...players.map((p) => totals[String(p.id)] ?? 0));
 
   return (

@@ -15,7 +15,7 @@ export const isValidScore = (val: string | number, gameRules?: GameRulesConfig):
     const trimmed = val.toString().trim().toUpperCase();
     const allowVis = gameRules?.allowVis !== false;
 
-    return /^\d+$/.test(trimmed) ||
+    return /^-?\d+$/.test(trimmed) ||
         trimmed === 'Б' ||
         trimmed === 'ХВ' ||
         (allowVis && trimmed === 'ВІС');
@@ -46,6 +46,69 @@ export const parseScore = (
 
     const parsed = parseInt(trimmed);
     return isNaN(parsed) ? 0 : parsed;
+};
+
+/**
+ * Returns the value to display in round history for a given score cell.
+ * For ВіС: shows 'ВіС' while pending or won, 'Б' / penalty when lost.
+ * A tie in the resolution round carries ВіС forward to the next round.
+ */
+export const getVisDisplayValue = (
+  roundIndex: number,
+  playerId: number,
+  rounds: Round[],
+  gameRules: GameRulesConfig,
+): string | number => {
+  const pid = String(playerId);
+  const val = rounds[roundIndex]?.scores[pid];
+  const isVis = (v: unknown): boolean =>
+    typeof v === 'string' && v.toUpperCase() === 'ВІС';
+
+  if (!isVis(val)) return val ?? 0;
+  if (!gameRules.allowVis) return 0;
+
+  // Follow the chain of ties to find the actual resolution round.
+  let resolveIdx = roundIndex + 1;
+  while (resolveIdx < rounds.length) {
+    const resolveRound = rounds[resolveIdx];
+    const visScore =
+      typeof resolveRound.scores[pid] === 'number' ? (resolveRound.scores[pid] as number) : 0;
+    const bestOpponent = Object.entries(resolveRound.scores)
+      .filter(([id]) => id !== pid)
+      .reduce((max, [, v]) => Math.max(max, typeof v === 'number' ? v : 0), -Infinity);
+
+    if (visScore > bestOpponent) return 'ВіС'; // won — show original token
+    if (visScore < bestOpponent) break;         // lost — fall through to Б logic
+    resolveIdx++;                               // tie — carry forward
+  }
+
+  // Won or still pending (no round with strict loss found).
+  if (resolveIdx >= rounds.length) return 'ВіС';
+
+  // Lost — count prior Б-equivalent events (regular Б + ВіС losses) before this roundIndex.
+  let bCount = 0;
+  for (let i = 0; i < roundIndex; i++) {
+    const prevVal = rounds[i].scores[pid];
+    if (prevVal === 'Б') {
+      bCount++;
+    } else if (isVis(prevVal) && gameRules.allowVis) {
+      // Follow tie chain for this prior ВіС, but only up to roundIndex.
+      let prevResolveIdx = i + 1;
+      while (prevResolveIdx < roundIndex) {
+        const prevResRound = rounds[prevResolveIdx];
+        const prevVisScore =
+          typeof prevResRound.scores[pid] === 'number' ? (prevResRound.scores[pid] as number) : 0;
+        const prevBestOpp = Object.entries(prevResRound.scores)
+          .filter(([id]) => id !== pid)
+          .reduce((max, [, v]) => Math.max(max, typeof v === 'number' ? v : 0), -Infinity);
+        if (prevVisScore < prevBestOpp) { bCount++; break; }
+        if (prevVisScore > prevBestOpp) break;
+        prevResolveIdx++;
+      }
+    }
+  }
+
+  return bCount >= 1 ? (gameRules.secondBPenalty ?? -100) : 'Б';
 };
 
 export function generateUniqueId(): number {
@@ -87,23 +150,26 @@ export const calculateGameTotals = (game: Game, gameRules: GameRulesConfig): Rec
             const visScore = typeof round.scores[visPlayerId] === 'number' ? round.scores[visPlayerId] as number : 0;
 
             if (visScore > bestOpponentCurrent.score) {
+                // WIN: ВіС player earns the hanging score (their round score is counted below).
                 totals[visPlayerId] += hangingScore;
-            } else {
+                pendingVis.splice(pendingVis.findIndex(p => p.playerId === visPlayerId && p.roundIndex === roundIndex), 1);
+            } else if (visScore < bestOpponentCurrent.score) {
+                // LOSS: ВіС player gets Б; best opponent earns the hanging score.
                 bCounts[visPlayerId] += 1;
-                if (bCounts[visPlayerId] === 2) {
+                if (bCounts[visPlayerId] >= 2) {
                     totals[visPlayerId] += gameRules.secondBPenalty;
                 }
                 currentRoundBonuses[bestOpponentCurrent.playerId] = (currentRoundBonuses[bestOpponentCurrent.playerId] || 0) + hangingScore;
+                pendingVis.splice(pendingVis.findIndex(p => p.playerId === visPlayerId && p.roundIndex === roundIndex), 1);
             }
-
-            pendingVis.splice(pendingVis.findIndex(p => p.playerId === visPlayerId && p.roundIndex === roundIndex), 1);
+            // TIE: ВіС carries forward — entry stays in pendingVis; no bonus or penalty applied.
         });
 
         for (const [pid, val] of Object.entries(round.scores)) {
             const playerId = Number(pid);
             if (val === 'Б') {
                 bCounts[playerId] += 1;
-                if (bCounts[playerId] === 2) {
+                if (bCounts[playerId] >= 2) {
                     totals[playerId] += gameRules.secondBPenalty;
                 }
             } else if (val === 'ВІС' && gameRules.allowVis) {

@@ -1,5 +1,22 @@
 import React from 'react';
 
+const EASTER_EGGS: Array<{ keywords: string[]; emoji: string }> = [
+  { keywords: ['заєць', 'заєц', 'заец', 'заець', 'косой'], emoji: '🐰' },
+  { keywords: ['бая', 'кот'], emoji: '😸' },
+  { keywords: ['киш', 'кіш'], emoji: '🥷' },
+  { keywords: ['сірко', 'сирко'], emoji: '🐶' },
+  { keywords: ['горох'], emoji: '🫛' },
+  { keywords: ['ося'], emoji: '🥥' },
+];
+
+const applyEasterEgg = (value: string): string => {
+  const trimmed = value.trim().toLowerCase();
+  for (const { keywords, emoji } of EASTER_EGGS) {
+    if (keywords.includes(trimmed)) return `${emoji} ${value}`;
+  }
+  return value;
+};
+
 interface PlayerRowProps {
   index: number;
   name: string;
@@ -29,7 +46,7 @@ export const PlayerRow: React.FC<PlayerRowProps> = ({
       <input
         type="text"
         value={name}
-        onChange={(e) => onNameChange(e.target.value)}
+        onChange={(e) => onNameChange(applyEasterEgg(e.target.value))}
         placeholder={`Гравець ${index + 1}`}
         className="flex-1 bg-transparent border-b border-white/20 text-white placeholder-muted
           font-sans text-base py-1 focus:outline-none focus:border-gold-from transition-colors"
