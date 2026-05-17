@@ -73,7 +73,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
     <div className="w-full max-w-md mx-auto flex flex-col gap-6 py-6 px-4">
       {/* Header */}
       <div className="text-center relative">
-        <div className="absolute inset-0 flex items-center justify-center text-8xl text-white/5 font-display pointer-events-none select-none">
+        <div className="absolute inset-0 flex items-center justify-center text-8xl text-white/5 font-display pointer-events-none select-none" aria-hidden="true">
           ♥♦♣
         </div>
         <h1 className="font-display text-4xl gold-gradient-text relative z-10">Деберц ♠</h1>

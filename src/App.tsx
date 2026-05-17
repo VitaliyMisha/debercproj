@@ -1,15 +1,16 @@
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { Game, GameRulesConfig, Player, Round } from './types';
 
 import SetupScreen from './components/SetupScreen';
 import RoundForm from './components/RoundForm';
 import RoundHistory from './components/RoundHistory';
 import RoundTimeline from './components/RoundTimeline';
-import WinnerScreen from './components/WinnerScreen';
 import GameHeader from './components/GameHeader';
 import GameHistory from './components/GameHistory';
 import ScoreBoard from './components/ScoreBoard';
-import PlayerStatistics from './components/PlayerStatistics';
+
+const WinnerScreen = lazy(() => import('./components/WinnerScreen'));
+const PlayerStatistics = lazy(() => import('./components/PlayerStatistics'));
 import { generateUniqueId, isValidScore, loadWinCounts, parseScore, saveWinCounts, calculateGameTotals } from './utils/gameHelpers';
 import { useSound } from './hooks/useSound';
 
@@ -253,7 +254,7 @@ export default function App() {
         <span className="absolute -bottom-4 -right-4 text-[22vw] opacity-[0.035] text-white leading-none select-none">♦</span>
       </div>
       {!game ? (
-        <div className="flex items-center justify-center min-h-dvh py-4 px-4">
+        <main className="flex items-center justify-center min-h-dvh py-4 px-4">
           <SetupScreen
             playerCount={playerCount}
             onPlayerCountChange={setPlayerCount}
@@ -267,9 +268,9 @@ export default function App() {
             onRulesChange={setGameRules}
             onStart={() => createGame()}
           />
-        </div>
+        </main>
       ) : (
-        <div className="w-full max-w-2xl mx-auto flex flex-col gap-4 p-4">
+        <main className="w-full max-w-2xl mx-auto flex flex-col gap-4 p-4">
           <GameHeader
             gameId={game.id}
             targetScore={targetScore}
@@ -305,15 +306,17 @@ export default function App() {
           />
 
           {winnerObj ? (
-            <WinnerScreen
-              winner={winnerObj}
-              players={game.players}
-              totals={totals}
-              roundCount={game.rounds.length}
-              onNewGame={resetGame}
-              onContinue={continueGame}
-              soundEnabled={soundEnabled}
-            />
+            <Suspense fallback={null}>
+              <WinnerScreen
+                winner={winnerObj}
+                players={game.players}
+                totals={totals}
+                roundCount={game.rounds.length}
+                onNewGame={resetGame}
+                onContinue={continueGame}
+                soundEnabled={soundEnabled}
+              />
+            </Suspense>
           ) : (
             <>
               {snapshotRound === null && (
@@ -361,13 +364,15 @@ export default function App() {
           )}
 
           {showStatistics && game.rounds.length > 0 && (
-            <PlayerStatistics
-              game={game}
-              players={game.players}
-              gameRules={gameRules}
-            />
+            <Suspense fallback={null}>
+              <PlayerStatistics
+                game={game}
+                players={game.players}
+                gameRules={gameRules}
+              />
+            </Suspense>
           )}
-        </div>
+        </main>
       )}
     </div>
   );
