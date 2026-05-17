@@ -229,7 +229,11 @@ export default function App() {
             players={game.players}
             totals={displayTotals}
             targetScore={targetScore}
-            dealerId={game.dealerId}
+            dealerId={
+              snapshotRound !== null
+                ? game.rounds[snapshotRound - 1]?.dealerId
+                : game.dealerId
+            }
             snapshotActive={snapshotRound !== null}
           />
 
