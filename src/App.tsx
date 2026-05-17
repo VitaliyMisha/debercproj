@@ -54,6 +54,13 @@ export default function App() {
     localStorage.setItem(GAME_RULES_KEY, JSON.stringify(gameRules));
   }, [gameRules]);
 
+  useEffect(() => {
+    if (!game || game.rounds.length === 0) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [game]);
+
   const createGame = (
     reusePlayers?: Player[],
     showHistory = false,

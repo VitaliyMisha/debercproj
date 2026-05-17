@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 
 interface PenaltySheetProps {
   label: string;
@@ -13,26 +13,49 @@ export const PenaltySheet: React.FC<PenaltySheetProps> = ({
   onChange,
   onClose,
 }) => {
-  const handleBackdrop = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (e.target === e.currentTarget) onClose();
-    },
-    [onClose],
-  );
+  const touchStartY = useRef<number | null>(null);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (touchStartY.current === null) return;
+    const delta = e.changedTouches[0].clientY - touchStartY.current;
+    if (delta > 80) onClose();
+    touchStartY.current = null;
+  }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end" onClick={handleBackdrop}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+    <div className="fixed inset-0 z-50 flex items-end">
+      {/* Backdrop — окремий шар, кліком закриває */}
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
 
+      {/* Sheet */}
       <div
         className="relative w-full bg-card-bg rounded-t-2xl p-6 pb-10 border-t border-white/10 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
-        <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-6" />
+        {/* Drag handle */}
+        <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-4" />
 
-        <h3 className="text-white font-sans font-semibold text-lg mb-6 text-center">
-          {label}
-        </h3>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-white font-sans font-semibold text-lg">{label}</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Закрити"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-muted
+              hover:text-white hover:bg-white/10 transition-colors text-lg leading-none"
+          >
+            ✕
+          </button>
+        </div>
 
         <div className="flex items-center gap-4">
           <input
@@ -57,7 +80,7 @@ export const PenaltySheet: React.FC<PenaltySheetProps> = ({
         </div>
 
         <p className="text-muted text-sm text-center mt-4">
-          Проведіть вліво/вправо або потягніть повзунок
+          Проведіть вниз або торкніться фону щоб закрити
         </p>
       </div>
     </div>
