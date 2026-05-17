@@ -23,7 +23,13 @@
       "Bash(convert --version)",
       "Bash(sips --help)",
       "Bash(bun add *)",
-      "Bash(bun x *)"
+      "Bash(bun x *)",
+      "Bash(echo \"BIOME EXIT: $?\")",
+      "Bash(echo \"TSC EXIT: $?\")",
+      "Bash(echo \"TEST EXIT: $?\")",
+      "Bash(echo \"BIOME: $?\")",
+      "Bash(echo \"TSC: $?\")",
+      "Bash(echo \"TEST: $?\")"
     ]
   }
 }
