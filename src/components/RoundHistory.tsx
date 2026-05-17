@@ -138,7 +138,10 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                           <div key={player.id}>
                             <label className="text-muted text-xs mb-1 block">{player.name}</label>
                             <input
+                              id={`edit-r${round.number}-p${player.id}`}
+                              name={`edit-r${round.number}-p${player.id}`}
                               type="text"
+                              autoComplete="off"
                               value={val}
                               onChange={(e) =>
                                 setEditScores((prev) => ({ ...prev, [String(player.id)]: e.target.value }))

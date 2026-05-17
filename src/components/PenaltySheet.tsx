@@ -36,6 +36,8 @@ export const PenaltySheet: React.FC<PenaltySheetProps> = ({
 
         <div className="flex items-center gap-4">
           <input
+            id="penalty-range"
+            name="penalty-range"
             type="range"
             min={-200}
             max={0}

@@ -86,7 +86,10 @@ const RoundForm: React.FC<RoundFormProps> = ({
 
                 <div className="relative shrink-0 w-28">
                   <input
+                    id={`score-r${roundNumber}-p${p.id}`}
+                    name={`score-r${roundNumber}-p${p.id}`}
                     type="text"
+                    autoComplete="off"
                     value={val}
                     onChange={(e) => onScoreChange(e, p.id)}
                     onBlur={(e) => handleBlur(e, p.id)}
