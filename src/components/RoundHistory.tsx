@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Player, Round } from '../types';
 import { GameRulesConfig } from '../types';
 import { isValidScore, getVisDisplayValue } from '../utils/gameHelpers';
+import { ConfirmSheet } from './ConfirmSheet';
 
 interface RoundHistoryProps {
   rounds: Round[];
@@ -72,11 +73,12 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
   }
 
   return (
+    <>
     <div className="bg-card-bg rounded-2xl border border-white/8 overflow-hidden">
       <div className="px-4 py-3 border-b border-white/8 flex items-center justify-between">
         <h2 className="text-muted text-xs font-semibold uppercase tracking-widest">Історія раундів</h2>
         <div className="flex items-center gap-2">
-          {onUndoLastRound && !confirmingUndo && (
+          {onUndoLastRound && (
             <button
               type="button"
               onClick={() => setConfirmingUndo(true)}
@@ -86,34 +88,10 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                 background: '#7F1D1D88',
                 color: '#FCA5A5',
                 border: '1px solid #DC262655',
-                boxShadow: 'none',
               }}
             >
               ↩ Undo
             </button>
-          )}
-          {confirmingUndo && (
-            <div className="flex items-center gap-1.5 bg-white/5 border border-white/15 rounded-xl px-2 py-1">
-              <span className="text-white/50 text-xs font-sans mr-0.5">Впевнений?</span>
-              <button
-                type="button"
-                onClick={() => { setConfirmingUndo(false); onUndoLastRound?.(); }}
-                aria-label="Підтвердити скасування раунду"
-                className="w-6 h-6 rounded-lg bg-score-neg/15 border border-score-neg/40 text-score-neg text-xs
-                  hover:bg-score-neg/30 transition-all duration-150 active:scale-[0.93] flex items-center justify-center"
-              >
-                ✓
-              </button>
-              <button
-                type="button"
-                onClick={() => setConfirmingUndo(false)}
-                aria-label="Скасувати"
-                className="w-6 h-6 rounded-lg bg-white/5 border border-white/10 text-muted text-xs
-                  hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.93] flex items-center justify-center"
-              >
-                ✗
-              </button>
-            </div>
           )}
           <span className="text-muted text-xs bg-white/5 px-2 py-0.5 rounded-full">Всього: {rounds.length}</span>
         </div>
@@ -248,6 +226,17 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
         })}
       </div>
     </div>
+
+    {confirmingUndo && (
+      <ConfirmSheet
+        title="Скасувати останній раунд?"
+        description="Раунд буде видалено, рахунки повернуться до попереднього стану."
+        confirmLabel="Скасувати раунд"
+        onConfirm={() => { setConfirmingUndo(false); onUndoLastRound?.(); }}
+        onCancel={() => setConfirmingUndo(false)}
+      />
+    )}
+  </>
   );
 };
 
