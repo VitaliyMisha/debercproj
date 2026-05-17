@@ -10,6 +10,7 @@ interface RoundFormProps {
   roundNumber: number;
   isAddDisabled: boolean;
   gameRules?: GameRulesConfig;
+  onChipClick?: () => void;
 }
 
 const TOKEN_HINTS = ['Б', 'ХВ', 'ВІС'] as const;
@@ -38,6 +39,7 @@ const RoundForm: React.FC<RoundFormProps> = ({
   roundNumber,
   isAddDisabled,
   gameRules,
+  onChipClick,
 }) => {
   const allowVis = gameRules?.allowVis !== false;
   const placeholder = allowVis ? '0, Б, ХВ, ВІС' : '0, Б, ХВ';
@@ -66,6 +68,7 @@ const RoundForm: React.FC<RoundFormProps> = ({
 
   const fillToken = (playerId: number, token: string) => {
     if (tokenAlreadyTakenFor(playerId, token)) return;
+    onChipClick?.();
     onScoreChange({ target: { value: token } } as ChangeEvent<HTMLInputElement>, playerId);
   };
 

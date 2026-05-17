@@ -11,9 +11,11 @@ import GameHistory from './components/GameHistory';
 import ScoreBoard from './components/ScoreBoard';
 import PlayerStatistics from './components/PlayerStatistics';
 import { generateUniqueId, isValidScore, loadWinCounts, parseScore, saveWinCounts, calculateGameTotals } from './utils/gameHelpers';
+import { useSound } from './hooks/useSound';
 
 const GAME_ID = 'gameId';
 const GAME_RULES_KEY = 'gameRules';
+const SOUND_KEY = 'soundEnabled';
 
 const defaultGameRules: GameRulesConfig = {
   secondBPenalty: -100,
@@ -41,6 +43,9 @@ export default function App() {
     return stored ? JSON.parse(stored) : defaultGameRules;
   });
 
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => localStorage.getItem(SOUND_KEY) !== 'false');
+  const { chipClick, roundSubmit, undoPop } = useSound();
+
   const [gameId, setGameId] = useState(() => {
     const stored = localStorage.getItem(GAME_ID);
     return stored ? parseInt(stored, 10) : 1;
@@ -53,6 +58,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(GAME_RULES_KEY, JSON.stringify(gameRules));
   }, [gameRules]);
+
+  useEffect(() => {
+    localStorage.setItem(SOUND_KEY, soundEnabled.toString());
+  }, [soundEnabled]);
 
   useEffect(() => {
     if (!game || game.rounds.length === 0) return;
@@ -150,6 +159,7 @@ export default function App() {
     setSnapshotRound(null);
     setScores(Object.fromEntries(updatedGame.players.map((p) => [p.id.toString(), ''])));
     setError('');
+    if (soundEnabled) roundSubmit();
     updateWinner(updatedGame);
   };
 
@@ -226,6 +236,7 @@ export default function App() {
     setWinnerPlayer(null);
     setScores(Object.fromEntries(updatedGame.players.map((p) => [p.id.toString(), ''])));
     setError('');
+    if (soundEnabled) undoPop();
   };
 
   return (
@@ -264,6 +275,9 @@ export default function App() {
             targetScore={targetScore}
             dealerName={game.players.find((p) => p.id === game.dealerId)?.name || ''}
             onNewGame={resetGame}
+            hasRounds={game.rounds.length > 0}
+            soundEnabled={soundEnabled}
+            onSoundToggle={() => setSoundEnabled((prev) => !prev)}
           />
 
           {hasHistoryShown && <GameHistory players={game.players} />}
@@ -298,6 +312,7 @@ export default function App() {
               roundCount={game.rounds.length}
               onNewGame={resetGame}
               onContinue={continueGame}
+              soundEnabled={soundEnabled}
             />
           ) : (
             <>
@@ -316,6 +331,7 @@ export default function App() {
                     roundNumber={game.rounds.length + 1}
                     isAddDisabled={isAddDisabled}
                     gameRules={gameRules}
+                    onChipClick={soundEnabled ? chipClick : undefined}
                   />
                 </>
               )}

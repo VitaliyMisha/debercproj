@@ -12,6 +12,7 @@ interface WinnerScreenProps {
   roundCount: number;
   onNewGame: () => void;
   onContinue: () => void;
+  soundEnabled?: boolean;
 }
 
 export const WinnerScreen: React.FC<WinnerScreenProps> = ({
@@ -21,12 +22,13 @@ export const WinnerScreen: React.FC<WinnerScreenProps> = ({
   roundCount,
   onNewGame,
   onContinue,
+  soundEnabled = true,
 }) => {
   const { fanfare } = useSound();
 
   useEffect(() => {
-    fanfare();
-  }, [fanfare]);
+    if (soundEnabled) fanfare();
+  }, [fanfare, soundEnabled]);
   const maxScore = Math.max(...players.map((p) => totals[String(p.id)] ?? 0));
 
   return (

@@ -23,12 +23,15 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
   const displayScore = useCountUp(score, snapshotActive ? 0 : 300);
   const progress = Math.min(Math.max(score / targetScore, 0), 1) * 100;
   const initial = Array.from(player.name.trim())[0]?.toUpperCase() || '?';
+  const isCloseToFinish = !snapshotActive && score > 0 && score < targetScore && score / targetScore >= 0.85;
 
   const leaderStyle = isLeader ? {
     background: 'linear-gradient(#192134, #192134) padding-box, linear-gradient(135deg, #78350F, #FCD34D 45%, #D97706 55%, #78350F) border-box',
     border: '1.5px solid transparent',
     boxShadow: '0 4px 24px rgba(120, 53, 15, 0.28), inset 0 0 0 0 transparent',
     animation: 'goldPulse 5s ease-in-out infinite',
+  } : isCloseToFinish ? {
+    animation: 'firePulse 2s ease-in-out infinite',
   } : undefined;
 
   return (
@@ -50,6 +53,9 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
         </div>
         <span className="text-white/80 font-sans text-sm font-medium truncate">{player.name}</span>
         <div className="ml-auto flex items-center gap-1">
+          {isCloseToFinish && !isLeader && (
+            <span className="text-xs leading-none">🔥</span>
+          )}
           {isDealer && (
             <span className="text-xs bg-primary/20 border border-primary/50 text-score-pos px-1.5 py-0.5 rounded-full leading-none">
               Д
@@ -82,7 +88,9 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
             width: `${progress}%`,
             background: isLeader
               ? 'linear-gradient(90deg, #92400E, #FCD34D)'
-              : 'var(--color-primary)',
+              : isCloseToFinish
+                ? 'linear-gradient(90deg, #EA580C, #FBBF24)'
+                : 'var(--color-primary)',
             animation: snapshotActive ? 'none' : 'progressFill 600ms ease',
           }}
         />
