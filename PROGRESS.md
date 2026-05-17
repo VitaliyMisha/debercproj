@@ -2,7 +2,7 @@
 
 ## Поточний стан (2026-05-17)
 
-Проєкт у робочому стані. UI перероблено на "Card Table Dark - Vintage" тему. Логіка гри відповідає правилам. Тестів: **92** (усі зелені).
+Проєкт у робочому стані. UI перероблено на "Card Table Dark - Vintage" тему. Логіка гри відповідає правилам. Тестів: **92** (усі зелені). PWA коректно працює на Android Chrome.
 
 ---
 
@@ -34,10 +34,19 @@
 - Незакритий ВіС в кінці гри — ігнорується
 - Тільки 1 ВіС на раунд
 
-### Нові фічі (2026-05-17)
+### Нові фічі
 - **Undo last round** (`handleUndoLastRound` в `App.tsx`): видаляє останній раунд, відновлює dealerId, скидає winnerPlayer. Кнопка "↩ Undo" у хедері `RoundHistory` — видима тільки поки немає переможця.
 - **Fanfare при перемозі** (`src/hooks/useSound.ts` + `WinnerScreen.tsx`): Web Audio API арпеджіо C5→E5→G5→C6 + sustained chord + haptic вібрація. Без зовнішніх файлів, офлайн-сумісний.
 - **Тести для undo** (8 нових у `tests/game.test.ts`): покривають усі комбінації останнього раунду — числа, Б, ВіС-виграш, ВіС-поразка, ВіС-незакритий, ХВ.
+
+### PWA / Mobile fixes
+- **Horizontal overflow** — `overflow-x: hidden` на `html, body, #root` + `w-full overflow-x-hidden` на root App div
+- **Кутові символи** — замінив `overflow-hidden` на `clipPath: 'inset(0)'` + `contain: 'strict'` (надійніше в Android WebView)
+- **Dealer button** — перенесено з окремої кнопки справа в кружечок гравця (уникає overflow); 👑 показується замість цифри коли гравець — дилер
+- **beforeunload** — listener додається тільки коли `game.rounds.length > 0` (після user gesture), інакше Chrome блокував діалог
+- **Form id/name** — всі `<input>` отримали `id`, `name`, `autoComplete` атрибути (PlayerRow, RoundForm, RoundHistory, PenaltySheet)
+- **PenaltySheet** — виправлено баг закриття (backdrop click не спрацьовував через неправильний event target); додано: кнопка ✕, клік по backdrop, swipe-down жест (≥80px)
+- **`width: 0%` → `width: 0`** у `@keyframes progressFill` (CSS lint warning)
 
 ---
 
@@ -53,10 +62,15 @@
 - `tests/game.test.ts` — інтеграційні сценарії + 8 undo-сценаріїв
 - `tests/saveWinCounts.test.ts` — localStorage
 
+### useSound hook
+- `src/hooks/useSound.ts` — Web Audio API без зовнішніх файлів
+- `fanfare()` — єдина функція що використовується (WinnerScreen.tsx, на маунті)
+- `chipClick`, `roundSubmit`, `undoPop` — реалізовані але не підключені до UI
+
 ---
 
 ## Потенційні наступні кроки (не заплановано)
 
 - Історія між сесіями (localStorage зберігає тільки winCounts, не раунди)
-- PWA offline-режим
 - Анімація при досягненні targetScore
+- Підключити chip click / round submit звуки до RoundForm
