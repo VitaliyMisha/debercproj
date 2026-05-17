@@ -211,9 +211,13 @@ export default function App() {
   };
 
   return (
-    <div className="felt-bg min-h-dvh">
+    <div className="felt-bg min-h-dvh w-full overflow-x-hidden">
       {/* Corner card suit silhouettes — decorative table atmosphere */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
+      <div
+        className="pointer-events-none fixed inset-0"
+        style={{ clipPath: 'inset(0)', contain: 'strict' }}
+        aria-hidden="true"
+      >
         <span className="absolute -top-4 -left-4 text-[22vw] opacity-[0.035] text-white leading-none select-none">♠</span>
         <span className="absolute -top-4 -right-4 text-[22vw] opacity-[0.035] text-white leading-none select-none">♥</span>
         <span className="absolute -bottom-4 -left-4 text-[22vw] opacity-[0.035] text-white leading-none select-none">♣</span>

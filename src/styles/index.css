@@ -20,6 +20,12 @@
 }
 
 @layer base {
+  /* Prevent horizontal scroll in PWA standalone mode on Android */
+  html, body, #root {
+    overflow-x: hidden;
+    width: 100%;
+  }
+
   *,
   ::after,
   ::before,
@@ -112,7 +118,7 @@
 
 @keyframes progressFill {
   from {
-    width: 0%;
+    width: 0;
   }
 }
 
