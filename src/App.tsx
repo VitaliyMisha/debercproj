@@ -128,7 +128,7 @@ export default function App() {
     game.players.forEach((p) => {
       updatedScores[p.id] = parseScore(scores[p.id], p.id.toString(), game.rounds, gameRules);
     });
-    const newRound: Round = { id: roundNumber, number: roundNumber, scores: updatedScores };
+    const newRound: Round = { id: roundNumber, number: roundNumber, scores: updatedScores, dealerId: game.dealerId };
     const nextDealerIndex = (game.players.findIndex((p) => p.id === game.dealerId) + 1) % game.players.length;
     const updatedGame: Game = {
       ...game,
@@ -161,18 +161,6 @@ export default function App() {
     if (!game) return {};
     return calculateGameTotals(game, gameRules);
   }, [game, gameRules]);
-
-  const dealerByRound = useMemo(() => {
-    if (!game) return [];
-    const n = game.players.length;
-    const currentDealerIdx = game.players.findIndex((p) => p.id === game.dealerId);
-    return game.rounds.map((_, i) => {
-      const roundNumber = i + 1;
-      const stepsBack = game.rounds.length - roundNumber + 1;
-      const idx = ((currentDealerIdx - stepsBack) % n + n) % n;
-      return game.players[idx].id;
-    });
-  }, [game]);
 
   const displayTotals = useMemo((): Record<string, number> => {
     if (!game || snapshotRound === null) return totals;
@@ -283,7 +271,6 @@ export default function App() {
             onUpdateRound={updateRound}
             gameRules={gameRules}
             snapshotRound={snapshotRound}
-            dealerByRound={dealerByRound}
           />
 
           {game.rounds.length > 0 && (

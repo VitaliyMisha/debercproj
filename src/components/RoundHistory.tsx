@@ -9,10 +9,9 @@ interface RoundHistoryProps {
   onUpdateRound: (roundNumber: number, newScores: Record<string, string>) => void;
   gameRules?: GameRulesConfig;
   snapshotRound?: number | null;
-  dealerByRound?: number[];
 }
 
-const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRound, gameRules, snapshotRound, dealerByRound }) => {
+const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRound, gameRules, snapshotRound }) => {
   const [editingRound, setEditingRound] = useState<number | null>(null);
   const [editScores, setEditScores] = useState<Record<string, string>>({});
   const prevLengthRef = useRef(rounds.length);
@@ -74,8 +73,9 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
           const isEditing = editingRound === round.number;
           const isSnapshot = round.number === snapshotRound;
           const isNew = round.number === newRoundId;
-          const dealerId = dealerByRound?.[round.number - 1];
-          const dealerName = dealerId !== undefined ? players.find((p) => p.id === dealerId)?.name : undefined;
+          const dealerName = round.dealerId !== undefined
+            ? players.find((p) => p.id === round.dealerId)?.name
+            : undefined;
 
           return (
             <div

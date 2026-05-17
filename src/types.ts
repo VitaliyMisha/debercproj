@@ -8,6 +8,7 @@ export interface Round {
     id: number;
     number: number;
     scores: Record<string, number | string>;
+    dealerId?: number;
 }
 
 export interface Game {
