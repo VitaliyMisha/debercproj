@@ -28,6 +28,7 @@ Single-page React app for scoring the Ukrainian card game Деберц (Deberc).
 **Core data flow:**
 - `src/types.ts` — `Player`, `Round`, `Game`, `GameRulesConfig` interfaces (source of truth for shape)
 - `src/utils/gameHelpers.ts` — all pure game logic: `calculateGameTotals`, `parseScore`, `isValidScore`, `getVisDisplayValue`, `loadWinCounts`, `saveWinCounts`, `generateUniqueId`
+- `src/hooks/useSound.ts` — Web Audio API hook: `fanfare` (used in WinnerScreen on mount), plus `chipClick`, `roundSubmit`, `undoPop` (implemented, not wired)
 - `src/App.tsx` — owns all game state, orchestrates components, calls helpers
 
 **Score entry values (stored in `Round.scores` as `Record<string, number | string>`):**
