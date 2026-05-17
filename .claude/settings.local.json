@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(superpowers:brainstorming)",
+      "Bash(bash *)",
+      "Skill(ui-ux-pro-max:ui-ux-pro-max)",
+      "Bash(python3 *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Skill(superpowers:writing-plans)",
+      "Bash(git commit *)",
+      "Skill(superpowers:subagent-driven-development)",
+      "Bash(bun run *)",
+      "Bash(biome check *)",
+      "Bash(bun /tmp/test_progress.ts)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
+      "Bash(git -C /Users/vitaliymisha/WebstormProjects/debercproj add src/components/RoundForm.tsx)",
+      "Bash(git -C /Users/vitaliymisha/WebstormProjects/debercproj commit -m ' *)"
+    ]
+  }
+}

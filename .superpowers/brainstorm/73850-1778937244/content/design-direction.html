@@ -1,0 +1,100 @@
+<h2>Який загальний стиль дизайну обрати?</h2>
+<p class="subtitle">Поточний стан: суміш dark glassmorphism + білих карток. Потрібно обрати єдиний напрямок.</p>
+
+<div class="cards">
+
+  <!-- Option A -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #1e3a5f 100%);
+      padding: 16px; border-radius: 8px; min-height: 200px; position: relative; overflow: hidden;
+    ">
+      <!-- Floating glass cards -->
+      <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; padding: 12px; margin-bottom: 8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="color:#a5b4fc; font-size:12px; font-weight:600;">👑 Василь</span>
+          <span style="color:#34d399; font-size:18px; font-weight:800;">850</span>
+        </div>
+      </div>
+      <div style="background: rgba(255,255,255,0.07); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 12px; margin-bottom: 8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="color:#c4b5fd; font-size:12px;">Олена</span>
+          <span style="color:#60a5fa; font-size:18px; font-weight:800;">620</span>
+        </div>
+      </div>
+      <div style="background: linear-gradient(90deg, #6366f1, #8b5cf6); border-radius: 10px; padding: 8px; text-align:center;">
+        <span style="color:white; font-size:11px; font-weight:700;">✅ Додати раунд</span>
+      </div>
+      <!-- card suits watermark -->
+      <div style="position:absolute; bottom:8px; right:8px; font-size:28px; opacity:0.15; color:white;">♠♥</div>
+    </div>
+    <div class="card-body">
+      <h3>A — Dark Glassmorphism</h3>
+      <p>Темний градієнт, всі картки — скло. Карточна атмосфера. <em>Уніфікація поточного стилю.</em></p>
+    </div>
+  </div>
+
+  <!-- Option B -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="
+      background: #f8fafc;
+      padding: 16px; border-radius: 8px; min-height: 200px;
+      border: 1px solid #e2e8f0;
+    ">
+      <div style="background: white; border-radius: 14px; padding: 12px; margin-bottom: 8px; box-shadow: 0 4px 16px rgba(99,102,241,0.12); border: 1px solid #e0e7ff;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="color:#4f46e5; font-size:12px; font-weight:700;">👑 Василь</span>
+          <span style="color:#059669; font-size:18px; font-weight:800;">850</span>
+        </div>
+      </div>
+      <div style="background: white; border-radius: 14px; padding: 12px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid #f1f5f9;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="color:#64748b; font-size:12px;">Олена</span>
+          <span style="color:#3b82f6; font-size:18px; font-weight:800;">620</span>
+        </div>
+      </div>
+      <div style="background: linear-gradient(90deg, #4f46e5, #7c3aed); border-radius: 10px; padding: 8px; text-align:center;">
+        <span style="color:white; font-size:11px; font-weight:700;">✅ Додати раунд</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Light Premium</h3>
+      <p>Світлий фон, чисті білі картки з кольоровими акцентами. Схоже на сучасні мобільні додатки.</p>
+    </div>
+  </div>
+
+  <!-- Option C -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="
+      background: #0a0a0f;
+      padding: 16px; border-radius: 8px; min-height: 200px; position: relative; overflow: hidden;
+    ">
+      <!-- Neon glow effects -->
+      <div style="position:absolute; top:-20px; left:-20px; width:80px; height:80px; background:rgba(139,92,246,0.3); border-radius:50%; filter:blur(20px);"></div>
+      <div style="position:absolute; bottom:-10px; right:-10px; width:60px; height:60px; background:rgba(236,72,153,0.25); border-radius:50%; filter:blur(16px);"></div>
+
+      <div style="background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.4); border-radius: 14px; padding: 12px; margin-bottom: 8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="color:#c4b5fd; font-size:12px; font-weight:700; text-shadow: 0 0 8px #8b5cf6;">👑 Василь</span>
+          <span style="color:#4ade80; font-size:18px; font-weight:800; text-shadow: 0 0 10px #22c55e;">850</span>
+        </div>
+      </div>
+      <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; margin-bottom: 8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="color:#94a3b8; font-size:12px;">Олена</span>
+          <span style="color:#60a5fa; font-size:18px; font-weight:800;">620</span>
+        </div>
+      </div>
+      <div style="background: linear-gradient(90deg, #7c3aed, #ec4899); border-radius: 10px; padding: 8px; text-align:center; box-shadow: 0 0 12px rgba(139,92,246,0.5);">
+        <span style="color:white; font-size:11px; font-weight:700;">✅ Додати раунд</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Dark Neon / Cyberpunk</h3>
+      <p>Майже чорний фон, неонові акценти, glow-ефекти. Дуже ефектно, більш геймерська атмосфера.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top: 16px;">Клікни на варіант (або кілька) щоб відмітити вподобання, і напиши в терміналі.</p>
