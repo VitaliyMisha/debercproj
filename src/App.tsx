@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
-import { Game, GameRulesConfig, Player, Round } from './types';
+import { Game, GameRulesConfig, Player, Round, SavedGameState } from './types';
 
 import SetupScreen from './components/SetupScreen';
 import RoundForm from './components/RoundForm';
@@ -11,7 +11,8 @@ import ScoreBoard from './components/ScoreBoard';
 
 const WinnerScreen = lazy(() => import('./components/WinnerScreen'));
 const PlayerStatistics = lazy(() => import('./components/PlayerStatistics'));
-import { generateUniqueId, isValidScore, loadWinCounts, parseScore, saveWinCounts, calculateGameTotals } from './utils/gameHelpers';
+import { generateUniqueId, isValidScore, loadWinCounts, parseScore, saveWinCounts, calculateGameTotals, saveGameState, loadGameState, clearGameState } from './utils/gameHelpers';
+import RecoverScreen from './components/RecoverScreen';
 import { useSound } from './hooks/useSound';
 
 const GAME_ID = 'gameId';
@@ -38,6 +39,7 @@ export default function App() {
   const [hasHistoryShown, setHasHistoryShown] = useState(false);
   const [showStatistics, setShowStatistics] = useState(false);
   const [snapshotRound, setSnapshotRound] = useState<number | null>(null);
+  const [recoveredState, setRecoveredState] = useState<SavedGameState | null>(() => loadGameState());
 
   const [gameRules, setGameRules] = useState<GameRulesConfig>(() => {
     const stored = localStorage.getItem(GAME_RULES_KEY);
@@ -70,6 +72,11 @@ export default function App() {
     window.addEventListener('beforeunload', handler);
     return () => window.removeEventListener('beforeunload', handler);
   }, [game]);
+
+  useEffect(() => {
+    if (!game || game.rounds.length === 0) return;
+    saveGameState({ game, targetScore, winnerPlayer });
+  }, [game, targetScore, winnerPlayer]);
 
   const createGame = (
     reusePlayers?: Player[],
@@ -198,6 +205,7 @@ export default function App() {
   }, [game, gameRules, snapshotRound, totals]);
 
   const resetGame = () => {
+    clearGameState();
     setGame(null);
     setNames(Array(playerCount).fill(''));
     setDealerIndex((dealerIndex + 1) % playerCount);
@@ -211,6 +219,7 @@ export default function App() {
 
   const continueGame = () => {
     if (game) {
+      clearGameState();
       createGame(game.players, true, true, game.dealerId);
     }
   };
@@ -240,6 +249,20 @@ export default function App() {
     if (soundEnabled) undoPop();
   };
 
+  const handleRecover = () => {
+    if (!recoveredState) return;
+    setGame(recoveredState.game);
+    setTargetScore(recoveredState.targetScore);
+    setWinnerPlayer(recoveredState.winnerPlayer);
+    setScores(Object.fromEntries(recoveredState.game.players.map((p) => [p.id.toString(), ''])));
+    setRecoveredState(null);
+  };
+
+  const handleDiscard = () => {
+    clearGameState();
+    setRecoveredState(null);
+  };
+
   return (
     <div className="felt-bg min-h-dvh w-full overflow-x-hidden">
       {/* Corner card suit silhouettes — decorative table atmosphere */}
@@ -253,7 +276,16 @@ export default function App() {
         <span className="absolute -bottom-4 -left-4 text-[22vw] opacity-[0.035] text-white leading-none select-none">♣</span>
         <span className="absolute -bottom-4 -right-4 text-[22vw] opacity-[0.035] text-white leading-none select-none">♦</span>
       </div>
-      {!game ? (
+      {recoveredState && !game ? (
+        <main className="flex items-center justify-center min-h-dvh py-4 px-4">
+          <RecoverScreen
+            savedState={recoveredState}
+            gameRules={gameRules}
+            onRecover={handleRecover}
+            onDiscard={handleDiscard}
+          />
+        </main>
+      ) : !game ? (
         <main className="flex items-center justify-center min-h-dvh py-4 px-4">
           <SetupScreen
             playerCount={playerCount}
