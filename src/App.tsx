@@ -75,11 +75,11 @@ export default function App() {
 
   useEffect(() => {
     if (!game || game.rounds.length === 0) {
-      clearGameState();
+      if (!recoveredState) clearGameState();
       return;
     }
     saveGameState({ game, targetScore, winnerPlayer });
-  }, [game, targetScore, winnerPlayer]);
+  }, [game, targetScore, winnerPlayer, recoveredState]);
 
   const createGame = (
     reusePlayers?: Player[],

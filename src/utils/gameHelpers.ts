@@ -206,7 +206,9 @@ export function loadGameState(): SavedGameState | null {
   try {
     const raw = localStorage.getItem(SAVED_GAME_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as SavedGameState;
+    const parsed = JSON.parse(raw);
+    if (!parsed?.game?.players || !Array.isArray(parsed.game.rounds)) return null;
+    return parsed as SavedGameState;
   } catch {
     return null;
   }
