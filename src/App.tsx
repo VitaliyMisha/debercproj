@@ -74,7 +74,10 @@ export default function App() {
   }, [game]);
 
   useEffect(() => {
-    if (!game || game.rounds.length === 0) return;
+    if (!game || game.rounds.length === 0) {
+      clearGameState();
+      return;
+    }
     saveGameState({ game, targetScore, winnerPlayer });
   }, [game, targetScore, winnerPlayer]);
 
