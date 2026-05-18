@@ -233,11 +233,12 @@ export function loadPlayerNames(): string[] {
 
 export function savePlayerNames(newNames: string[]): void {
   const trimmed = newNames.map((n) => n.trim()).filter(Boolean);
-  const existing = loadPlayerNames().filter(
+  const stored = loadPlayerNames();
+  const existing = stored.filter(
     (e) => !trimmed.some((n) => n.toLowerCase() === e.toLowerCase()),
   );
   const merged = [...existing, ...trimmed];
-  if (JSON.stringify(loadPlayerNames()) !== JSON.stringify(merged)) {
+  if (JSON.stringify(stored) !== JSON.stringify(merged)) {
     localStorage.setItem(PLAYER_NAMES_KEY, JSON.stringify(merged));
   }
 }
