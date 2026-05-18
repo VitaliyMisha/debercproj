@@ -25,7 +25,7 @@ export const RecoverScreen: React.FC<RecoverScreenProps> = ({
     <div className="w-full max-w-md mx-auto flex flex-col gap-6 py-6 px-4">
       {/* Header */}
       <div className="text-center">
-        <h1 className="font-display text-4xl gold-gradient-text">Деберц ♠</h1>
+        <h1 className="font-display text-4xl gold-gradient-text">Деберц <span aria-hidden="true">♠</span></h1>
       </div>
 
       {/* Card */}
@@ -44,7 +44,8 @@ export const RecoverScreen: React.FC<RecoverScreenProps> = ({
         <div className="flex flex-col gap-3">
           {game.players.map((player) => {
             const score = totals[player.id] ?? 0;
-            const progress = Math.min(Math.max(score / targetScore, 0), 1);
+            const safeTarget = targetScore > 0 ? targetScore : 1;
+            const progress = Math.min(Math.max(score / safeTarget, 0), 1);
             const isWinner = player.id === winnerPlayer;
 
             return (
@@ -52,7 +53,7 @@ export const RecoverScreen: React.FC<RecoverScreenProps> = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-sm font-display text-white/70">
-                      {player.name.charAt(0).toUpperCase()}
+                      {Array.from(player.name.trim())[0]?.toUpperCase() ?? '?'}
                     </div>
                     <span className="text-white text-sm font-medium font-sans">
                       {player.name}
@@ -64,12 +65,12 @@ export const RecoverScreen: React.FC<RecoverScreenProps> = ({
                 {/* Progress bar */}
                 <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
                   <div
-                    className="h-full rounded-full transition-none"
+                    className="h-full rounded-full"
                     style={{
                       width: `${progress * 100}%`,
                       background: isWinner
                         ? 'linear-gradient(90deg, #D97706, #FBBF24)'
-                        : score >= targetScore * 0.85
+                        : score >= safeTarget * 0.85
                         ? 'linear-gradient(90deg, #EA580C, #FBBF24)'
                         : 'linear-gradient(90deg, #1D4ED8, #3B82F6)',
                     }}
