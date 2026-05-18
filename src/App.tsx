@@ -11,7 +11,7 @@ import ScoreBoard from './components/ScoreBoard';
 
 const WinnerScreen = lazy(() => import('./components/WinnerScreen'));
 const PlayerStatistics = lazy(() => import('./components/PlayerStatistics'));
-import { generateUniqueId, isValidScore, loadWinCounts, parseScore, saveWinCounts, calculateGameTotals, saveGameState, loadGameState, clearGameState } from './utils/gameHelpers';
+import { generateUniqueId, isValidScore, loadWinCounts, parseScore, saveWinCounts, calculateGameTotals, saveGameState, loadGameState, clearGameState, loadPlayerNames, savePlayerNames } from './utils/gameHelpers';
 import RecoverScreen from './components/RecoverScreen';
 import { useSound } from './hooks/useSound';
 
@@ -40,6 +40,7 @@ export default function App() {
   const [showStatistics, setShowStatistics] = useState(false);
   const [snapshotRound, setSnapshotRound] = useState<number | null>(null);
   const [recoveredState, setRecoveredState] = useState<SavedGameState | null>(() => loadGameState());
+  const [playerNames, setPlayerNames] = useState<string[]>(() => loadPlayerNames());
 
   const [gameRules, setGameRules] = useState<GameRulesConfig>(() => {
     const stored = localStorage.getItem(GAME_RULES_KEY);
@@ -87,6 +88,10 @@ export default function App() {
     preserveWinCounts = false,
     startingDealerId?: number,
   ) => {
+    if (!reusePlayers) {
+      savePlayerNames(names);
+      setPlayerNames(loadPlayerNames());
+    }
     const winCounts = loadWinCounts();
     const players: Player[] = reusePlayers || names.map((name) => {
       const id = generateUniqueId();
@@ -301,6 +306,7 @@ export default function App() {
             onDealerIndexChange={setDealerIndex}
             gameRules={gameRules}
             onRulesChange={setGameRules}
+            playerNames={playerNames}
             onStart={() => createGame()}
           />
         </main>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { NameInput } from './NameInput';
 
 const EASTER_EGGS: Array<{ keywords: string[]; emoji: string }> = [
   { keywords: ['заєць', 'заєц', 'заец', 'заець', 'косой'], emoji: '🐰' },
@@ -23,6 +24,7 @@ interface PlayerRowProps {
   isDealer: boolean;
   onNameChange: (name: string) => void;
   onSetDealer: () => void;
+  suggestions?: string[];
 }
 
 export const PlayerRow: React.FC<PlayerRowProps> = ({
@@ -31,6 +33,7 @@ export const PlayerRow: React.FC<PlayerRowProps> = ({
   isDealer,
   onNameChange,
   onSetDealer,
+  suggestions = [],
 }) => {
   const initial = Array.from(name.trim())[0]?.toUpperCase() || String(index + 1);
 
@@ -52,16 +55,13 @@ export const PlayerRow: React.FC<PlayerRowProps> = ({
         {isDealer ? '👑' : initial}
       </button>
 
-      <input
+      <NameInput
         id={`player-name-${index}`}
         name={`player-name-${index}`}
-        type="text"
-        autoComplete="off"
         value={name}
-        onChange={(e) => onNameChange(applyEasterEgg(e.target.value))}
         placeholder={`Гравець ${index + 1}`}
-        className="flex-1 min-w-0 bg-transparent border-b border-white/20 text-white placeholder-muted
-          font-sans text-base py-1 focus:outline-none focus:border-gold-from transition-colors"
+        suggestions={suggestions}
+        onChange={(value) => onNameChange(applyEasterEgg(value))}
       />
     </div>
   );

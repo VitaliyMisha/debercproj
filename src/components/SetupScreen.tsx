@@ -17,6 +17,7 @@ interface SetupScreenProps {
   onDealerIndexChange: (index: number) => void;
   gameRules: GameRulesConfig;
   onRulesChange: (rules: GameRulesConfig) => void;
+  playerNames?: string[];
   onStart: () => void;
 }
 
@@ -39,6 +40,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
   onDealerIndexChange,
   gameRules,
   onRulesChange,
+  playerNames = [],
   onStart,
 }) => {
   const [penaltySheet, setPenaltySheet] = useState<PenaltyKey | null>(null);
@@ -115,6 +117,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
               isDealer={dealerIndex === idx}
               onNameChange={(v) => handleNameChange(idx, v)}
               onSetDealer={() => onDealerIndexChange(idx)}
+              suggestions={playerNames}
             />
           ))}
         </div>
