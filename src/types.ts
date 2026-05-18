@@ -26,3 +26,9 @@ export interface GameRulesConfig {
   customTargetScore: boolean;
   targetScoreOptions: number[];
 }
+
+export type SavedGameState = {
+  game: Game;
+  targetScore: number;
+  winnerPlayer: number | null;
+};

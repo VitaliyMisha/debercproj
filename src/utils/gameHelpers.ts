@@ -1,4 +1,4 @@
-import {Round, Game, GameRulesConfig} from '../types';
+import { Round, Game, GameRulesConfig, SavedGameState } from '../types';
 
 const WIN_COUNTS_KEY = 'playerWinCounts';
 
@@ -195,3 +195,23 @@ export const calculateGameTotals = (game: Game, gameRules: GameRulesConfig): Rec
 
     return totals;
 };
+
+const SAVED_GAME_KEY = 'savedGame';
+
+export function saveGameState(state: SavedGameState): void {
+  localStorage.setItem(SAVED_GAME_KEY, JSON.stringify(state));
+}
+
+export function loadGameState(): SavedGameState | null {
+  try {
+    const raw = localStorage.getItem(SAVED_GAME_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as SavedGameState;
+  } catch {
+    return null;
+  }
+}
+
+export function clearGameState(): void {
+  localStorage.removeItem(SAVED_GAME_KEY);
+}
