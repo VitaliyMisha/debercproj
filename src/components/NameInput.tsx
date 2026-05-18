@@ -34,6 +34,10 @@ export const NameInput: React.FC<NameInputProps> = ({
       <input
         id={id}
         name={name}
+        role="combobox"
+        aria-expanded={showDropdown}
+        aria-haspopup="listbox"
+        aria-autocomplete="list"
         type="text"
         autoComplete="off"
         value={value}
@@ -58,11 +62,12 @@ export const NameInput: React.FC<NameInputProps> = ({
               key={s}
               role="option"
               aria-selected={false}
+              onMouseDown={(e) => e.preventDefault()}
               onClick={() => {
                 onChange(s);
                 setOpen(false);
               }}
-              className="px-4 py-2.5 text-sm text-white/80 font-sans cursor-pointer
+              className="px-4 py-3 min-h-[44px] flex items-center text-sm text-white/80 font-sans cursor-pointer
                 hover:bg-white/10 active:bg-white/15 select-none"
             >
               {s}
