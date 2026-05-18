@@ -234,6 +234,7 @@ export function loadPlayerNames(): string[] {
 export function savePlayerNames(newNames: string[]): void {
   const trimmed = newNames.map((n) => n.trim()).filter(Boolean);
   const stored = loadPlayerNames();
+  // Remove old case variant of each incoming name so the newer capitalisation wins.
   const existing = stored.filter(
     (e) => !trimmed.some((n) => n.toLowerCase() === e.toLowerCase()),
   );

@@ -47,7 +47,7 @@ export const NameInput: React.FC<NameInputProps> = ({
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)} // delay lets click on a suggestion fire before blur closes the list
         className="w-full bg-transparent border-b border-white/20 text-white placeholder-muted
           font-sans text-base py-1 focus:outline-none focus:border-gold-from transition-colors"
       />
@@ -62,7 +62,7 @@ export const NameInput: React.FC<NameInputProps> = ({
               key={s}
               role="option"
               aria-selected={false}
-              onMouseDown={(e) => e.preventDefault()}
+              onMouseDown={(e) => e.preventDefault()} // prevents blur from firing before click on iOS Safari
               onClick={() => {
                 onChange(s);
                 setOpen(false);

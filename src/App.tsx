@@ -76,6 +76,8 @@ export default function App() {
 
   useEffect(() => {
     if (!game || game.rounds.length === 0) {
+      // Skip clearing while RecoverScreen is visible — otherwise the save would be
+      // erased on the very first render before the user decides whether to continue.
       if (!recoveredState) clearGameState();
       return;
     }
