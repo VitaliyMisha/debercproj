@@ -217,3 +217,24 @@ export function loadGameState(): SavedGameState | null {
 export function clearGameState(): void {
   localStorage.removeItem(SAVED_GAME_KEY);
 }
+
+const PLAYER_NAMES_KEY = 'playerNames';
+
+export function loadPlayerNames(): string[] {
+  try {
+    const raw = localStorage.getItem(PLAYER_NAMES_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export function savePlayerNames(newNames: string[]): void {
+  const trimmed = newNames.map((n) => n.trim()).filter(Boolean);
+  const existing = loadPlayerNames().filter(
+    (e) => !trimmed.some((n) => n.toLowerCase() === e.toLowerCase()),
+  );
+  localStorage.setItem(PLAYER_NAMES_KEY, JSON.stringify([...existing, ...trimmed]));
+}
