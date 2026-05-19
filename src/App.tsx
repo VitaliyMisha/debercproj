@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Game, GameRulesConfig, Player, Round, SavedGameState } from './types';
 
 import SetupScreen from './components/SetupScreen';
@@ -48,7 +48,8 @@ export default function App() {
   });
 
   const [soundEnabled, setSoundEnabled] = useState<boolean>(() => localStorage.getItem(SOUND_KEY) !== 'false');
-  const { chipClick, roundSubmit, undoPop } = useSound();
+  const { chipClick, roundSubmit, undoPop, bSound, secondBSound, hvSound, visPlay, visWin, visLose, closeFinish, newGame } = useSound();
+  const closeFinishFiredRef = useRef<Set<string>>(new Set());
 
   const [gameId, setGameId] = useState(() => {
     const stored = localStorage.getItem(GAME_ID);
@@ -90,6 +91,8 @@ export default function App() {
     preserveWinCounts = false,
     startingDealerId?: number,
   ) => {
+    closeFinishFiredRef.current.clear();
+    if (soundEnabled) newGame();
     if (!reusePlayers) {
       savePlayerNames(names);
       setPlayerNames(loadPlayerNames());
@@ -99,14 +102,14 @@ export default function App() {
       const id = generateUniqueId();
       return { id, name, winCount: preserveWinCounts ? 0 : winCounts[id] || 0 };
     });
-    const newGame: Game = {
+    const createdGame: Game = {
       id: gameId,
       createdAt: new Date().toISOString(),
       players,
       rounds: [],
       dealerId: startingDealerId ?? players[dealerIndex].id,
     };
-    setGame(newGame);
+    setGame(createdGame);
     setWinnerPlayer(null);
     setScores(Object.fromEntries(players.map((p) => [p.id.toString(), ''])));
     setGameId((prev) => prev + 1);
@@ -177,7 +180,41 @@ export default function App() {
     setSnapshotRound(null);
     setScores(Object.fromEntries(updatedGame.players.map((p) => [p.id.toString(), ''])));
     setError('');
-    if (soundEnabled) roundSubmit();
+
+    if (soundEnabled) {
+      roundSubmit();
+
+      // Б sound — check raw input vs parsed result to distinguish 1st vs 2nd+ Б
+      for (const p of game.players) {
+        if (String(scores[String(p.id)] ?? '').trim().toUpperCase() === 'Б') {
+          if (updatedScores[String(p.id)] === 'Б') bSound();
+          else secondBSound();
+        }
+      }
+
+      // ВіС resolution sound — fires when the round immediately after a ВіС resolves it
+      if (game.rounds.length > 0) {
+        const lastRound = game.rounds[game.rounds.length - 1];
+        for (const [playerIdStr, val] of Object.entries(lastRound.scores)) {
+          if (String(val).toUpperCase() === 'ВІС') {
+            const playerId = Number(playerIdStr);
+            const ownScore = typeof updatedScores[playerIdStr] === 'number' ? (updatedScores[playerIdStr] as number) : 0;
+            const bestOpponent = Math.max(
+              ...game.players
+                .filter((p) => p.id !== playerId)
+                .map((p) => (typeof updatedScores[String(p.id)] === 'number' ? (updatedScores[String(p.id)] as number) : 0)),
+            );
+            if (ownScore > bestOpponent) visWin();
+            else if (ownScore < bestOpponent) visLose();
+            // ownScore === bestOpponent → tie → no sound (ВіС carries forward)
+          }
+        }
+      }
+    }
+
+    // Haptic fires regardless of sound toggle
+    if ('vibrate' in navigator) navigator.vibrate(30);
+
     updateWinner(updatedGame);
   };
 
@@ -202,6 +239,18 @@ export default function App() {
     if (!game) return {};
     return calculateGameTotals(game, gameRules);
   }, [game, gameRules]);
+
+  useEffect(() => {
+    if (!game || !soundEnabled) return;
+    for (const p of game.players) {
+      const score = totals[p.id] ?? 0;
+      const key = String(p.id);
+      if (score > 0 && targetScore - score <= 100 && !closeFinishFiredRef.current.has(key)) {
+        closeFinishFiredRef.current.add(key);
+        closeFinish();
+      }
+    }
+  }, [totals, game, soundEnabled, targetScore, closeFinish]);
 
   const winnerObj = useMemo(
     () => (game && winnerPlayer !== null ? (game.players.find((p) => p.id === winnerPlayer) ?? null) : null),
@@ -257,6 +306,7 @@ export default function App() {
     setScores(Object.fromEntries(updatedGame.players.map((p) => [p.id.toString(), ''])));
     setError('');
     if (soundEnabled) undoPop();
+    else if ('vibrate' in navigator) navigator.vibrate([20, 30, 20]);
   };
 
   const handleRecover = () => {
@@ -377,7 +427,11 @@ export default function App() {
                     roundNumber={game.rounds.length + 1}
                     isAddDisabled={isAddDisabled}
                     gameRules={gameRules}
-                    onChipClick={soundEnabled ? chipClick : undefined}
+                    onChipClick={soundEnabled ? (token: string) => {
+                      if (token === 'ВІС') visPlay();
+                      else if (token === 'ХВ') hvSound();
+                      else chipClick();
+                    } : undefined}
                   />
                 </>
               )}
