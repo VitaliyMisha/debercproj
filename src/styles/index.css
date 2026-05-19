@@ -149,6 +149,31 @@
   }
 }
 
+@keyframes scoreDeltaFloat {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(0px); }
+  15%  { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+  60%  { opacity: 1; transform: translateX(-50%) translateY(-28px); }
+  85%  { opacity: 0; transform: translateX(-50%) translateY(-40px); }
+  100% { opacity: 0; }
+}
+
+.score-delta {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Share Tech Mono', monospace;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 10;
+  animation: scoreDeltaFloat 1.8s ease-out forwards;
+}
+
+.score-delta.pos { color: #4ade80; }
+.score-delta.neg { color: #f87171; }
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
