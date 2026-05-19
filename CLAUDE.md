@@ -2,10 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## ⚡ Token Optimization (CRITICAL)
-- **Session Start**: ЗАБОРОНЕНО сканувати весь проект. Читай `PROGRESS.md` та цей файл першими.
+## ⚡ Session Continuity (CRITICAL)
+- **Session Start — ПЕРШЕ ЩО РОБИШ**: Читай `PROGRESS.md` — там поточний стан, завершені задачі та next steps. Без цього не відповідай на запитання про стан проєкту.
+- **Session End — ПЕРЕД ЗАВЕРШЕННЯМ**: Онови `PROGRESS.md` — додай що зробив, нові архітектурні рішення, блокери, плани. Дата у заголовку — сьогоднішня.
 - **Context Limits**: Ігноруй `node_modules`, `.next`, `public/assets`, `dist` та `mcp_config.json`.
-- **Selective Reading**: Використовуй `@writing-plans` для визначення лише необхідних файлів перед їх читанням.
+- **Selective Reading**: Використовуй skill `superpowers:writing-plans` для визначення лише необхідних файлів перед їх читанням.
 
 ## Commands
 
@@ -26,10 +27,21 @@ Run a single test file: `bun x vitest run tests/game.test.ts`
 Single-page React app for scoring the Ukrainian card game Деберц (Deberc). No routing, no server — all state lives in `App.tsx` and persists to `localStorage`.
 
 **Core data flow:**
-- `src/types.ts` — `Player`, `Round`, `Game`, `GameRulesConfig` interfaces (source of truth for shape)
-- `src/utils/gameHelpers.ts` — all pure game logic: `calculateGameTotals`, `parseScore`, `isValidScore`, `getVisDisplayValue`, `loadWinCounts`, `saveWinCounts`, `generateUniqueId`
+- `src/types.ts` — `Player`, `Round`, `Game`, `GameRulesConfig`, `SavedGameState` interfaces (source of truth for shape)
+- `src/utils/gameHelpers.ts` — all pure game logic: `calculateGameTotals`, `parseScore`, `isValidScore`, `getVisDisplayValue`, `loadWinCounts`, `saveWinCounts`, `generateUniqueId`, `saveGameState`, `loadGameState`, `clearSavedGame`, `loadPlayerNames`, `savePlayerNames`
 - `src/hooks/useSound.ts` — Web Audio API hook: `fanfare` (used in WinnerScreen on mount), plus `chipClick`, `roundSubmit`, `undoPop` (implemented, not wired)
 - `src/App.tsx` — owns all game state, orchestrates components, calls helpers
+
+**Key components:**
+- `SetupScreen.tsx` — game setup with `NameInput` for player names
+- `NameInput.tsx` — input with dropdown autocomplete from player name history (iOS-safe)
+- `RecoverScreen.tsx` — shown at startup if saved game exists; offers Resume or New Game
+- `ScoreBoard.tsx` — live scores with leader highlight, progress bars, close-to-finish indicator
+- `RoundForm.tsx` — per-player score entry with casino chip buttons (Б/ХВ/ВіС)
+- `RoundHistory.tsx` — history table with undo chip, inline edit
+- `GameHeader.tsx` — sound toggle, undo, new game (via ConfirmSheet)
+- `ConfirmSheet.tsx` — reusable bottom sheet for confirmations
+- `WinnerScreen.tsx` — victory screen with CardSuitsRain + fanfare
 
 **Score entry values (stored in `Round.scores` as `Record<string, number | string>`):**
 - Number → plain points (negative allowed)
@@ -45,6 +57,8 @@ Single-page React app for scoring the Ukrainian card game Деберц (Deberc).
 - `gameId` — auto-incrementing game counter
 - `gameRules` — `GameRulesConfig` JSON
 - `playerWinCounts` — `Record<playerId, winCount>` persisted across games
+- `savedGame` — `SavedGameState` JSON: auto-saved active game; shown in RecoverScreen on next launch
+- `playerNames` — `string[]` JSON: deduped list of all player names used (powers NameInput dropdown)
 
 ## Code style
 
@@ -63,5 +77,5 @@ Linter/formatter: **Biome** (not ESLint/Prettier). Config in `biome.json`:
 - **Linting**: `bun run lint` (Biome) — обов'язково перед commit.
 
 ## Continuity
-- **Session Start**: Читай `PROGRESS.md` (якщо існує) — там поточний стан та next steps.
-- **Session End**: Оновлюй або створюй `PROGRESS.md` — виконані задачі, нові блокери, плани.
+- **Session Start**: Читай `PROGRESS.md` ПЕРШИМ — там поточний стан та next steps.
+- **Session End**: Перед завершенням — онови `PROGRESS.md`: завершені задачі, нові архітектурні рішення, блокери, плани. Оновлюй дату в заголовку.

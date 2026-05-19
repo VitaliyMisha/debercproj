@@ -30,7 +30,24 @@
       "Bash(echo \"BIOME: $?\")",
       "Bash(echo \"TSC: $?\")",
       "Bash(echo \"TEST: $?\")",
-      "Skill(ui-ux-pro-max)"
+      "Skill(ui-ux-pro-max)",
+      "Bash(xxd /Users/vitaliymisha/WebstormProjects/debercproj/src/utils/gameHelpers.ts)",
+      "Bash(xxd /Users/vitaliymisha/WebstormProjects/debercproj/tests/savedGame.test.ts)",
+      "Skill(superpowers:finishing-a-development-branch)",
+      "Bash(xargs ls -la)"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '⚠️  НАГАДУВАННЯ: Оновив PROGRESS.md перед завершенням? (дата, завершені задачі, next steps)'"
+          }
+        ]
+      }
     ]
   }
 }
