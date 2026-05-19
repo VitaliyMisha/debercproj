@@ -8,6 +8,8 @@ interface ScoreBoardProps {
   targetScore: number;
   dealerId?: number;
   snapshotActive?: boolean;
+  deltas?: Record<string, number> | null;
+  deltaKey?: number;
 }
 
 interface PlayerCardProps {
@@ -17,9 +19,11 @@ interface PlayerCardProps {
   isLeader: boolean;
   isDealer: boolean;
   snapshotActive: boolean;
+  delta?: number;
+  deltaKey?: number;
 }
 
-const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isLeader, isDealer, snapshotActive }) => {
+const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isLeader, isDealer, snapshotActive, delta, deltaKey }) => {
   const displayScore = useCountUp(score, snapshotActive ? 0 : 300);
   const progress = Math.min(Math.max(score / targetScore, 0), 1) * 100;
   const initial = Array.from(player.name.trim())[0]?.toUpperCase() || '?';
@@ -65,16 +69,23 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
         </div>
       </div>
 
-      {/* Score — Share Tech Mono for mechanical vintage feel */}
-      <div
-        className={`text-3xl text-center transition-all duration-300
-          ${score < 0 ? 'text-score-neg' : 'text-score-pos'}`}
-        style={{
-          fontFamily: "'Share Tech Mono', monospace",
-          animation: snapshotActive ? 'none' : 'countUp 300ms ease-out',
-        }}
-      >
-        {displayScore}
+      {/* Score — relative wrapper lets delta float from this position */}
+      <div className="relative">
+        <div
+          className={`text-3xl text-center transition-all duration-300
+            ${score < 0 ? 'text-score-neg' : 'text-score-pos'}`}
+          style={{
+            fontFamily: "'Share Tech Mono', monospace",
+            animation: snapshotActive ? 'none' : 'countUp 300ms ease-out',
+          }}
+        >
+          {displayScore}
+        </div>
+        {delta !== undefined && delta !== 0 && (
+          <div key={deltaKey} className={`score-delta ${delta > 0 ? 'pos' : 'neg'}`}>
+            {delta > 0 ? '+' : ''}{delta}
+          </div>
+        )}
       </div>
 
       {/* Progress bar — inset / embossed into the felt */}
@@ -99,7 +110,15 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
   );
 };
 
-export const ScoreBoard: React.FC<ScoreBoardProps> = ({ players, totals, targetScore, dealerId, snapshotActive = false }) => {
+export const ScoreBoard: React.FC<ScoreBoardProps> = ({
+  players,
+  totals,
+  targetScore,
+  dealerId,
+  snapshotActive = false,
+  deltas,
+  deltaKey,
+}) => {
   const sorted = [...players].sort((a, b) => (totals[String(b.id)] ?? 0) - (totals[String(a.id)] ?? 0));
   const maxScore = players.length > 0 ? Math.max(...players.map((p) => totals[String(p.id)] ?? 0)) : 0;
   // Only highlight a leader once at least one score is non-zero (game has started).
@@ -125,6 +144,8 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ players, totals, targetS
             isLeader={hasLeader && (totals[String(player.id)] ?? 0) === maxScore}
             isDealer={player.id === dealerId}
             snapshotActive={snapshotActive}
+            delta={snapshotActive ? undefined : (deltas?.[String(player.id)] ?? undefined)}
+            deltaKey={deltaKey}
           />
         ))}
       </div>
