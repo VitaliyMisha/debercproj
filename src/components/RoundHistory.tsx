@@ -17,6 +17,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
   const [editingRound, setEditingRound] = useState<number | null>(null);
   const [editScores, setEditScores] = useState<Record<string, string>>({});
   const [confirmingUndo, setConfirmingUndo] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const prevLengthRef = useRef(rounds.length);
   const [newRoundId, setNewRoundId] = useState<number | null>(null);
 
@@ -75,13 +76,23 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
   return (
     <>
     <div className="bg-card-bg rounded-2xl border border-white/8 overflow-hidden">
-      <div className="px-4 py-3 border-b border-white/8 flex items-center justify-between">
-        <h2 className="text-muted text-xs font-semibold uppercase tracking-widest">Історія раундів</h2>
+      <div
+        className="px-4 py-3 flex items-center justify-between cursor-pointer select-none"
+        style={{ borderBottom: collapsed ? 'none' : '1px solid rgba(255,255,255,0.08)' }}
+        onClick={() => setCollapsed((c) => !c)}
+        role="button"
+        aria-expanded={!collapsed}
+        aria-label="Показати або сховати історію раундів"
+      >
         <div className="flex items-center gap-2">
-          {onUndoLastRound && (
+          <span className="text-muted text-xs" aria-hidden="true">{collapsed ? '▶' : '▼'}</span>
+          <h2 className="text-muted text-xs font-semibold uppercase tracking-widest">Історія раундів</h2>
+        </div>
+        <div className="flex items-center gap-2">
+          {!collapsed && onUndoLastRound && (
             <button
               type="button"
-              onClick={() => setConfirmingUndo(true)}
+              onClick={(e) => { e.stopPropagation(); setConfirmingUndo(true); }}
               aria-label="Скасувати останній раунд"
               className="h-7 px-3 rounded-full text-xs font-bold transition-all duration-150 active:scale-[0.93]"
               style={{
@@ -97,7 +108,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
         </div>
       </div>
 
-      <div className="divide-y divide-white/5">
+      {!collapsed && <div className="divide-y divide-white/5">
         {[...rounds].sort((a, b) => b.number - a.number).map((round) => {
           const isEditing = editingRound === round.number;
           const isSnapshot = round.number === snapshotRound;
@@ -224,7 +235,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
             </div>
           );
         })}
-      </div>
+      </div>}
     </div>
 
     {confirmingUndo && (
