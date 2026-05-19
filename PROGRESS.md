@@ -4,6 +4,8 @@
 
 Проєкт у робочому стані. UI перероблено на "Card Table Dark - Vintage" тему. Логіка гри відповідає правилам. Тестів: **107** (усі зелені). PWA коректно працює на Android Chrome.
 
+**Sounds + UX Polish** задеплоєно: 8 нових звуків (Web Audio API), gold glow анімація при наближенні до фінішу, haptic feedback на submit та undo.
+
 ---
 
 ## Завершено
@@ -117,16 +119,33 @@
 - `tests/savedGame.test.ts` — `SavedGameState` serialization + localStorage persistence
 - `tests/playerNames.test.ts` — `loadPlayerNames` / `savePlayerNames`
 
-### useSound hook
+### useSound hook (повністю підключено, 2026-05-19)
 - `src/hooks/useSound.ts` — Web Audio API без зовнішніх файлів
 - `fanfare()` — використовується у `WinnerScreen.tsx` на маунті
 - Sound toggle — глобальний стан `soundEnabled` в `App.tsx`, передається у `GameHeader`
-- `chipClick`, `roundSubmit`, `undoPop` — реалізовані але не підключені до UI
+- **Усі звуки підключені:**
+  - `chipClick` → будь-який числовий чіп у `RoundForm`
+  - `hvSound` → чіп ХВ у `RoundForm`
+  - `visPlay` → чіп ВіС у `RoundForm`
+  - `roundSubmit` → успішний submit раунду в `App.tsx`
+  - `undoPop` → undo в `App.tsx`
+  - `bSound` → перший Б гравця після submit
+  - `secondBSound` → другий і подальші Б після submit
+  - `visWin` / `visLose` → розв'язка ВіС після submit (порівняння bCounts до/після)
+  - `newGame` → старт нової гри
+  - `closeFinish` → перший раз коли гравець наближається до фінішу (≤100 від targetScore); one-shot per player via `closeFinishFiredRef`
+
+### Gold Glow анімація
+- `ScoreBoard.tsx`: `isCloseToFinish` (`score > 0 && targetScore - score <= 100`) → `goldGlow 1.4s ease-in-out infinite`
+- `index.css`: `@keyframes goldGlow` — золотий box-shadow pulse; замінив старий `firePulse`
+
+### Haptic feedback
+- Submit раунду: `navigator.vibrate(30)` — одиночний пульс (тільки якщо звук вимкнено, бо `roundSubmit()` сам вібрує коли звук увімкнено)
+- Undo: `navigator.vibrate([20, 30, 20])` — подвійний дотик
 
 ---
 
 ## Потенційні наступні кроки (не заплановано)
 
 - Повна історія ігор між сесіями (localStorage зберігає тільки winCounts + поточну гру)
-- Анімація при досягненні targetScore
-- Підключити chip click / round submit звуки до RoundForm
+- iPad layout improvements
