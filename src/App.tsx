@@ -212,8 +212,8 @@ export default function App() {
       }
     }
 
-    // Haptic fires regardless of sound toggle
-    if ('vibrate' in navigator) navigator.vibrate(30);
+    // Haptic fires when sound is off (roundSubmit() already includes haptic when sound is on)
+    if (!soundEnabled && 'vibrate' in navigator) navigator.vibrate(30);
 
     updateWinner(updatedGame);
   };
@@ -315,6 +315,17 @@ export default function App() {
     setTargetScore(recoveredState.targetScore);
     setWinnerPlayer(recoveredState.winnerPlayer);
     setScores(Object.fromEntries(recoveredState.game.players.map((p) => [p.id.toString(), ''])));
+
+    // Pre-populate so close-finish sound doesn't re-fire for players already near target
+    const recoveredTotals = calculateGameTotals(recoveredState.game, gameRules);
+    closeFinishFiredRef.current.clear();
+    for (const p of recoveredState.game.players) {
+      const score = recoveredTotals[p.id] ?? 0;
+      if (score > 0 && recoveredState.targetScore - score <= 100) {
+        closeFinishFiredRef.current.add(String(p.id));
+      }
+    }
+
     setRecoveredState(null);
   };
 
