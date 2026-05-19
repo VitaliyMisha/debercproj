@@ -26,6 +26,22 @@ const tone = (
   osc.stop(start + duration + 0.05);
 };
 
+/** Creates a short white-noise burst — used for ХВ crack effect. */
+const noise = (ctx: AudioContext, start: number, duration: number, vol = 0.2): void => {
+  const sampleCount = Math.ceil(ctx.sampleRate * duration);
+  const buffer = ctx.createBuffer(1, sampleCount, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < sampleCount; i++) data[i] = Math.random() * 2 - 1;
+  const source = ctx.createBufferSource();
+  const env = ctx.createGain();
+  source.buffer = buffer;
+  source.connect(env);
+  env.connect(ctx.destination);
+  env.gain.setValueAtTime(vol, start);
+  env.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+  source.start(start);
+};
+
 /**
  * Triggers a vibration pattern on devices that support the Vibration API
  * (most Android browsers, some PWA contexts). Silently no-ops elsewhere.
@@ -123,5 +139,95 @@ export const useSound = () => {
     haptic([40, 20, 40, 20, 100]);
   }, [getCtx]);
 
-  return { chipClick, roundSubmit, undoPop, fanfare };
+  /** Low boom when a player receives their first Б. */
+  const bSound = useCallback(() => {
+    const c = getCtx();
+    if (!c) return;
+    tone(c, 80, c.currentTime, 0.3, 'sine', 0.35);
+    haptic(40);
+  }, [getCtx]);
+
+  /** Heavier double boom for the 2nd+ Б — escalates the drama. */
+  const secondBSound = useCallback(() => {
+    const c = getCtx();
+    if (!c) return;
+    const t = c.currentTime;
+    tone(c, 60, t,        0.3,  'sine', 0.4);
+    tone(c, 55, t + 0.12, 0.2,  'sine', 0.3);
+    haptic([40, 20, 60]);
+  }, [getCtx]);
+
+  /** Sharp noise crack + low thump when ХВ chip is selected. */
+  const hvSound = useCallback(() => {
+    const c = getCtx();
+    if (!c) return;
+    const t = c.currentTime;
+    noise(c, t, 0.08, 0.25);
+    tone(c, 120, t + 0.04, 0.15, 'sine', 0.3);
+    haptic(20);
+  }, [getCtx]);
+
+  /** Rising mysterious tone when ВіС chip is selected. */
+  const visPlay = useCallback(() => {
+    const c = getCtx();
+    if (!c) return;
+    const t = c.currentTime;
+    const osc = c.createOscillator();
+    const env = c.createGain();
+    osc.connect(env);
+    env.connect(c.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(300, t);
+    osc.frequency.exponentialRampToValueAtTime(600, t + 0.4);
+    env.gain.setValueAtTime(0.22, t);
+    env.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
+    osc.start(t);
+    osc.stop(t + 0.6);
+    haptic([8, 10, 8]);
+  }, [getCtx]);
+
+  /** Short ascending arpeggio when ВіС is won. */
+  const visWin = useCallback(() => {
+    const c = getCtx();
+    if (!c) return;
+    const t = c.currentTime;
+    tone(c, 523, t,        0.2, 'sine', 0.18);
+    tone(c, 659, t + 0.12, 0.2, 'sine', 0.18);
+    tone(c, 784, t + 0.24, 0.3, 'sine', 0.2);
+    haptic([20, 15, 40]);
+  }, [getCtx]);
+
+  /** Descending tones when ВіС is lost. */
+  const visLose = useCallback(() => {
+    const c = getCtx();
+    if (!c) return;
+    const t = c.currentTime;
+    tone(c, 392, t,        0.2,  'sine', 0.2);
+    tone(c, 330, t + 0.14, 0.2,  'sine', 0.2);
+    tone(c, 262, t + 0.28, 0.35, 'sine', 0.22);
+    haptic([30, 20, 30, 20, 50]);
+  }, [getCtx]);
+
+  /** One-shot tension tick when a player first enters the final 100-point stretch. */
+  const closeFinish = useCallback(() => {
+    const c = getCtx();
+    if (!c) return;
+    const t = c.currentTime;
+    tone(c, 1200, t,        0.04, 'square', 0.12);
+    tone(c, 880,  t + 0.07, 0.08, 'sine',   0.15);
+    haptic(15);
+  }, [getCtx]);
+
+  /** Card-shuffle burst at the start of every new game. */
+  const newGame = useCallback(() => {
+    const c = getCtx();
+    if (!c) return;
+    const t = c.currentTime;
+    for (let i = 0; i < 6; i++) {
+      tone(c, 800 - i * 80, t + i * 0.04, 0.06, 'square', 0.08);
+    }
+    haptic([10, 5, 10, 5, 10]);
+  }, [getCtx]);
+
+  return { chipClick, roundSubmit, undoPop, fanfare, bSound, secondBSound, hvSound, visPlay, visWin, visLose, closeFinish, newGame };
 };
