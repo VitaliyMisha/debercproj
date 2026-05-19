@@ -149,6 +149,15 @@
   }
 }
 
+@keyframes goldGlow {
+  0%, 100% {
+    box-shadow: 0 0 0px rgba(255, 215, 0, 0);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

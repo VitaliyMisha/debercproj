@@ -23,7 +23,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
   const displayScore = useCountUp(score, snapshotActive ? 0 : 300);
   const progress = Math.min(Math.max(score / targetScore, 0), 1) * 100;
   const initial = Array.from(player.name.trim())[0]?.toUpperCase() || '?';
-  const isCloseToFinish = !snapshotActive && score > 0 && score < targetScore && score / targetScore >= 0.85;
+  const isCloseToFinish = !snapshotActive && score > 0 && targetScore - score <= 100;
 
   const leaderStyle = isLeader ? {
     background: 'linear-gradient(#192134, #192134) padding-box, linear-gradient(135deg, #78350F, #FCD34D 45%, #D97706 55%, #78350F) border-box',
@@ -31,7 +31,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
     boxShadow: '0 4px 24px rgba(120, 53, 15, 0.28), inset 0 0 0 0 transparent',
     animation: 'goldPulse 5s ease-in-out infinite',
   } : isCloseToFinish ? {
-    animation: 'firePulse 2s ease-in-out infinite',
+    animation: 'goldGlow 1.4s ease-in-out infinite',
   } : undefined;
 
   return (
