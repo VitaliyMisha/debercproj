@@ -40,6 +40,7 @@ const noise = (ctx: AudioContext, start: number, duration: number, vol = 0.2): v
   env.gain.setValueAtTime(vol, start);
   env.gain.exponentialRampToValueAtTime(0.0001, start + duration);
   source.start(start);
+  source.stop(start + duration + 0.05);
 };
 
 /**
