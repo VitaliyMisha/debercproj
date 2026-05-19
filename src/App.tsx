@@ -51,6 +51,10 @@ export default function App() {
   const { chipClick, roundSubmit, undoPop, bSound, secondBSound, hvSound, visPlay, visWin, visLose, closeFinish, newGame } = useSound();
   const closeFinishFiredRef = useRef<Set<string>>(new Set());
 
+  const [roundDeltas, setRoundDeltas] = useState<Record<string, number> | null>(null);
+  const [deltaKey, setDeltaKey] = useState(0);
+  const deltaTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const [gameId, setGameId] = useState(() => {
     const stored = localStorage.getItem(GAME_ID);
     return stored ? parseInt(stored, 10) : 1;
@@ -176,6 +180,18 @@ export default function App() {
       rounds: [...game.rounds, newRound],
       dealerId: game.players[nextDealerIndex].id,
     };
+    // Compute per-player score deltas for the floating animation
+    const newTotals = calculateGameTotals(updatedGame, gameRules);
+    const deltas: Record<string, number> = {};
+    for (const p of game.players) {
+      const key = String(p.id);
+      deltas[key] = (newTotals[p.id] ?? 0) - (totals[p.id] ?? 0);
+    }
+    if (deltaTimerRef.current) clearTimeout(deltaTimerRef.current);
+    setRoundDeltas(deltas);
+    setDeltaKey((k) => k + 1);
+    deltaTimerRef.current = setTimeout(() => setRoundDeltas(null), 2000);
+
     setGame(updatedGame);
     setSnapshotRound(null);
     setScores(Object.fromEntries(updatedGame.players.map((p) => [p.id.toString(), ''])));
@@ -413,6 +429,8 @@ export default function App() {
                 : game.dealerId
             }
             snapshotActive={snapshotRound !== null}
+            deltas={roundDeltas}
+            deltaKey={deltaKey}
           />
 
           {winnerObj ? (
