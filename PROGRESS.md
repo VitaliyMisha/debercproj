@@ -6,6 +6,8 @@
 
 **Sounds + UX Polish** задеплоєно: 8 нових звуків (Web Audio API), gold glow анімація при наближенні до фінішу, haptic feedback на submit та undo.
 
+**Score Delta Animation** задеплоєно: після кожного раунду над рахунком гравця плаває +/- дельта (зелена/червона), 1.8с CSS анімація.
+
 ---
 
 ## Завершено
@@ -145,7 +147,15 @@
 
 ---
 
+### Score Delta Animation (2026-05-19)
+- `App.tsx`: `roundDeltas` + `deltaKey` state, `deltaTimerRef` для cleanup; обчислення `newTotals - oldTotals` в `addRound`
+- `ScoreBoard.tsx`: `PlayerCard` key змінено на `${player.id}-${deltaKey}` для re-mount при кожному раунді; delta елемент зеленим/червоним кольором
+- `index.css`: `@keyframes scoreDeltaFloat` + `.score-delta` (1.8s ease-out, float up + fade)
+
+---
+
 ## Потенційні наступні кроки (не заплановано)
 
 - Повна історія ігор між сесіями (localStorage зберігає тільки winCounts + поточну гру)
+- Поділитись результатом (share card для WhatsApp/Telegram)
 - iPad layout improvements
