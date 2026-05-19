@@ -20,10 +20,9 @@ interface PlayerCardProps {
   isDealer: boolean;
   snapshotActive: boolean;
   delta?: number;
-  deltaKey?: number;
 }
 
-const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isLeader, isDealer, snapshotActive, delta, deltaKey }) => {
+const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isLeader, isDealer, snapshotActive, delta }) => {
   const displayScore = useCountUp(score, snapshotActive ? 0 : 300);
   const progress = Math.min(Math.max(score / targetScore, 0), 1) * 100;
   const initial = Array.from(player.name.trim())[0]?.toUpperCase() || '?';
@@ -82,7 +81,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
           {displayScore}
         </div>
         {delta !== undefined && delta !== 0 && (
-          <div key={deltaKey} className={`score-delta ${delta > 0 ? 'pos' : 'neg'}`}>
+          <div className={`score-delta ${delta > 0 ? 'pos' : 'neg'}`}>
             {delta > 0 ? '+' : ''}{delta}
           </div>
         )}
@@ -137,7 +136,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
       <div className={`grid ${gridClass} gap-3`}>
         {sorted.map((player) => (
           <PlayerCard
-            key={player.id}
+            key={`${player.id}-${deltaKey ?? 0}`}
             player={player}
             score={totals[String(player.id)] ?? 0}
             targetScore={targetScore}
@@ -145,7 +144,6 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
             isDealer={player.id === dealerId}
             snapshotActive={snapshotActive}
             delta={snapshotActive ? undefined : (deltas?.[String(player.id)] ?? undefined)}
-            deltaKey={deltaKey}
           />
         ))}
       </div>

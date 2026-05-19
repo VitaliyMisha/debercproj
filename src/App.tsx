@@ -89,6 +89,14 @@ export default function App() {
     saveGameState({ game, targetScore, winnerPlayer });
   }, [game, targetScore, winnerPlayer, recoveredState]);
 
+  // Cleanup deltaTimerRef on unmount to prevent setState on unmounted component
+  // warning in React 18 strict mode and tests.
+  useEffect(() => {
+    return () => {
+      if (deltaTimerRef.current) clearTimeout(deltaTimerRef.current);
+    };
+  }, []);
+
   const createGame = (
     reusePlayers?: Player[],
     showHistory = false,
