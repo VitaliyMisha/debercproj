@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Game, GameRulesConfig, Player, Round, SavedGameState } from './types';
 
 import SetupScreen from './components/SetupScreen';
@@ -323,6 +323,12 @@ export default function App() {
     setRecoveredState(null);
   };
 
+  const handleChipClick = useCallback((token: string) => {
+    if (token === 'ВІС') visPlay();
+    else if (token === 'ХВ') hvSound();
+    else chipClick();
+  }, [visPlay, hvSound, chipClick]);
+
   return (
     <div className="felt-bg min-h-dvh w-full overflow-x-hidden">
       {/* Corner card suit silhouettes — decorative table atmosphere */}
@@ -427,11 +433,7 @@ export default function App() {
                     roundNumber={game.rounds.length + 1}
                     isAddDisabled={isAddDisabled}
                     gameRules={gameRules}
-                    onChipClick={soundEnabled ? (token: string) => {
-                      if (token === 'ВІС') visPlay();
-                      else if (token === 'ХВ') hvSound();
-                      else chipClick();
-                    } : undefined}
+                    onChipClick={soundEnabled ? handleChipClick : undefined}
                   />
                 </>
               )}
