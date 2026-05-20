@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Player, Round } from '../types';
 import { GameRulesConfig } from '../types';
 import { isValidScore, getVisDisplayValue } from '../utils/gameHelpers';
@@ -14,6 +15,7 @@ interface RoundHistoryProps {
 }
 
 const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRound, gameRules, snapshotRound, onUndoLastRound }) => {
+  const { t } = useTranslation();
   const [editingRound, setEditingRound] = useState<number | null>(null);
   const [editScores, setEditScores] = useState<Record<string, string>>({});
   const [confirmingUndo, setConfirmingUndo] = useState(false);
@@ -67,8 +69,8 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
   if (rounds.length === 0) {
     return (
       <div className="bg-card-bg rounded-2xl border border-white/8 p-6 text-center">
-        <h2 className="text-muted text-xs font-semibold uppercase tracking-widest mb-3">Історія раундів</h2>
-        <p className="text-muted text-sm py-4">Поки що немає завершених раундів</p>
+        <h2 className="text-muted text-xs font-semibold uppercase tracking-widest mb-3">{t('history.title')}</h2>
+        <p className="text-muted text-sm py-4">{t('history.empty')}</p>
       </div>
     );
   }
@@ -82,18 +84,18 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
         onClick={() => setCollapsed((c) => !c)}
         role="button"
         aria-expanded={!collapsed}
-        aria-label="Показати або сховати історію раундів"
+        aria-label={t('history.toggle')}
       >
         <div className="flex items-center gap-2">
           <span className="text-muted text-xs" aria-hidden="true">{collapsed ? '▶' : '▼'}</span>
-          <h2 className="text-muted text-xs font-semibold uppercase tracking-widest">Історія раундів</h2>
+          <h2 className="text-muted text-xs font-semibold uppercase tracking-widest">{t('history.title')}</h2>
         </div>
         <div className="flex items-center gap-2">
           {!collapsed && onUndoLastRound && (
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); setConfirmingUndo(true); }}
-              aria-label="Скасувати останній раунд"
+              aria-label={t('history.undoAriaLabel')}
               className="h-7 px-3 rounded-full text-xs font-bold transition-all duration-150 active:scale-[0.93]"
               style={{
                 background: '#7F1D1D88',
@@ -101,10 +103,10 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                 border: '1px solid #DC262655',
               }}
             >
-              ↩ Undo
+              ↩ {t('history.undoBtn')}
             </button>
           )}
-          <span className="text-muted text-xs bg-white/5 px-2 py-0.5 rounded-full">Всього: {rounds.length}</span>
+          <span className="text-muted text-xs bg-white/5 px-2 py-0.5 rounded-full">{t('history.total', { n: rounds.length })}</span>
         </div>
       </div>
 
@@ -129,16 +131,16 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
               <div className="flex items-center justify-between px-4 py-3">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className={`text-sm font-semibold ${isSnapshot ? 'text-gold-to' : 'text-white/60'}`}>
-                    Раунд {round.number}
+                    {t('history.round', { n: round.number })}
                   </span>
                   {dealerName && (
                     <span className="text-xs bg-primary/20 border border-primary/40 text-score-pos px-2 py-0.5 rounded-full leading-none">
-                      Д: {dealerName}
+                      {t('history.dealer', { name: dealerName })}
                     </span>
                   )}
                   {isSnapshot && (
                     <span className="text-xs text-gold-from bg-gold-from/10 border border-gold-from/30 px-2 py-0.5 rounded-full">
-                      перегляд
+                      {t('history.preview')}
                     </span>
                   )}
                 </div>
@@ -148,7 +150,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                     onClick={() => startEditing(round)}
                     className="text-muted text-xs hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-white/5"
                   >
-                    ✏️ Редагувати
+                    {t('history.edit')}
                   </button>
                 )}
               </div>
@@ -184,7 +186,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                       })}
                     </div>
                     {!Object.values(editScores).every((s) => isValidScore(s, gameRules)) && (
-                      <p className="text-score-neg text-xs text-center">Вкажіть числа або Б / ХВ / ВІС</p>
+                      <p className="text-score-neg text-xs text-center">{t('history.invalidHint')}</p>
                     )}
                     <div className="flex justify-end gap-2 pt-1">
                       <button
@@ -192,7 +194,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                         onClick={cancelEdit}
                         className="px-3 py-1.5 text-xs text-muted border border-white/10 rounded-lg hover:text-white hover:border-white/30 transition-colors"
                       >
-                        Відмінити
+                        {t('history.cancelEdit')}
                       </button>
                       <button
                         type="button"
@@ -200,7 +202,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                         disabled={!Object.values(editScores).every((s) => isValidScore(s, gameRules))}
                         className="px-3 py-1.5 text-xs bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                       >
-                        Зберегти
+                        {t('history.save')}
                       </button>
                     </div>
                   </div>
@@ -240,9 +242,9 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
 
     {confirmingUndo && (
       <ConfirmSheet
-        title="Скасувати останній раунд?"
-        description="Раунд буде видалено, рахунки повернуться до попереднього стану."
-        confirmLabel="Скасувати раунд"
+        title={t('history.confirmUndo')}
+        description={t('history.confirmUndoDesc')}
+        confirmLabel={t('history.undoConfirmLabel')}
         onConfirm={() => { setConfirmingUndo(false); onUndoLastRound?.(); }}
         onCancel={() => setConfirmingUndo(false)}
       />
