@@ -1,8 +1,10 @@
 # PROGRESS.md — Деберц Score App
 
-## Поточний стан (2026-05-19)
+## Поточний стан (2026-05-20)
 
 Проєкт у робочому стані. UI перероблено на "Card Table Dark - Vintage" тему. Логіка гри відповідає правилам. Тестів: **107** (усі зелені). PWA коректно працює на Android Chrome.
+
+**i18n (UK / EN)** задеплоєно: перемикач мови в GameHeader, всі UI-рядки перекладено, вибір мови зберігається в localStorage. Ігрові терміни (Б/ХВ/ВіС) залишаються українськими в обох мовах.
 
 **Sounds + UX Polish** задеплоєно: 8 нових звуків (Web Audio API), gold glow анімація при наближенні до фінішу, haptic feedback на submit та undo.
 
@@ -151,6 +153,16 @@
 - `App.tsx`: `roundDeltas` + `deltaKey` state, `deltaTimerRef` для cleanup; обчислення `newTotals - oldTotals` в `addRound`
 - `ScoreBoard.tsx`: `PlayerCard` key змінено на `${player.id}-${deltaKey}` для re-mount при кожному раунді; delta елемент зеленим/червоним кольором
 - `index.css`: `@keyframes scoreDeltaFloat` + `.score-delta` (1.8s ease-out, float up + fade)
+
+---
+
+### i18n (UK / EN) — 2026-05-20
+- `src/i18n/locales/uk.ts` + `en.ts` — bundled TypeScript локалі, TypeScript перевіряє повноту обох мов через `typeof uk`
+- `src/i18n/index.ts` — синхронна ініціалізація i18next, `CustomTypeOptions` augmentation для type-safe `t()`
+- `App.tsx`: `lang` стан + `handleLangChange` (useCallback) + `i18n.changeLanguage()`
+- `GameHeader.tsx`: кнопка `УК`/`EN` поруч зі звуком
+- Всі компоненти оновлено: SetupScreen, RoundForm, RoundHistory, WinnerScreen, RecoverScreen, ScoreBoard, ConfirmSheet, PlayerStatistics, GameHistory
+- localStorage ключ `lang` — зберігає вибір між сесіями
 
 ---
 
