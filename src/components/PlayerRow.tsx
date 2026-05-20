@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { NameInput } from './NameInput';
 
 const EASTER_EGGS: Array<{ keywords: string[]; emoji: string }> = [
@@ -35,6 +36,7 @@ export const PlayerRow: React.FC<PlayerRowProps> = ({
   onSetDealer,
   suggestions = [],
 }) => {
+  const { t } = useTranslation();
   const initial = Array.from(name.trim())[0]?.toUpperCase() || String(index + 1);
 
   return (
@@ -59,7 +61,7 @@ export const PlayerRow: React.FC<PlayerRowProps> = ({
         id={`player-name-${index}`}
         name={`player-name-${index}`}
         value={name}
-        placeholder={`Гравець ${index + 1}`}
+        placeholder={t('setup.playerName', { n: index + 1 })}
         suggestions={suggestions}
         onChange={(value) => onNameChange(applyEasterEgg(value))}
       />

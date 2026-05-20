@@ -21,6 +21,7 @@ export const en: typeof uk = {
     players2: '2 players',
     players3: '3 players',
     players4: '4 players',
+    playerName: 'Player {{n}}',
     playersSection: 'Players',
     dealerHint: '(👑 = dealer)',
     rulesLabel: 'Rules',

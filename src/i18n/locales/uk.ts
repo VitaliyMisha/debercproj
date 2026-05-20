@@ -19,6 +19,7 @@ export const uk = {
     players2: '2 гравці',
     players3: '3 гравці',
     players4: '4 гравці',
+    playerName: 'Гравець {{n}}',
     playersSection: 'Гравці',
     dealerHint: '(👑 = дилер)',
     rulesLabel: 'Правила',
