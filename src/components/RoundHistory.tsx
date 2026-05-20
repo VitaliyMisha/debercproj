@@ -175,7 +175,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                               onChange={(e) =>
                                 setEditScores((prev) => ({ ...prev, [String(player.id)]: e.target.value }))
                               }
-                              aria-label={`Рахунок для ${player.name}`}
+                              aria-label={t('round.scoreFor', { name: player.name })}
                               placeholder={placeholder}
                               className={`w-full px-3 py-2 rounded-xl text-sm text-center bg-felt border transition-colors
                                 focus:outline-none focus:ring-2 focus:ring-gold-from/40 text-white
