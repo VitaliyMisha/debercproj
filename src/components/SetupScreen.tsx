@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { GameRulesConfig } from '../types';
 import { ChipGroup } from './ChipGroup';
 import { GoldDivider } from './GoldDivider';
@@ -23,12 +24,6 @@ interface SetupScreenProps {
 
 type PenaltyKey = 'secondBPenalty' | 'hvPenalty';
 
-const PLAYER_COUNT_OPTIONS = [
-  { label: '2 гравці', value: 2 as const },
-  { label: '3 гравці', value: 3 as const },
-  { label: '4 гравці', value: 4 as const },
-];
-
 export const SetupScreen: React.FC<SetupScreenProps> = ({
   playerCount,
   onPlayerCountChange,
@@ -43,7 +38,14 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
   playerNames = [],
   onStart,
 }) => {
+  const { t } = useTranslation();
   const [penaltySheet, setPenaltySheet] = useState<PenaltyKey | null>(null);
+
+  const PLAYER_COUNT_OPTIONS = [
+    { label: t('setup.players2'), value: 2 as const },
+    { label: t('setup.players3'), value: 3 as const },
+    { label: t('setup.players4'), value: 4 as const },
+  ];
 
   const handlePlayerCountChange = (count: number) => {
     onPlayerCountChange(count);
@@ -60,8 +62,8 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
   };
 
   const targetOptions = [
-    { label: '510 — швидка', value: 510 as const },
-    { label: '1020 — класика', value: 1020 as const },
+    { label: t('setup.target510'), value: 510 as const },
+    { label: t('setup.target1020'), value: 1020 as const },
     ...(gameRules.customTargetScore
       ? gameRules.targetScoreOptions
           .filter((s) => s !== 510 && s !== 1020)
@@ -78,12 +80,12 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
         <div className="absolute inset-0 flex items-center justify-center text-8xl text-white/5 font-display pointer-events-none select-none" aria-hidden="true">
           ♥♦♣
         </div>
-        <h1 className="font-display text-4xl gold-gradient-text relative z-10">Деберц ♠</h1>
+        <h1 className="font-display text-4xl gold-gradient-text relative z-10">{t('app.title')} ♠</h1>
       </div>
 
       {/* Кількість гравців */}
       <section>
-        <h2 className="text-muted text-xs font-semibold uppercase tracking-widest mb-3">Гравців</h2>
+        <h2 className="text-muted text-xs font-semibold uppercase tracking-widest mb-3">{t('setup.playersLabel')}</h2>
         <ChipGroup
           options={PLAYER_COUNT_OPTIONS}
           value={playerCount}
@@ -93,7 +95,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
 
       {/* До перемоги */}
       <section>
-        <h2 className="text-muted text-xs font-semibold uppercase tracking-widest mb-3">До перемоги</h2>
+        <h2 className="text-muted text-xs font-semibold uppercase tracking-widest mb-3">{t('setup.targetLabel')}</h2>
         <ChipGroup
           options={targetOptions}
           value={targetScore}
@@ -106,7 +108,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
       {/* Імена гравців */}
       <section>
         <h2 className="text-muted text-xs font-semibold uppercase tracking-widest mb-3">
-          Гравці <span className="normal-case opacity-60">(👑 = дилер)</span>
+          {t('setup.playersSection')} <span className="normal-case opacity-60">{t('setup.dealerHint')}</span>
         </h2>
         <div className="flex flex-col gap-3">
           {names.map((name, idx) => (
@@ -127,7 +129,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
 
       {/* Правила */}
       <section>
-        <h2 className="text-muted text-xs font-semibold uppercase tracking-widest mb-3">Правила</h2>
+        <h2 className="text-muted text-xs font-semibold uppercase tracking-widest mb-3">{t('setup.rulesLabel')}</h2>
         <div className="flex flex-wrap gap-2">
           {/* ВІС toggle */}
           <button
@@ -150,7 +152,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
             onClick={() => setPenaltySheet('secondBPenalty')}
             className="px-4 py-2 rounded-full text-sm font-semibold border bg-card-bg border-white/10 text-score-neg hover:border-score-neg/50 transition-all duration-150 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-to/60"
           >
-            2-га Б: {gameRules.secondBPenalty}
+            {t('setup.penaltyBLabel')}: {gameRules.secondBPenalty}
           </button>
 
           {/* ХВ penalty */}
@@ -159,7 +161,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
             onClick={() => setPenaltySheet('hvPenalty')}
             className="px-4 py-2 rounded-full text-sm font-semibold border bg-card-bg border-white/10 text-score-neg hover:border-score-neg/50 transition-all duration-150 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-to/60"
           >
-            ХВ: {gameRules.hvPenalty}
+            {t('setup.penaltyHVLabel')}: {gameRules.hvPenalty}
           </button>
         </div>
       </section>
@@ -171,13 +173,13 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
         onClick={onStart}
         className="py-4 text-lg mt-2"
       >
-        🎴 Почати гру
+        {t('setup.startGame')}
       </Button>
 
       {/* Penalty sheet */}
       {penaltySheet && (
         <PenaltySheet
-          label={penaltySheet === 'secondBPenalty' ? 'Штраф за 2-гу "Б"' : 'Штраф за "ХВ"'}
+          label={penaltySheet === 'secondBPenalty' ? t('setup.penaltyBLabel') : t('setup.penaltyHVLabel')}
           value={gameRules[penaltySheet]}
           onChange={(v) => onRulesChange({ ...gameRules, [penaltySheet]: v })}
           onClose={() => setPenaltySheet(null)}
