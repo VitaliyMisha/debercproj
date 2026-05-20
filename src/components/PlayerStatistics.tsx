@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { BarChart3 } from 'lucide-react';
 import { Game, Player, GameRulesConfig } from '../types';
 import { calculateGameTotals, getVisDisplayValue } from '../utils/gameHelpers';
@@ -36,6 +37,7 @@ const StatCell: React.FC<StatCellProps> = ({ label, value, valueClass = 'text-wh
 );
 
 const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, gameRules }) => {
+  const { t } = useTranslation();
   const hvPenalty = gameRules?.hvPenalty ?? -100;
   const secondBPenalty = gameRules?.secondBPenalty ?? -100;
 
@@ -122,9 +124,9 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
     <div className="bg-card-bg rounded-2xl border border-white/8 overflow-hidden">
       <div className="px-4 py-3 border-b border-white/8 flex items-center gap-2">
         <BarChart3 className="w-4 h-4 text-gold-from shrink-0" />
-        <h2 className="text-muted text-xs font-semibold uppercase tracking-widest flex-1">Детальна статистика</h2>
+        <h2 className="text-muted text-xs font-semibold uppercase tracking-widest flex-1">{t('stats.title')}</h2>
         <span className="text-muted text-xs bg-white/5 px-2 py-0.5 rounded-full">
-          {game.rounds.length} раундів
+          {t('stats.rounds', { n: game.rounds.length })}
         </span>
       </div>
 
@@ -152,15 +154,15 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
 
               {/* Main stats */}
               <div className="grid grid-cols-2 gap-2 mb-2">
-                <StatCell label="Середній" value={stats.averageScore.toFixed(1)} valueClass="text-score-chalk" />
-                <StatCell label="Раундів" value={`+${stats.positiveRounds} / −${stats.negativeRounds}`} valueClass="text-white/60" />
+                <StatCell label={t('stats.avg')} value={stats.averageScore.toFixed(1)} valueClass="text-score-chalk" />
+                <StatCell label={t('stats.roundsStat')} value={`+${stats.positiveRounds} / −${stats.negativeRounds}`} valueClass="text-white/60" />
                 <StatCell
-                  label="Кращий"
+                  label={t('stats.best')}
                   value={String(stats.bestRound)}
                   valueClass="text-score-pos"
                 />
                 <StatCell
-                  label="Гірший"
+                  label={t('stats.worst')}
                   value={String(stats.worstRound)}
                   valueClass={stats.worstRound < 0 ? 'text-score-neg' : 'text-score-chalk'}
                 />

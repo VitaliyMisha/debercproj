@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Trophy } from 'lucide-react';
 import { Player } from '../types';
 
@@ -6,13 +7,15 @@ interface GameHistoryProps {
   players: Player[];
 }
 
-const victoryLabel = (n: number): string => {
-  if (n === 1) return 'перемога';
-  if (n >= 2 && n <= 4) return 'перемоги';
-  return 'перемог';
-};
-
 const GameHistory: React.FC<GameHistoryProps> = ({ players }) => {
+  const { t } = useTranslation();
+
+  const victoryLabel = (n: number): string => {
+    if (n === 1) return t('gameHistory.wins.one');
+    if (n >= 2 && n <= 4) return t('gameHistory.wins.few');
+    return t('gameHistory.wins.many');
+  };
+
   if (players.length === 0) return null;
 
   const maxWins = Math.max(...players.map((p) => p.winCount));
@@ -24,13 +27,17 @@ const GameHistory: React.FC<GameHistoryProps> = ({ players }) => {
 
   const sorted = [...players].sort((a, b) => b.winCount - a.winCount);
 
-  const gamesLabel = totalGames === 1 ? 'гра' : totalGames < 5 ? 'гри' : 'ігор';
+  const gamesLabel = totalGames === 1
+    ? t('gameHistory.games.one')
+    : totalGames < 5
+      ? t('gameHistory.games.few')
+      : t('gameHistory.games.many');
 
   return (
     <div className="bg-card-bg rounded-2xl border border-white/8 overflow-hidden">
       <div className="px-4 py-3 border-b border-white/8 flex items-center gap-2">
         <Trophy className="w-4 h-4 text-gold-from shrink-0" />
-        <h2 className="text-muted text-xs font-semibold uppercase tracking-widest flex-1">Історія ігор</h2>
+        <h2 className="text-muted text-xs font-semibold uppercase tracking-widest flex-1">{t('gameHistory.title')}</h2>
         {hasWins && (
           <span className="text-muted text-xs bg-white/5 px-2 py-0.5 rounded-full">
             {totalGames} {gamesLabel}

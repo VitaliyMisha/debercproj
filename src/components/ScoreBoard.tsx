@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Player } from '../types';
 import { useCountUp } from '../hooks/useCountUp';
 
@@ -118,6 +119,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
   deltas,
   deltaKey,
 }) => {
+  const { t } = useTranslation();
   const sorted = [...players].sort((a, b) => (totals[String(b.id)] ?? 0) - (totals[String(a.id)] ?? 0));
   const maxScore = players.length > 0 ? Math.max(...players.map((p) => totals[String(p.id)] ?? 0)) : 0;
   // Only highlight a leader once at least one score is non-zero (game has started).
@@ -132,7 +134,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
 
   return (
     <div>
-      <h2 className="text-muted text-xs font-semibold uppercase tracking-widest mb-3">Рахунок</h2>
+      <h2 className="text-muted text-xs font-semibold uppercase tracking-widest mb-3">{t('score.title')}</h2>
       <div className={`grid ${gridClass} gap-3`}>
         {sorted.map((player) => (
           <PlayerCard
