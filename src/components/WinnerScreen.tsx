@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Player } from '../types';
 import { CardSuitsRain } from './CardSuitsRain';
 import { Button } from './Button';
@@ -25,6 +26,7 @@ export const WinnerScreen: React.FC<WinnerScreenProps> = ({
   soundEnabled = true,
 }) => {
   const { fanfare } = useSound();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (soundEnabled) fanfare();
@@ -39,7 +41,7 @@ export const WinnerScreen: React.FC<WinnerScreenProps> = ({
       <div className="text-7xl animate-bounce">🏆</div>
 
       {/* Title */}
-      <h1 className="font-display text-3xl gold-gradient-text tracking-wide">ПЕРЕМОЖЕЦЬ</h1>
+      <h1 className="font-display text-3xl gold-gradient-text tracking-wide">{t('winner.title')}</h1>
 
       {/* Winner card */}
       <div
@@ -54,7 +56,7 @@ export const WinnerScreen: React.FC<WinnerScreenProps> = ({
         </div>
         <p className="font-display text-2xl text-white mb-1">{winner.name}</p>
         <p className="text-muted text-sm">
-          {totals[String(winner.id)] ?? 0} очок · {roundCount} раундів
+          {t('winner.scoreRounds', { score: totals[String(winner.id)] ?? 0, rounds: roundCount })}
         </p>
       </div>
 
@@ -63,7 +65,7 @@ export const WinnerScreen: React.FC<WinnerScreenProps> = ({
       {/* Summary table */}
       <div className="w-full max-w-xs bg-card-bg rounded-2xl border border-white/8 overflow-hidden">
         <div className="px-4 py-2 border-b border-white/8">
-          <span className="text-muted text-xs uppercase tracking-widest font-semibold">Підсумок</span>
+          <span className="text-muted text-xs uppercase tracking-widest font-semibold">{t('winner.summary')}</span>
         </div>
         {[...players]
           .sort((a, b) => (totals[String(b.id)] ?? 0) - (totals[String(a.id)] ?? 0))
@@ -101,10 +103,10 @@ export const WinnerScreen: React.FC<WinnerScreenProps> = ({
       {/* Actions */}
       <div className="flex flex-col gap-3 w-full max-w-xs">
         <Button fullWidth onClick={onNewGame} className="py-4 text-base">
-          🎮 Нова гра
+          {t('winner.newGame')}
         </Button>
         <Button fullWidth variant="secondary" onClick={onContinue} className="py-3 text-base">
-          ▶ Продовжити
+          {t('winner.continue')}
         </Button>
       </div>
     </div>

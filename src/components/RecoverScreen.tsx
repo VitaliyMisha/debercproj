@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { SavedGameState, GameRulesConfig } from '../types';
 import { calculateGameTotals } from '../utils/gameHelpers';
 import { Button } from './Button';
@@ -17,6 +18,7 @@ export const RecoverScreen: React.FC<RecoverScreenProps> = ({
   onDiscard,
 }) => {
   const { game, targetScore, winnerPlayer } = savedState;
+  const { t } = useTranslation();
   const totals = calculateGameTotals(game, gameRules);
   const roundCount = game.rounds.length;
   const isFinished = winnerPlayer !== null;
@@ -25,7 +27,7 @@ export const RecoverScreen: React.FC<RecoverScreenProps> = ({
     <div className="w-full max-w-md mx-auto flex flex-col gap-6 py-6 px-4">
       {/* Header */}
       <div className="text-center">
-        <h1 className="font-display text-4xl gold-gradient-text">Деберц <span aria-hidden="true">♠</span></h1>
+        <h1 className="font-display text-4xl gold-gradient-text">{t('app.title')} <span aria-hidden="true">♠</span></h1>
       </div>
 
       {/* Card */}
@@ -33,10 +35,10 @@ export const RecoverScreen: React.FC<RecoverScreenProps> = ({
         {/* Title row */}
         <div>
           <h2 className="font-display text-xl gold-gradient-text">
-            {isFinished ? `Завершена гра #${game.id}` : `Незавершена гра #${game.id}`}
+            {isFinished ? t('recover.finishedGame', { id: game.id }) : t('recover.unfinishedGame', { id: game.id })}
           </h2>
           <p className="text-muted text-sm mt-0.5">
-            Раунд {roundCount} · до <span className="text-white font-semibold">{targetScore}</span> очок
+            {t('recover.roundInfo', { n: roundCount, score: targetScore })}
           </p>
         </div>
 
@@ -85,7 +87,7 @@ export const RecoverScreen: React.FC<RecoverScreenProps> = ({
       {/* Buttons */}
       <div className="flex flex-col gap-3">
         <Button fullWidth onClick={onRecover} className="py-4 text-lg">
-          {isFinished ? '🏆 Переглянути результат' : '▶ Продовжити гру'}
+          {isFinished ? t('recover.viewResult') : t('recover.continue')}
         </Button>
         <button
           type="button"
@@ -94,7 +96,7 @@ export const RecoverScreen: React.FC<RecoverScreenProps> = ({
             hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]
             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-to/60"
         >
-          Нова гра
+          {t('recover.newGame')}
         </button>
       </div>
     </div>
