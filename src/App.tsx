@@ -54,12 +54,12 @@ export default function App() {
   const [lang, setLang] = useState<'uk' | 'en'>(() =>
     (localStorage.getItem(LANG_KEY) as 'uk' | 'en') ?? 'uk'
   );
-  const handleLangChange = () => {
+  const handleLangChange = useCallback(() => {
     const next: 'uk' | 'en' = lang === 'uk' ? 'en' : 'uk';
     setLang(next);
     localStorage.setItem(LANG_KEY, next);
     i18n.changeLanguage(next);
-  };
+  }, [lang, i18n]);
   const { chipClick, roundSubmit, undoPop, bSound, secondBSound, hvSound, visPlay, visWin, visLose, closeFinish, newGame } = useSound();
   const closeFinishFiredRef = useRef<Set<string>>(new Set());
 
