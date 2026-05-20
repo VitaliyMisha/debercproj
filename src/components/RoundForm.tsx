@@ -1,4 +1,5 @@
 import React, { ChangeEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Player } from '../types';
 import { GameRulesConfig } from '../types';
 
@@ -41,8 +42,9 @@ const RoundForm: React.FC<RoundFormProps> = ({
   gameRules,
   onChipClick,
 }) => {
+  const { t } = useTranslation();
   const allowVis = gameRules?.allowVis !== false;
-  const placeholder = allowVis ? '0, Б, ХВ, ВІС' : '0, Б, ХВ';
+  const placeholder = allowVis ? t('round.placeholder') : t('round.placeholderNoVis');
   const validTokens = allowVis ? TOKEN_HINTS : (['Б', 'ХВ'] as const);
 
   const isBToken = (v: string | number) => String(v).toUpperCase() === 'Б';
@@ -79,7 +81,7 @@ const RoundForm: React.FC<RoundFormProps> = ({
         <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-display text-sm">
           {roundNumber}
         </div>
-        <span className="text-white font-sans font-semibold">Раунд</span>
+        <span className="text-white font-sans font-semibold">{t('round.roundLabel')}</span>
       </div>
 
       {/* Player inputs */}
@@ -110,7 +112,7 @@ const RoundForm: React.FC<RoundFormProps> = ({
                     onChange={(e) => onScoreChange(e, p.id)}
                     onBlur={(e) => handleBlur(e, p.id)}
                     placeholder={placeholder}
-                    aria-label={`Рахунок для ${p.name}`}
+                    aria-label={t('round.scoreFor', { name: p.name })}
                     className={`w-full px-3 py-2 rounded-xl text-center text-base font-semibold
                       bg-felt border transition-all duration-150
                       focus:outline-none focus:ring-2 focus:ring-gold-from/40
@@ -135,7 +137,7 @@ const RoundForm: React.FC<RoundFormProps> = ({
                       type="button"
                       onClick={() => fillToken(p.id, token)}
                       disabled={isDisabled}
-                      aria-label={`Встановити ${token} для ${p.name}`}
+                      aria-label={t('round.setToken', { token, name: p.name })}
                       className="h-7 px-2.5 rounded-full text-xs font-bold transition-all duration-150 active:scale-[0.93] disabled:opacity-30 disabled:cursor-not-allowed"
                       style={{
                         background: isActive
@@ -173,7 +175,7 @@ const RoundForm: React.FC<RoundFormProps> = ({
               : 'bg-primary hover:bg-primary-dark text-white shadow-lg'
             }`}
         >
-          {isAddDisabled ? '⏳ Заповніть всі поля' : '✅ Додати раунд'}
+          {isAddDisabled ? t('round.fillAll') : t('round.addRound')}
         </button>
       </div>
     </div>
