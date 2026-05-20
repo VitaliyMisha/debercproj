@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Game, GameRulesConfig, Player, Round, SavedGameState } from './types';
 
 import SetupScreen from './components/SetupScreen';
@@ -18,6 +19,7 @@ import { useSound } from './hooks/useSound';
 const GAME_ID = 'gameId';
 const GAME_RULES_KEY = 'gameRules';
 const SOUND_KEY = 'soundEnabled';
+const LANG_KEY = 'lang';
 
 const defaultGameRules: GameRulesConfig = {
   secondBPenalty: -100,
@@ -48,6 +50,16 @@ export default function App() {
   });
 
   const [soundEnabled, setSoundEnabled] = useState<boolean>(() => localStorage.getItem(SOUND_KEY) !== 'false');
+  const { i18n, t } = useTranslation();
+  const [lang, setLang] = useState<'uk' | 'en'>(() =>
+    (localStorage.getItem(LANG_KEY) as 'uk' | 'en') ?? 'uk'
+  );
+  const handleLangChange = () => {
+    const next: 'uk' | 'en' = lang === 'uk' ? 'en' : 'uk';
+    setLang(next);
+    localStorage.setItem(LANG_KEY, next);
+    i18n.changeLanguage(next);
+  };
   const { chipClick, roundSubmit, undoPop, bSound, secondBSound, hvSound, visPlay, visWin, visLose, closeFinish, newGame } = useSound();
   const closeFinishFiredRef = useRef<Set<string>>(new Set());
 
@@ -165,15 +177,15 @@ export default function App() {
   const addRound = () => {
     if (!game || winnerPlayer !== null) return;
     if (bCount > 1) {
-      setError('Лише один гравець може отримати Б за раунд.');
+      setError(t('error.oneB'));
       return;
     }
     if (visCount > 1) {
-      setError('Лише один гравець може грати ВіС за раунд.');
+      setError(t('error.oneVis'));
       return;
     }
     if (isAddDisabled) {
-      setError('Заповніть всі поля валідними значеннями (число, Б, ХВ' + (gameRules.allowVis ? ' або ВІС' : '') + ').');
+      setError(gameRules.allowVis ? t('error.invalidScores') : t('error.invalidScoresNoVis'));
       return;
     }
     const roundNumber = game.rounds.length + 1;
@@ -413,6 +425,8 @@ export default function App() {
             hasRounds={game.rounds.length > 0}
             soundEnabled={soundEnabled}
             onSoundToggle={() => setSoundEnabled((prev) => !prev)}
+            lang={lang}
+            onLangChange={handleLangChange}
           />
 
           {hasHistoryShown && <GameHistory players={game.players} />}

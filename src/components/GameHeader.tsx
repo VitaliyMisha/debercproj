@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ConfirmSheet } from './ConfirmSheet';
 
 interface GameHeaderProps {
@@ -9,6 +10,8 @@ interface GameHeaderProps {
   hasRounds?: boolean;
   soundEnabled?: boolean;
   onSoundToggle?: () => void;
+  lang?: 'uk' | 'en';
+  onLangChange?: () => void;
 }
 
 export const GameHeader: React.FC<GameHeaderProps> = ({
@@ -19,7 +22,10 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
   hasRounds = false,
   soundEnabled = true,
   onSoundToggle,
+  lang = 'uk',
+  onLangChange,
 }) => {
+  const { t } = useTranslation();
   const [confirming, setConfirming] = useState(false);
 
   const handleNewGame = () => {
@@ -40,9 +46,9 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
 
         <div className="relative z-10 flex items-center justify-between">
           <div>
-            <h1 className="font-display text-2xl gold-gradient-text">Деберц</h1>
+            <h1 className="font-display text-2xl gold-gradient-text">{t('app.title')}</h1>
             <p className="text-muted text-sm">
-              Гра #{gameId} · до <span className="text-white font-semibold">{targetScore}</span> очок
+              {t('header.gameInfo', { id: gameId, score: targetScore })}
             </p>
           </div>
 
@@ -54,11 +60,24 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
               </div>
             )}
 
+            {onLangChange && (
+              <button
+                type="button"
+                onClick={onLangChange}
+                aria-label={lang === 'uk' ? 'Switch to English' : 'Перейти на Українську'}
+                className="w-9 h-9 rounded-xl bg-card-bg border border-white/10 text-xs font-bold text-white/70
+                  hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]
+                  flex items-center justify-center"
+              >
+                {t('header.langToggle')}
+              </button>
+            )}
+
             {onSoundToggle && (
               <button
                 type="button"
                 onClick={onSoundToggle}
-                aria-label={soundEnabled ? 'Вимкнути звук' : 'Увімкнути звук'}
+                aria-label={soundEnabled ? t('header.soundOff') : t('header.soundOn')}
                 className="w-9 h-9 rounded-xl bg-card-bg border border-white/10 text-base
                   hover:border-white/30 transition-all duration-150 active:scale-[0.97]
                   flex items-center justify-center"
@@ -75,7 +94,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
                   hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-to/60"
               >
-                Нова гра
+                {t('header.newGame')}
               </button>
             )}
           </div>
@@ -84,9 +103,9 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
 
       {confirming && (
         <ConfirmSheet
-          title="Розпочати нову гру?"
-          description="Поточний прогрес буде втрачено."
-          confirmLabel="Нова гра"
+          title={t('header.confirmNewGame')}
+          description={t('header.confirmDesc')}
+          confirmLabel={t('header.newGame')}
           onConfirm={() => { setConfirming(false); onNewGame?.(); }}
           onCancel={() => setConfirming(false)}
         />
