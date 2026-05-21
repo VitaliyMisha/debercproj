@@ -15,6 +15,8 @@ const PlayerStatistics = lazy(() => import('./components/PlayerStatistics'));
 import { generateUniqueId, isValidScore, loadWinCounts, parseScore, saveWinCounts, calculateGameTotals, saveGameState, loadGameState, clearGameState, loadPlayerNames, savePlayerNames } from './utils/gameHelpers';
 import RecoverScreen from './components/RecoverScreen';
 import { useSound } from './hooks/useSound';
+import { useFirebaseSync } from './hooks/useFirebaseSync';
+import ShareSheet from './components/ShareSheet';
 
 const GAME_ID = 'gameId';
 const GAME_RULES_KEY = 'gameRules';
@@ -44,6 +46,10 @@ export default function App() {
   const [recoveredState, setRecoveredState] = useState<SavedGameState | null>(() => loadGameState());
   const [playerNames, setPlayerNames] = useState<string[]>(() => loadPlayerNames());
 
+  const [isSharing, setIsSharing] = useState(false);
+  const [shareCode, setShareCode] = useState<string | null>(null);
+  const [showShareSheet, setShowShareSheet] = useState(false);
+
   const [gameRules, setGameRules] = useState<GameRulesConfig>(() => {
     const stored = localStorage.getItem(GAME_RULES_KEY);
     return stored ? JSON.parse(stored) : defaultGameRules;
@@ -60,7 +66,23 @@ export default function App() {
     localStorage.setItem(LANG_KEY, next);
     i18n.changeLanguage(next);
   }, [lang, i18n]);
+  const handleShareOpen = useCallback(() => {
+    if (!isSharing) {
+      const code = crypto.randomUUID().replace(/-/g, '').slice(0, 10);
+      setShareCode(code);
+      setIsSharing(true);
+    }
+    setShowShareSheet(true);
+  }, [isSharing]);
+
+  const handleStopSharing = useCallback(() => {
+    setIsSharing(false);
+    setShareCode(null);
+    setShowShareSheet(false);
+  }, []);
+
   const { chipClick, roundSubmit, undoPop, bSound, secondBSound, hvSound, visPlay, visWin, visLose, closeFinish, newGame } = useSound();
+  useFirebaseSync({ game, targetScore, winnerPlayer, gameRules, isSharing, shareCode });
   const closeFinishFiredRef = useRef<Set<string>>(new Set());
 
   const [roundDeltas, setRoundDeltas] = useState<Record<string, number> | null>(null);
@@ -300,6 +322,9 @@ export default function App() {
   }, [game, gameRules, snapshotRound, totals]);
 
   const resetGame = () => {
+    setIsSharing(false);
+    setShareCode(null);
+    setShowShareSheet(false);
     clearGameState();
     setGame(null);
     setNames(Array(playerCount).fill(''));
@@ -441,6 +466,8 @@ export default function App() {
             onSoundToggle={() => setSoundEnabled((prev) => !prev)}
             lang={lang}
             onLangChange={handleLangChange}
+            isSharing={isSharing}
+            onShareOpen={handleShareOpen}
           />
 
           {hasHistoryShown && <GameHistory players={game.players} />}
@@ -537,6 +564,13 @@ export default function App() {
             </Suspense>
           )}
         </main>
+      )}
+      {showShareSheet && shareCode && game && (
+        <ShareSheet
+          shareUrl={`${window.location.origin}?watch=${shareCode}`}
+          onStopSharing={handleStopSharing}
+          onClose={() => setShowShareSheet(false)}
+        />
       )}
     </div>
   );
