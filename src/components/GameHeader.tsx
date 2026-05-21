@@ -12,6 +12,8 @@ interface GameHeaderProps {
   onSoundToggle?: () => void;
   lang?: 'uk' | 'en';
   onLangChange?: () => void;
+  isSharing?: boolean;
+  onShareOpen?: () => void;
 }
 
 export const GameHeader: React.FC<GameHeaderProps> = ({
@@ -24,6 +26,8 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
   onSoundToggle,
   lang = 'uk',
   onLangChange,
+  isSharing = false,
+  onShareOpen,
 }) => {
   const { t } = useTranslation();
   const [confirming, setConfirming] = useState(false);
@@ -58,6 +62,23 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
                 <span className="text-sm">👑</span>
                 <span className="text-sm text-white/80 font-sans">{dealerName}</span>
               </div>
+            )}
+
+            {onShareOpen && (
+              <button
+                type="button"
+                onClick={onShareOpen}
+                aria-label={t('share.title')}
+                className={`w-9 h-9 rounded-xl border text-base
+                  hover:border-white/30 transition-all duration-150 active:scale-[0.97]
+                  flex items-center justify-center
+                  ${isSharing
+                    ? 'bg-gold-from/20 border-gold-from/60'
+                    : 'bg-card-bg border-white/10'
+                  }`}
+              >
+                📡
+              </button>
             )}
 
             {onLangChange && (
