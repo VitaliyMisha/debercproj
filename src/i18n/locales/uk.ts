@@ -82,6 +82,8 @@ export const uk = {
     roundsStat: 'Раундів',
     best: 'Кращий',
     worst: 'Гірший',
+    show: 'Показати статистику',
+    hide: 'Приховати статистику',
   },
   gameHistory: {
     title: 'Історія ігор',

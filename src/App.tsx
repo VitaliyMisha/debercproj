@@ -569,7 +569,7 @@ export default function App() {
                     className="px-4 py-2 bg-card-bg border border-white/10 text-muted text-sm rounded-xl
                       hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]"
                   >
-                    {showStatistics ? 'Приховати статистику' : 'Показати статистику'}
+                    {showStatistics ? t('stats.hide') : t('stats.show')}
                   </button>
                 </div>
               )}
@@ -656,7 +656,7 @@ export default function App() {
                     className="px-4 py-2 bg-card-bg border border-white/10 text-muted text-sm rounded-xl
                       hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]"
                   >
-                    {showSpectatorStatistics ? 'Приховати статистику' : 'Показати статистику'}
+                    {showSpectatorStatistics ? t('stats.hide') : t('stats.show')}
                   </button>
                 </div>
               )}

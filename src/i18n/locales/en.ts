@@ -84,6 +84,8 @@ export const en: typeof uk = {
     roundsStat: 'Rounds',
     best: 'Best',
     worst: 'Worst',
+    show: 'Show statistics',
+    hide: 'Hide statistics',
   },
   gameHistory: {
     title: 'Game History',
