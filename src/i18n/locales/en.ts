@@ -58,6 +58,7 @@ export const en: typeof uk = {
   },
   score: {
     title: 'Score',
+    toWin: '{{n}} pts to win',
   },
   winner: {
     title: 'WINNER',

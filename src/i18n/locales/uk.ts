@@ -56,6 +56,7 @@ export const uk = {
   },
   score: {
     title: 'Рахунок',
+    toWin: '{{n}} очок до перемоги',
   },
   winner: {
     title: 'ПЕРЕМОЖЕЦЬ',

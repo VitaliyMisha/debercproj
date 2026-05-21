@@ -140,13 +140,22 @@
   }
 }
 
-@keyframes goldGlow {
-  0%, 100% {
-    box-shadow: 0 0 0px rgba(255, 215, 0, 0);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-  }
+@keyframes closeFinishOverlay {
+  0%, 100% { background: transparent; }
+  50%       { background: rgba(194, 65, 12, 0.11); }
+}
+
+@keyframes closeFinishScore {
+  0%, 100% { color: var(--color-score-pos); text-shadow: none; }
+  50%       { color: #fbbf24; text-shadow: 0 0 14px rgba(251, 191, 36, 0.65); }
+}
+
+.close-finish-overlay {
+  animation: closeFinishOverlay 1.6s ease-in-out infinite;
+}
+
+.score-close-finish {
+  animation: closeFinishScore 1.6s ease-in-out infinite !important;
 }
 
 @keyframes scoreDeltaFloat {

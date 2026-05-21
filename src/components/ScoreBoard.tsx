@@ -24,10 +24,12 @@ interface PlayerCardProps {
 }
 
 const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isLeader, isDealer, snapshotActive, delta }) => {
+  const { t } = useTranslation();
   const displayScore = useCountUp(score, snapshotActive ? 0 : 300);
   const progress = Math.min(Math.max(score / targetScore, 0), 1) * 100;
   const initial = Array.from(player.name.trim())[0]?.toUpperCase() || '?';
   const isCloseToFinish = !snapshotActive && score > 0 && targetScore - score <= 100;
+  const remaining = targetScore - score;
 
   const leaderStyle = isLeader ? {
     background: 'linear-gradient(#192134, #192134) padding-box, linear-gradient(135deg, #78350F, #FCD34D 45%, #D97706 55%, #78350F) border-box',
@@ -35,7 +37,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
     boxShadow: '0 4px 24px rgba(120, 53, 15, 0.28), inset 0 0 0 0 transparent',
     animation: 'goldPulse 5s ease-in-out infinite',
   } : isCloseToFinish ? {
-    animation: 'goldGlow 1.4s ease-in-out infinite',
+    border: '1.5px solid rgba(251, 191, 36, 0.35)',
   } : undefined;
 
   return (
@@ -47,18 +49,27 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
         }`}
       style={leaderStyle}
     >
+      {/* Warm overlay pulse when close to finish */}
+      {isCloseToFinish && !isLeader && (
+        <div className="absolute inset-0 rounded-2xl pointer-events-none close-finish-overlay" />
+      )}
+
       {/* Avatar + name */}
       <div className="flex items-center gap-2">
         <div
           className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-display shrink-0"
-          style={{ background: 'linear-gradient(135deg, #15803D, #166534)' }}
+          style={{
+            background: isCloseToFinish && !isLeader
+              ? 'linear-gradient(135deg, #c2410c, #ea580c)'
+              : 'linear-gradient(135deg, #15803D, #166534)',
+          }}
         >
           {initial}
         </div>
         <span className="text-white/80 font-sans text-sm font-medium truncate">{player.name}</span>
         <div className="ml-auto flex items-center gap-1">
           {isCloseToFinish && !isLeader && (
-            <span className="text-xs leading-none">🔥</span>
+            <span className="text-base leading-none">🔥</span>
           )}
           {isDealer && (
             <span className="text-xs bg-primary/20 border border-primary/50 text-score-pos px-1.5 py-0.5 rounded-full leading-none">
@@ -73,10 +84,10 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
       <div className="relative">
         <div
           className={`text-3xl text-center transition-all duration-300
-            ${score < 0 ? 'text-score-neg' : 'text-score-pos'}`}
+            ${score < 0 ? 'text-score-neg' : isCloseToFinish && !isLeader ? 'score-close-finish' : 'text-score-pos'}`}
           style={{
             fontFamily: "'Share Tech Mono', monospace",
-            animation: snapshotActive ? 'none' : 'countUp 300ms ease-out',
+            animation: snapshotActive ? 'none' : undefined,
           }}
         >
           {displayScore}
@@ -87,6 +98,16 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
           </div>
         )}
       </div>
+
+      {/* "X pts to win" label — only when close to finish */}
+      {isCloseToFinish && !isLeader && (
+        <p
+          className="text-center text-xs font-semibold tracking-wide"
+          style={{ color: '#fbbf24', animation: 'closeFinishScore 1.6s ease-in-out infinite' }}
+        >
+          {t('score.toWin', { n: remaining })}
+        </p>
+      )}
 
       {/* Progress bar — inset / embossed into the felt */}
       <div
@@ -100,7 +121,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
             background: isLeader
               ? 'linear-gradient(90deg, #92400E, #FCD34D)'
               : isCloseToFinish
-                ? 'linear-gradient(90deg, #EA580C, #FBBF24)'
+                ? 'linear-gradient(90deg, #15803d, #4ade80 65%, #fbbf24 85%, #ea580c)'
                 : 'var(--color-primary)',
             animation: snapshotActive ? 'none' : 'progressFill 600ms ease',
           }}
