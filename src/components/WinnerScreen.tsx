@@ -14,6 +14,7 @@ interface WinnerScreenProps {
   onNewGame?: () => void;
   onContinue?: () => void;
   soundEnabled?: boolean;
+  hideAnimation?: boolean;
 }
 
 export const WinnerScreen: React.FC<WinnerScreenProps> = ({
@@ -24,6 +25,7 @@ export const WinnerScreen: React.FC<WinnerScreenProps> = ({
   onNewGame,
   onContinue,
   soundEnabled = true,
+  hideAnimation = false,
 }) => {
   const { fanfare } = useSound();
   const { t } = useTranslation();
@@ -35,7 +37,7 @@ export const WinnerScreen: React.FC<WinnerScreenProps> = ({
 
   return (
     <div className="relative flex flex-col items-center gap-6 py-8 px-4">
-      <CardSuitsRain />
+      {!hideAnimation && <CardSuitsRain />}
 
       {/* Trophy */}
       <div className="text-7xl animate-bounce">🏆</div>

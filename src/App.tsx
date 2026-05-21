@@ -431,21 +431,21 @@ export default function App() {
         <span className="absolute -bottom-4 -left-4 text-[22vw] opacity-[0.035] text-white leading-none select-none">♣</span>
         <span className="absolute -bottom-4 -right-4 text-[22vw] opacity-[0.035] text-white leading-none select-none">♦</span>
       </div>
-      {/* Lang toggle — visible when no active host game (GameHeader has it during game) or in spectator mode */}
-      {(!game || !!watchId) && (
-        <button
-          type="button"
-          onClick={handleLangChange}
-          aria-label={lang === 'uk' ? 'Switch to English' : 'Перейти на Українську'}
-          className="fixed top-4 right-4 z-40 w-9 h-9 rounded-xl bg-card-bg border border-white/10 text-xs font-bold text-white/70
-            hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]
-            flex items-center justify-center"
-        >
-          {t('header.langToggle')}
-        </button>
-      )}
       {!watchId ? (
         <>
+          {/* Lang toggle — only on setup/recover screens; GameHeader handles it during active game */}
+          {!game && (
+            <button
+              type="button"
+              onClick={handleLangChange}
+              aria-label={lang === 'uk' ? 'Switch to English' : 'Перейти на Українську'}
+              className="fixed top-4 right-4 z-40 w-9 h-9 rounded-xl bg-card-bg border border-white/10 text-xs font-bold text-white/70
+                hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]
+                flex items-center justify-center"
+            >
+              {t('header.langToggle')}
+            </button>
+          )}
 
           {recoveredState && !game ? (
             <main className="flex items-center justify-center min-h-dvh py-4 px-4">
@@ -603,10 +603,21 @@ export default function App() {
           )}
           {spectator.status === 'live' && spectator.game && (
             <main className="w-full max-w-2xl mx-auto flex flex-col gap-4 p-4">
-              <div className="rounded-2xl bg-card-bg border border-white/8 px-4 py-3 text-center">
-                <p className="text-sm font-semibold text-white/70">
+              <div className="rounded-2xl bg-card-bg border border-white/8 px-4 py-3 flex items-center">
+                <div className="w-9 shrink-0" />
+                <p className="flex-1 text-center text-sm font-semibold text-white/70">
                   {t('share.spectatorBanner', { id: spectator.game.id })}
                 </p>
+                <button
+                  type="button"
+                  onClick={handleLangChange}
+                  aria-label={lang === 'uk' ? 'Switch to English' : 'Перейти на Українську'}
+                  className="w-9 h-9 shrink-0 rounded-xl bg-white/5 border border-white/10 text-xs font-bold text-white/70
+                    hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]
+                    flex items-center justify-center"
+                >
+                  {t('header.langToggle')}
+                </button>
               </div>
               <ScoreBoard
                 players={spectator.game.players}
@@ -625,6 +636,7 @@ export default function App() {
                     totals={spectatorTotals as Record<string, number>}
                     roundCount={spectator.game.rounds.length}
                     soundEnabled={false}
+                    hideAnimation
                   />
                 </Suspense>
               )}

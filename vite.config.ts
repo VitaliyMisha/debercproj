@@ -16,6 +16,7 @@ export default defineConfig({
                 short_name: 'Деберц',
                 description: 'Рахунок для карточної гри Деберц',
                 start_url: '/',
+                scope: '/',
                 display: 'standalone',
                 background_color: '#0A1A0C',
                 theme_color: '#0A1A0C',
