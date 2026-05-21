@@ -647,6 +647,15 @@ export default function App() {
                 gameRules={spectator.gameRules ?? undefined}
                 readOnly
               />
+              {spectator.game.rounds.length > 0 && spectator.gameRules && (
+                <Suspense fallback={null}>
+                  <PlayerStatistics
+                    game={spectator.game}
+                    players={spectator.game.players}
+                    gameRules={spectator.gameRules}
+                  />
+                </Suspense>
+              )}
             </main>
           )}
         </>
