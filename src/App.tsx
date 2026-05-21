@@ -588,7 +588,7 @@ export default function App() {
         </>
       ) : (
         <>
-          {spectator.status === 'loading' && (
+          {(spectator.status === 'loading' || (spectator.status === 'live' && !spectator.game)) && (
             <main className="flex items-center justify-center min-h-dvh">
               <p className="text-muted text-sm">{t('share.spectatorLoading')}</p>
             </main>

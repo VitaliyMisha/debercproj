@@ -29,8 +29,11 @@ export function useSpectator(watchId: string | null): SpectatorState {
     gameRules: null,
     status: watchId ? 'loading' : 'not_found',
   });
-  // Track whether the first Firebase callback has fired
   const firstCallRef = useRef(true);
+  // Debounce 'ended' to survive transient null snapshots during game continuation.
+  // When host continues a game, Firebase may briefly report the path as empty before
+  // the new game data arrives. Without the debounce the spectator flashes "game ended".
+  const endedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!watchId) return;
@@ -42,11 +45,22 @@ export function useSpectator(watchId: string | null): SpectatorState {
       firstCallRef.current = false;
 
       if (!snapshot.exists()) {
-        setState((prev) => ({
-          ...prev,
-          status: isFirst ? 'not_found' : 'ended',
-        }));
+        if (isFirst) {
+          setState((prev) => ({ ...prev, status: 'not_found' }));
+        } else {
+          // Wait before committing 'ended' — a 'live' update may arrive within ms
+          // if the host just continued the game (transient empty snapshot).
+          endedTimerRef.current = setTimeout(() => {
+            setState((prev) => ({ ...prev, status: 'ended' }));
+          }, 1500);
+        }
         return;
+      }
+
+      // Live data arrived — cancel any pending 'ended' transition.
+      if (endedTimerRef.current !== null) {
+        clearTimeout(endedTimerRef.current);
+        endedTimerRef.current = null;
       }
 
       const data = snapshot.val() as {
@@ -65,7 +79,13 @@ export function useSpectator(watchId: string | null): SpectatorState {
       });
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      if (endedTimerRef.current !== null) {
+        clearTimeout(endedTimerRef.current);
+        endedTimerRef.current = null;
+      }
+    };
   }, [watchId]);
 
   return state;
