@@ -431,21 +431,21 @@ export default function App() {
         <span className="absolute -bottom-4 -left-4 text-[22vw] opacity-[0.035] text-white leading-none select-none">♣</span>
         <span className="absolute -bottom-4 -right-4 text-[22vw] opacity-[0.035] text-white leading-none select-none">♦</span>
       </div>
+      {/* Lang toggle — visible when no active host game (GameHeader has it during game) or in spectator mode */}
+      {(!game || !!watchId) && (
+        <button
+          type="button"
+          onClick={handleLangChange}
+          aria-label={lang === 'uk' ? 'Switch to English' : 'Перейти на Українську'}
+          className="fixed top-4 right-4 z-40 w-9 h-9 rounded-xl bg-card-bg border border-white/10 text-xs font-bold text-white/70
+            hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]
+            flex items-center justify-center"
+        >
+          {t('header.langToggle')}
+        </button>
+      )}
       {!watchId ? (
         <>
-          {/* Global lang toggle — visible on all screens except during game (GameHeader has it there) */}
-          {!game && (
-            <button
-              type="button"
-              onClick={handleLangChange}
-              aria-label={lang === 'uk' ? 'Switch to English' : 'Перейти на Українську'}
-              className="fixed top-4 right-4 z-40 w-9 h-9 rounded-xl bg-card-bg border border-white/10 text-xs font-bold text-white/70
-                hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]
-                flex items-center justify-center"
-            >
-              {t('header.langToggle')}
-            </button>
-          )}
 
           {recoveredState && !game ? (
             <main className="flex items-center justify-center min-h-dvh py-4 px-4">
