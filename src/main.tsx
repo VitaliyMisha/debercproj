@@ -10,3 +10,5 @@ root.render(
         <App />
     </React.StrictMode>
 );
+
+document.getElementById('app-loading')?.remove();
