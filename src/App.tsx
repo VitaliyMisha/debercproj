@@ -46,6 +46,7 @@ export default function App() {
   const [error, setError] = useState<string>('');
   const [hasHistoryShown, setHasHistoryShown] = useState(false);
   const [showStatistics, setShowStatistics] = useState(false);
+  const [showSpectatorStatistics, setShowSpectatorStatistics] = useState(false);
   const [snapshotRound, setSnapshotRound] = useState<number | null>(null);
   const [recoveredState, setRecoveredState] = useState<SavedGameState | null>(() => loadGameState());
   const [playerNames, setPlayerNames] = useState<string[]>(() => loadPlayerNames());
@@ -647,7 +648,19 @@ export default function App() {
                 gameRules={spectator.gameRules ?? undefined}
                 readOnly
               />
-              {spectator.game.rounds.length > 0 && spectator.gameRules && (
+              {spectator.game.rounds.length > 0 && (
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowSpectatorStatistics((prev) => !prev)}
+                    className="px-4 py-2 bg-card-bg border border-white/10 text-muted text-sm rounded-xl
+                      hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]"
+                  >
+                    {showSpectatorStatistics ? 'Приховати статистику' : 'Показати статистику'}
+                  </button>
+                </div>
+              )}
+              {showSpectatorStatistics && spectator.game.rounds.length > 0 && spectator.gameRules && (
                 <Suspense fallback={null}>
                   <PlayerStatistics
                     game={spectator.game}
