@@ -1,6 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Game, GameRulesConfig, Player, Round, SavedGameState } from './types';
+import { useSpectator } from './hooks/useSpectator';
 
 import SetupScreen from './components/SetupScreen';
 import RoundForm from './components/RoundForm';
@@ -32,6 +33,9 @@ const defaultGameRules: GameRulesConfig = {
 };
 
 export default function App() {
+  const watchId = useMemo(() => new URLSearchParams(window.location.search).get('watch'), []);
+  const spectator = useSpectator(watchId);
+
   const [playerCount, setPlayerCount] = useState(2);
   const [targetScore, setTargetScore] = useState(1020);
   const [names, setNames] = useState<string[]>(Array(2).fill(''));
@@ -298,6 +302,19 @@ export default function App() {
     return calculateGameTotals(game, gameRules);
   }, [game, gameRules]);
 
+  const spectatorTotals = useMemo(() => {
+    if (!watchId || !spectator.game || !spectator.gameRules) return {};
+    return calculateGameTotals(spectator.game, spectator.gameRules);
+  }, [watchId, spectator.game, spectator.gameRules]);
+
+  const spectatorWinnerObj = useMemo(
+    () =>
+      spectator.game && spectator.winnerPlayer !== null
+        ? (spectator.game.players.find((p) => p.id === spectator.winnerPlayer) ?? null)
+        : null,
+    [spectator.game, spectator.winnerPlayer],
+  );
+
   useEffect(() => {
     if (!game || !soundEnabled) return;
     for (const p of game.players) {
@@ -414,156 +431,213 @@ export default function App() {
         <span className="absolute -bottom-4 -left-4 text-[22vw] opacity-[0.035] text-white leading-none select-none">♣</span>
         <span className="absolute -bottom-4 -right-4 text-[22vw] opacity-[0.035] text-white leading-none select-none">♦</span>
       </div>
-      {/* Global lang toggle — visible on all screens except during game (GameHeader has it there) */}
-      {!game && (
-        <button
-          type="button"
-          onClick={handleLangChange}
-          aria-label={lang === 'uk' ? 'Switch to English' : 'Перейти на Українську'}
-          className="fixed top-4 right-4 z-40 w-9 h-9 rounded-xl bg-card-bg border border-white/10 text-xs font-bold text-white/70
-            hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]
-            flex items-center justify-center"
-        >
-          {t('header.langToggle')}
-        </button>
-      )}
-
-      {recoveredState && !game ? (
-        <main className="flex items-center justify-center min-h-dvh py-4 px-4">
-          <RecoverScreen
-            savedState={recoveredState}
-            gameRules={gameRules}
-            onRecover={handleRecover}
-            onDiscard={handleDiscard}
-          />
-        </main>
-      ) : !game ? (
-        <main className="flex items-center justify-center min-h-dvh py-4 px-4">
-          <SetupScreen
-            playerCount={playerCount}
-            onPlayerCountChange={setPlayerCount}
-            targetScore={targetScore}
-            onTargetScoreChange={setTargetScore}
-            names={names}
-            onNamesChange={setNames}
-            dealerIndex={dealerIndex}
-            onDealerIndexChange={setDealerIndex}
-            gameRules={gameRules}
-            onRulesChange={setGameRules}
-            playerNames={playerNames}
-            onStart={() => createGame()}
-          />
-        </main>
-      ) : (
-        <main className="w-full max-w-2xl mx-auto flex flex-col gap-4 p-4">
-          <GameHeader
-            gameId={game.id}
-            targetScore={targetScore}
-            dealerName={game.players.find((p) => p.id === game.dealerId)?.name || ''}
-            onNewGame={resetGame}
-            hasRounds={game.rounds.length > 0}
-            soundEnabled={soundEnabled}
-            onSoundToggle={() => setSoundEnabled((prev) => !prev)}
-            lang={lang}
-            onLangChange={handleLangChange}
-            isSharing={isSharing}
-            onShareOpen={handleShareOpen}
-          />
-
-          {hasHistoryShown && <GameHistory players={game.players} />}
-
-          {game.rounds.length > 0 && (
-            <RoundTimeline
-              totalRounds={game.rounds.length + (winnerPlayer !== null ? 0 : 1)}
-              currentRound={game.rounds.length + (winnerPlayer !== null ? 0 : 1)}
-              snapshotRound={snapshotRound}
-              onSelectRound={(r) => setSnapshotRound(r)}
-              onExitSnapshot={() => setSnapshotRound(null)}
-            />
+      {!watchId ? (
+        <>
+          {/* Global lang toggle — visible on all screens except during game (GameHeader has it there) */}
+          {!game && (
+            <button
+              type="button"
+              onClick={handleLangChange}
+              aria-label={lang === 'uk' ? 'Switch to English' : 'Перейти на Українську'}
+              className="fixed top-4 right-4 z-40 w-9 h-9 rounded-xl bg-card-bg border border-white/10 text-xs font-bold text-white/70
+                hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]
+                flex items-center justify-center"
+            >
+              {t('header.langToggle')}
+            </button>
           )}
 
-          <ScoreBoard
-            players={game.players}
-            totals={displayTotals}
-            targetScore={targetScore}
-            dealerId={
-              snapshotRound !== null
-                ? game.rounds[snapshotRound - 1]?.dealerId
-                : game.dealerId
-            }
-            snapshotActive={snapshotRound !== null}
-            deltas={roundDeltas}
-            deltaKey={deltaKey}
-          />
-
-          {winnerObj ? (
-            <Suspense fallback={null}>
-              <WinnerScreen
-                winner={winnerObj}
-                players={game.players}
-                totals={totals}
-                roundCount={game.rounds.length}
-                onNewGame={resetGame}
-                onContinue={continueGame}
-                soundEnabled={soundEnabled}
+          {recoveredState && !game ? (
+            <main className="flex items-center justify-center min-h-dvh py-4 px-4">
+              <RecoverScreen
+                savedState={recoveredState}
+                gameRules={gameRules}
+                onRecover={handleRecover}
+                onDiscard={handleDiscard}
               />
-            </Suspense>
+            </main>
+          ) : !game ? (
+            <main className="flex items-center justify-center min-h-dvh py-4 px-4">
+              <SetupScreen
+                playerCount={playerCount}
+                onPlayerCountChange={setPlayerCount}
+                targetScore={targetScore}
+                onTargetScoreChange={setTargetScore}
+                names={names}
+                onNamesChange={setNames}
+                dealerIndex={dealerIndex}
+                onDealerIndexChange={setDealerIndex}
+                gameRules={gameRules}
+                onRulesChange={setGameRules}
+                playerNames={playerNames}
+                onStart={() => createGame()}
+              />
+            </main>
           ) : (
-            <>
-              {snapshotRound === null && (
-                <>
-                  {error && (
-                    <div className="bg-score-neg/10 border border-score-neg/40 text-score-neg px-4 py-3 rounded-xl text-sm">
-                      {error}
-                    </div>
-                  )}
-                  <RoundForm
+            <main className="w-full max-w-2xl mx-auto flex flex-col gap-4 p-4">
+              <GameHeader
+                gameId={game.id}
+                targetScore={targetScore}
+                dealerName={game.players.find((p) => p.id === game.dealerId)?.name || ''}
+                onNewGame={resetGame}
+                hasRounds={game.rounds.length > 0}
+                soundEnabled={soundEnabled}
+                onSoundToggle={() => setSoundEnabled((prev) => !prev)}
+                lang={lang}
+                onLangChange={handleLangChange}
+                isSharing={isSharing}
+                onShareOpen={handleShareOpen}
+              />
+
+              {hasHistoryShown && <GameHistory players={game.players} />}
+
+              {game.rounds.length > 0 && (
+                <RoundTimeline
+                  totalRounds={game.rounds.length + (winnerPlayer !== null ? 0 : 1)}
+                  currentRound={game.rounds.length + (winnerPlayer !== null ? 0 : 1)}
+                  snapshotRound={snapshotRound}
+                  onSelectRound={(r) => setSnapshotRound(r)}
+                  onExitSnapshot={() => setSnapshotRound(null)}
+                />
+              )}
+
+              <ScoreBoard
+                players={game.players}
+                totals={displayTotals}
+                targetScore={targetScore}
+                dealerId={
+                  snapshotRound !== null
+                    ? game.rounds[snapshotRound - 1]?.dealerId
+                    : game.dealerId
+                }
+                snapshotActive={snapshotRound !== null}
+                deltas={roundDeltas}
+                deltaKey={deltaKey}
+              />
+
+              {winnerObj ? (
+                <Suspense fallback={null}>
+                  <WinnerScreen
+                    winner={winnerObj}
                     players={game.players}
-                    scores={scores}
-                    onScoreChange={(e, id) => setScores({ ...scores, [id]: e.target.value })}
-                    onAddRound={addRound}
-                    roundNumber={game.rounds.length + 1}
-                    isAddDisabled={isAddDisabled}
-                    gameRules={gameRules}
-                    onChipClick={soundEnabled ? handleChipClick : undefined}
+                    totals={totals}
+                    roundCount={game.rounds.length}
+                    onNewGame={resetGame}
+                    onContinue={continueGame}
+                    soundEnabled={soundEnabled}
                   />
+                </Suspense>
+              ) : (
+                <>
+                  {snapshotRound === null && (
+                    <>
+                      {error && (
+                        <div className="bg-score-neg/10 border border-score-neg/40 text-score-neg px-4 py-3 rounded-xl text-sm">
+                          {error}
+                        </div>
+                      )}
+                      <RoundForm
+                        players={game.players}
+                        scores={scores}
+                        onScoreChange={(e, id) => setScores({ ...scores, [id]: e.target.value })}
+                        onAddRound={addRound}
+                        roundNumber={game.rounds.length + 1}
+                        isAddDisabled={isAddDisabled}
+                        gameRules={gameRules}
+                        onChipClick={soundEnabled ? handleChipClick : undefined}
+                      />
+                    </>
+                  )}
                 </>
               )}
-            </>
-          )}
 
-          <RoundHistory
-            rounds={game.rounds}
-            players={game.players}
-            onUpdateRound={updateRound}
-            gameRules={gameRules}
-            snapshotRound={snapshotRound}
-            onUndoLastRound={winnerObj === null ? handleUndoLastRound : undefined}
-          />
-
-          {game.rounds.length > 0 && (
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={() => setShowStatistics(!showStatistics)}
-                className="px-4 py-2 bg-card-bg border border-white/10 text-muted text-sm rounded-xl
-                  hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]"
-              >
-                {showStatistics ? 'Приховати статистику' : 'Показати статистику'}
-              </button>
-            </div>
-          )}
-
-          {showStatistics && game.rounds.length > 0 && (
-            <Suspense fallback={null}>
-              <PlayerStatistics
-                game={game}
+              <RoundHistory
+                rounds={game.rounds}
                 players={game.players}
+                onUpdateRound={updateRound}
                 gameRules={gameRules}
+                snapshotRound={snapshotRound}
+                onUndoLastRound={winnerObj === null ? handleUndoLastRound : undefined}
               />
-            </Suspense>
+
+              {game.rounds.length > 0 && (
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowStatistics(!showStatistics)}
+                    className="px-4 py-2 bg-card-bg border border-white/10 text-muted text-sm rounded-xl
+                      hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]"
+                  >
+                    {showStatistics ? 'Приховати статистику' : 'Показати статистику'}
+                  </button>
+                </div>
+              )}
+
+              {showStatistics && game.rounds.length > 0 && (
+                <Suspense fallback={null}>
+                  <PlayerStatistics
+                    game={game}
+                    players={game.players}
+                    gameRules={gameRules}
+                  />
+                </Suspense>
+              )}
+            </main>
           )}
-        </main>
+        </>
+      ) : (
+        <>
+          {spectator.status === 'loading' && (
+            <main className="flex items-center justify-center min-h-dvh">
+              <p className="text-muted text-sm">{t('share.spectatorLoading')}</p>
+            </main>
+          )}
+          {(spectator.status === 'not_found' || spectator.status === 'ended') && (
+            <main className="flex items-center justify-center min-h-dvh px-6 text-center">
+              <p className="text-muted text-sm">
+                {spectator.status === 'not_found'
+                  ? t('share.spectatorNotFound')
+                  : t('share.spectatorEnded')}
+              </p>
+            </main>
+          )}
+          {spectator.status === 'live' && spectator.game && (
+            <main className="w-full max-w-2xl mx-auto flex flex-col gap-4 p-4">
+              <div className="rounded-2xl bg-card-bg border border-white/8 px-4 py-3 text-center">
+                <p className="text-sm font-semibold text-white/70">
+                  {t('share.spectatorBanner', { id: spectator.game.id })}
+                </p>
+              </div>
+              <ScoreBoard
+                players={spectator.game.players}
+                totals={spectatorTotals as Record<string, number>}
+                targetScore={spectator.targetScore}
+                dealerId={spectator.game.dealerId}
+                snapshotActive={false}
+                deltas={null}
+                deltaKey={0}
+              />
+              {spectatorWinnerObj && (
+                <Suspense fallback={null}>
+                  <WinnerScreen
+                    winner={spectatorWinnerObj}
+                    players={spectator.game.players}
+                    totals={spectatorTotals as Record<string, number>}
+                    roundCount={spectator.game.rounds.length}
+                    soundEnabled={false}
+                  />
+                </Suspense>
+              )}
+              <RoundHistory
+                rounds={spectator.game.rounds}
+                players={spectator.game.players}
+                onUpdateRound={() => {}}
+                gameRules={spectator.gameRules ?? undefined}
+                readOnly
+              />
+            </main>
+          )}
+        </>
       )}
       {showShareSheet && shareCode && game && (
         <ShareSheet
