@@ -12,9 +12,10 @@ interface RoundHistoryProps {
   gameRules?: GameRulesConfig;
   snapshotRound?: number | null;
   onUndoLastRound?: () => void;
+  readOnly?: boolean;
 }
 
-const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRound, gameRules, snapshotRound, onUndoLastRound }) => {
+const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRound, gameRules, snapshotRound, onUndoLastRound, readOnly = false }) => {
   const { t } = useTranslation();
   const [editingRound, setEditingRound] = useState<number | null>(null);
   const [editScores, setEditScores] = useState<Record<string, string>>({});
@@ -91,7 +92,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
           <h2 className="text-muted text-xs font-semibold uppercase tracking-widest">{t('history.title')}</h2>
         </div>
         <div className="flex items-center gap-2">
-          {!collapsed && onUndoLastRound && (
+          {!collapsed && onUndoLastRound && !readOnly && (
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); setConfirmingUndo(true); }}
@@ -144,7 +145,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                     </span>
                   )}
                 </div>
-                {!isEditing && (
+                {!isEditing && !readOnly && (
                   <button
                     type="button"
                     onClick={() => startEditing(round)}
