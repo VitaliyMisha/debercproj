@@ -11,8 +11,8 @@ interface WinnerScreenProps {
   players: Player[];
   totals: Record<string, number>;
   roundCount: number;
-  onNewGame: () => void;
-  onContinue: () => void;
+  onNewGame?: () => void;
+  onContinue?: () => void;
   soundEnabled?: boolean;
 }
 
@@ -101,14 +101,20 @@ export const WinnerScreen: React.FC<WinnerScreenProps> = ({
       </div>
 
       {/* Actions */}
-      <div className="flex flex-col gap-3 w-full max-w-xs">
-        <Button fullWidth onClick={onNewGame} className="py-4 text-base">
-          {t('winner.newGame')}
-        </Button>
-        <Button fullWidth variant="secondary" onClick={onContinue} className="py-3 text-base">
-          {t('winner.continue')}
-        </Button>
-      </div>
+      {(onNewGame || onContinue) && (
+        <div className="flex flex-col gap-3 w-full max-w-xs">
+          {onNewGame && (
+            <Button fullWidth onClick={onNewGame} className="py-4 text-base">
+              {t('winner.newGame')}
+            </Button>
+          )}
+          {onContinue && (
+            <Button fullWidth variant="secondary" onClick={onContinue} className="py-3 text-base">
+              {t('winner.continue')}
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 };
