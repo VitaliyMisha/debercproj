@@ -48,77 +48,85 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
           ♠ ♥ ♦ ♣
         </div>
 
-        <div className="relative z-10 flex items-center justify-between">
-          <div>
-            <h1 className="font-display text-2xl gold-gradient-text">{t('app.title')}</h1>
-            <p className="text-muted text-sm">
-              {t('header.gameInfo', { id: gameId, score: targetScore })}
-            </p>
+        <div className="relative z-10 flex flex-col gap-3">
+          {/* Row 1: title + icon buttons */}
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="font-display text-2xl gold-gradient-text">{t('app.title')}</h1>
+              <p className="text-muted text-sm">
+                {t('header.gameInfo', { id: gameId, score: targetScore })}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              {onShareOpen && (
+                <button
+                  type="button"
+                  onClick={onShareOpen}
+                  aria-label={t('share.title')}
+                  className={`w-9 h-9 rounded-xl border text-base
+                    hover:border-white/30 transition-all duration-150 active:scale-[0.97]
+                    flex items-center justify-center
+                    ${isSharing
+                      ? 'bg-gold-from/20 border-gold-from/60'
+                      : 'bg-white/5 border-white/10'
+                    }`}
+                >
+                  📡
+                </button>
+              )}
+
+              {onLangChange && (
+                <button
+                  type="button"
+                  onClick={onLangChange}
+                  aria-label={lang === 'uk' ? 'Switch to English' : 'Перейти на Українську'}
+                  className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 text-xs font-bold text-white/70
+                    hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]
+                    flex items-center justify-center"
+                >
+                  {t('header.langToggle')}
+                </button>
+              )}
+
+              {onSoundToggle && (
+                <button
+                  type="button"
+                  onClick={onSoundToggle}
+                  aria-label={soundEnabled ? t('header.soundOff') : t('header.soundOn')}
+                  className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 text-base
+                    hover:border-white/30 transition-all duration-150 active:scale-[0.97]
+                    flex items-center justify-center"
+                >
+                  {soundEnabled ? '🔊' : '🔇'}
+                </button>
+              )}
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {dealerName && (
-              <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3 py-1.5">
-                <span className="text-sm">👑</span>
-                <span className="text-sm text-white/80 font-sans">{dealerName}</span>
-              </div>
-            )}
+          {/* Row 2: dealer chip + new game button */}
+          {(dealerName || onNewGame) && (
+            <div className="flex items-center justify-between">
+              {dealerName ? (
+                <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3 py-1.5">
+                  <span className="text-sm">👑</span>
+                  <span className="text-sm text-white/80 font-sans">{dealerName}</span>
+                </div>
+              ) : <div />}
 
-            {onShareOpen && (
-              <button
-                type="button"
-                onClick={onShareOpen}
-                aria-label={t('share.title')}
-                className={`w-9 h-9 rounded-xl border text-base
-                  hover:border-white/30 transition-all duration-150 active:scale-[0.97]
-                  flex items-center justify-center
-                  ${isSharing
-                    ? 'bg-gold-from/20 border-gold-from/60'
-                    : 'bg-card-bg border-white/10'
-                  }`}
-              >
-                📡
-              </button>
-            )}
-
-            {onLangChange && (
-              <button
-                type="button"
-                onClick={onLangChange}
-                aria-label={lang === 'uk' ? 'Switch to English' : 'Перейти на Українську'}
-                className="w-9 h-9 rounded-xl bg-card-bg border border-white/10 text-xs font-bold text-white/70
-                  hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]
-                  flex items-center justify-center"
-              >
-                {t('header.langToggle')}
-              </button>
-            )}
-
-            {onSoundToggle && (
-              <button
-                type="button"
-                onClick={onSoundToggle}
-                aria-label={soundEnabled ? t('header.soundOff') : t('header.soundOn')}
-                className="w-9 h-9 rounded-xl bg-card-bg border border-white/10 text-base
-                  hover:border-white/30 transition-all duration-150 active:scale-[0.97]
-                  flex items-center justify-center"
-              >
-                {soundEnabled ? '🔊' : '🔇'}
-              </button>
-            )}
-
-            {onNewGame && (
-              <button
-                type="button"
-                onClick={handleNewGame}
-                className="px-4 py-2 rounded-xl bg-card-bg border border-white/10 text-muted text-sm font-semibold
-                  hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-to/60"
-              >
-                {t('header.newGame')}
-              </button>
-            )}
-          </div>
+              {onNewGame && (
+                <button
+                  type="button"
+                  onClick={handleNewGame}
+                  className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-muted text-sm font-semibold
+                    hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]
+                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-to/60"
+                >
+                  {t('header.newGame')}
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
