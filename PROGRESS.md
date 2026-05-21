@@ -1,8 +1,10 @@
 # PROGRESS.md — Деберц Score App
 
-## Поточний стан (2026-05-20)
+## Поточний стан (2026-05-21)
 
 Проєкт у робочому стані. UI перероблено на "Card Table Dark - Vintage" тему. Логіка гри відповідає правилам. Тестів: **107** (усі зелені). PWA коректно працює на Android Chrome.
+
+**Spectator Mode (Firebase)** задеплоєно: хост генерує QR-код, глядачі відкривають посилання `?watch=<code>` і бачать гру в реальному часі (read-only). Backend — Firebase Realtime Database (europe-west1). Глядач бачить ScoreBoard, RoundHistory, PlayerStatistics, WinnerScreen (без анімації та звуку).
 
 **i18n (UK / EN)** задеплоєно: перемикач мови в GameHeader, всі UI-рядки перекладено, вибір мови зберігається в localStorage. Ігрові терміни (Б/ХВ/ВіС) залишаються українськими в обох мовах.
 
@@ -13,6 +15,26 @@
 ---
 
 ## Завершено
+
+### Spectator Mode (2026-05-21)
+- **`src/config/firebase.ts`** — ініціалізація Firebase app + Realtime Database (env vars з `.env.local`)
+- **`src/hooks/useFirebaseSync.ts`** — хук хоста: записує стан гри до `games/${shareCode}` при кожній зміні поки `isSharing`; видаляє запис при зупинці шерингу або unmount
+- **`src/hooks/useSpectator.ts`** — хук глядача: підписується на `onValue(games/${watchId})`; розрізняє `not_found` (перший callback без даних) vs `ended` (дані зникли після отримання) через `firstCallRef`; типи: `SpectatorStatus = 'loading' | 'live' | 'ended' | 'not_found'`
+- **`src/components/ShareSheet.tsx`** — bottom sheet з QR-кодом (`qrcode.react` v4, `QRCodeSVG`), кнопкою копіювання посилання (2с toggle "Скопійовано"), кнопкою "Зупинити шеринг"
+- **`src/App.tsx`** — `watchId` з `?watch=` URL param; `isSharing`/`shareCode`/`showShareSheet` стани; `handleShareOpen` генерує UUID-код; spectator layout у `watchId` гілці; `resetGame` скидає шеринг першим
+- **`src/components/GameHeader.tsx`** — кнопка 📡 коли шеринг активний (gold стиль); `isSharing` + `onShareOpen` пропси
+- **`src/components/RoundHistory.tsx`** — `readOnly?: boolean` пропс: ховає undo та edit кнопки
+- **`src/components/WinnerScreen.tsx`** — `hideAnimation?: boolean` пропс: пропускає `<CardSuitsRain />` для глядача (уникає flash на Android Chrome)
+- **Spectator layout** — баннер з вбудованою кнопкою мови, ScoreBoard, WinnerScreen (опційно), RoundHistory (readOnly), PlayerStatistics з кнопкою Показати/Приховати
+- **Firebase Security Rules**: `"!newData.exists() || newData.child('hostUpdatedAt').exists()"` — дозволяє запис і видалення
+- **env vars**: `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_DATABASE_URL`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_APP_ID` — в `.env.local` (gitignored) і Vercel Dashboard
+- **Loading screen**: `index.html` містить inline зелений splash-screen (`#app-loading`), прибирається при mount React (`main.tsx`)
+- **PWA**: `scope: '/'` явно в `vite.config.ts` manifest для Android deep links
+
+### i18n доповнення (2026-05-21)
+- `setup.playerName` — переклад placeholder імені гравця (виправлено хардкод у `PlayerRow.tsx`)
+- `share.*` — всі рядки для ShareSheet та spectator банера
+- `stats.show` / `stats.hide` — кнопки показу/приховання статистики (хост і глядач)
 
 ### UI (Casino Redesign)
 - Design tokens: felt-green фон, gold gradient, card-bg, Share Tech Mono для цифр
@@ -123,6 +145,10 @@
 - `tests/savedGame.test.ts` — `SavedGameState` serialization + localStorage persistence
 - `tests/playerNames.test.ts` — `loadPlayerNames` / `savePlayerNames`
 
+**Не покрито тестами (навмисно):**
+- `useFirebaseSync` / `useSpectator` — Firebase integration hooks; потребують `@testing-library/react` + Firebase mock; логіка тривіальна і визначена зовнішнім SDK
+- UI-компоненти (`ShareSheet`, spectator layout) — React render тести; проект не має RTL setup
+
 ### useSound hook (повністю підключено, 2026-05-19)
 - `src/hooks/useSound.ts` — Web Audio API без зовнішніх файлів
 - `fanfare()` — використовується у `WinnerScreen.tsx` на маунті
@@ -171,3 +197,4 @@
 - Повна історія ігор між сесіями (localStorage зберігає тільки winCounts + поточну гру)
 - Поділитись результатом (share card для WhatsApp/Telegram)
 - iPad layout improvements
+- React Testing Library для UI/hook тестів (ShareSheet, useSpectator, useFirebaseSync)
