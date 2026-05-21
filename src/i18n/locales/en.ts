@@ -104,4 +104,14 @@ export const en: typeof uk = {
     invalidScores: 'Fill in all fields with valid values (number, Б, ХВ, or ВІС).',
     invalidScoresNoVis: 'Fill in all fields with valid values (number, Б, or ХВ).',
   },
+  share: {
+    title: 'Share Game',
+    copyLink: 'Copy Link',
+    copied: '✓ Copied',
+    stopSharing: 'Stop Sharing',
+    spectatorBanner: '👁 Spectator Mode · Game #{{id}}',
+    spectatorLoading: 'Loading game...',
+    spectatorEnded: 'Game ended or sharing was stopped',
+    spectatorNotFound: 'Game not found. Check the link.',
+  },
 };
