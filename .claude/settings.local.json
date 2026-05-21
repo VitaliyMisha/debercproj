@@ -34,7 +34,8 @@
       "Bash(xxd /Users/vitaliymisha/WebstormProjects/debercproj/src/utils/gameHelpers.ts)",
       "Bash(xxd /Users/vitaliymisha/WebstormProjects/debercproj/tests/savedGame.test.ts)",
       "Skill(superpowers:finishing-a-development-branch)",
-      "Bash(xargs ls -la)"
+      "Bash(xargs ls -la)",
+      "Bash(git check-ignore *)"
     ]
   },
   "hooks": {
