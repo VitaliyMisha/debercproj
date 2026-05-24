@@ -70,8 +70,13 @@ export function useSpectator(watchId: string | null): SpectatorState {
         gameRules: GameRulesConfig;
       };
 
+      // Firebase omits empty arrays — restore them so game.rounds is always an array.
+      const game: Game | null = data.game
+        ? { ...data.game, rounds: data.game.rounds ?? [], players: data.game.players ?? [] }
+        : null;
+
       setState({
-        game: data.game ?? null,
+        game,
         targetScore: data.targetScore ?? 1020,
         winnerPlayer: data.winnerPlayer ?? null,
         gameRules: data.gameRules ?? DEFAULT_RULES,
