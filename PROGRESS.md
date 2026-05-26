@@ -1,10 +1,10 @@
 # PROGRESS.md — Деберц Score App
 
-## Поточний стан (2026-05-21)
+## Поточний стан (2026-05-26)
 
 Проєкт у робочому стані. UI перероблено на "Card Table Dark - Vintage" тему. Логіка гри відповідає правилам. Тестів: **107** (усі зелені). PWA коректно працює на Android Chrome.
 
-**Spectator Mode (Firebase)** задеплоєно: хост генерує QR-код, глядачі відкривають посилання `?watch=<code>` і бачать гру в реальному часі (read-only). Backend — Firebase Realtime Database (europe-west1). Глядач бачить ScoreBoard, RoundHistory, PlayerStatistics, WinnerScreen (без анімації та звуку).
+**Spectator Mode (Firebase)** задеплоєно: хост генерує QR-код, глядачі відкривають посилання `?watch=<code>` і бачать гру в реальному часі (read-only). Backend — Firebase Realtime Database (europe-west1). Глядач бачить ScoreBoard, RoundHistory, PlayerStatistics, WinnerScreen (без анімації та звуку). Виправлено два баги білого екрану у глядача (деталі нижче).
 
 **i18n (UK / EN)** задеплоєно: перемикач мови в GameHeader, всі UI-рядки перекладено, вибір мови зберігається в localStorage. Ігрові терміни (Б/ХВ/ВіС) залишаються українськими в обох мовах.
 
@@ -16,10 +16,16 @@
 
 ## Завершено
 
+### Spectator bugfixes (2026-05-26)
+- **`src/hooks/useSpectator.ts`** — два фікси білого екрану у глядача:
+  1. **Дебаунс `'ended'`** (1.5с): Firebase може коротко повертати null під час `set()` при продовженні гри хостом — без дебаунсу глядач бачив blank screen. `endedTimerRef` скасовується якщо до нього прийдуть нові live-дані.
+  2. **Відновлення порожніх масивів**: Firebase Realtime Database не зберігає `[]` — при читанні `game.rounds` і `game.players` могли бути `undefined`. `calculateGameTotals` викликав `undefined.forEach()` → React crash → білий екран. Фікс: `rounds: data.game.rounds ?? []`, `players: data.game.players ?? []`.
+- **`src/App.tsx`** — fallback loading state для `status === 'live' && !game` (короткий проміжок між станами).
+
 ### Spectator Mode (2026-05-21)
 - **`src/config/firebase.ts`** — ініціалізація Firebase app + Realtime Database (env vars з `.env.local`)
 - **`src/hooks/useFirebaseSync.ts`** — хук хоста: записує стан гри до `games/${shareCode}` при кожній зміні поки `isSharing`; видаляє запис при зупинці шерингу або unmount
-- **`src/hooks/useSpectator.ts`** — хук глядача: підписується на `onValue(games/${watchId})`; розрізняє `not_found` (перший callback без даних) vs `ended` (дані зникли після отримання) через `firstCallRef`; типи: `SpectatorStatus = 'loading' | 'live' | 'ended' | 'not_found'`
+- **`src/hooks/useSpectator.ts`** — хук глядача: підписується на `onValue(games/${watchId})`; розрізняє `not_found` (перший callback без даних) vs `ended` (дані зникли після отримання) через `firstCallRef`; типи: `SpectatorStatus = 'loading' | 'live' | 'ended' | 'not_found'`; **дебаунс 1.5с** для переходу в `'ended'` — запобігає flash коли Firebase тимчасово повертає null під час продовження гри хостом
 - **`src/components/ShareSheet.tsx`** — bottom sheet з QR-кодом (`qrcode.react` v4, `QRCodeSVG`), кнопкою копіювання посилання (2с toggle "Скопійовано"), кнопкою "Зупинити шеринг"
 - **`src/App.tsx`** — `watchId` з `?watch=` URL param; `isSharing`/`shareCode`/`showShareSheet` стани; `handleShareOpen` генерує UUID-код; spectator layout у `watchId` гілці; `resetGame` скидає шеринг першим
 - **`src/components/GameHeader.tsx`** — кнопка 📡 коли шеринг активний (gold стиль); `isSharing` + `onShareOpen` пропси
