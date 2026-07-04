@@ -23,9 +23,11 @@ interface PlayerCardProps {
   snapshotActive: boolean;
   delta?: number;
   deltaKey?: number;
+  /** Card spans both grid columns (hero card for the top player in a 3-player game). */
+  spanFull?: boolean;
 }
 
-const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isLeader, isDealer, snapshotActive, delta, deltaKey }) => {
+const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isLeader, isDealer, snapshotActive, delta, deltaKey, spanFull = false }) => {
   const { t } = useTranslation();
   const displayScore = useCountUp(score, snapshotActive ? 0 : 300);
   const progress = Math.min(Math.max(score / targetScore, 0), 1) * 100;
@@ -44,6 +46,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
   return (
     <div
       className={`relative flex flex-col gap-2 p-4 rounded-2xl transition-all duration-300
+        ${spanFull ? 'col-span-2' : ''}
         ${isLeader
           ? 'bg-card-bg'
           : 'bg-card-bg/60 border border-white/8'
@@ -142,18 +145,13 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
   // Only highlight a leader once at least one score is non-zero (game has started).
   const hasLeader = players.length > 1 && players.some((p) => (totals[String(p.id)] ?? 0) !== 0);
 
-  const gridClass =
-    players.length === 2
-      ? 'grid-cols-2'
-      : players.length === 3
-        ? 'grid-cols-3'
-        : 'grid-cols-2';
-
+  // Always two columns: 3-player games get a full-width "hero" card for the top
+  // player (grid-cols-3 made cards too narrow on mobile — truncated names/badges).
   return (
     <div>
       <h2 className="text-muted text-xs font-semibold uppercase tracking-widest mb-3">{t('score.title')}</h2>
-      <div className={`grid ${gridClass} gap-3`}>
-        {sorted.map((player) => (
+      <div className="grid grid-cols-2 gap-3">
+        {sorted.map((player, idx) => (
           <PlayerCard
             key={player.id}
             player={player}
@@ -164,6 +162,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
             snapshotActive={snapshotActive}
             delta={snapshotActive ? undefined : (deltas?.[String(player.id)] ?? undefined)}
             deltaKey={deltaKey}
+            spanFull={players.length === 3 && idx === 0}
           />
         ))}
       </div>
