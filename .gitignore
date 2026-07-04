@@ -29,3 +29,6 @@ Thumbs.db
 
 # Superpowers brainstorm sessions (local visual companion temp files)
 .superpowers/
+
+# Superpowers plans/specs (local working docs)
+docs/superpowers/
