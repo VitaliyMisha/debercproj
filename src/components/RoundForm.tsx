@@ -2,6 +2,7 @@ import React, { ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Player } from '../types';
 import { GameRulesConfig } from '../types';
+import { Avatar } from './Avatar';
 
 interface RoundFormProps {
   players: Player[];
@@ -94,12 +95,7 @@ const RoundForm: React.FC<RoundFormProps> = ({
             <div key={p.id} className="space-y-2">
               {/* Player row: avatar + name + input */}
               <div className="flex items-center gap-3">
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-display shrink-0"
-                  style={{ background: 'linear-gradient(135deg, #15803D, #166534)' }}
-                >
-                  {Array.from(p.name.trim())[0]?.toUpperCase() || '?'}
-                </div>
+                <Avatar name={p.name} />
                 <span className="flex-1 text-white/80 font-sans text-sm truncate">{p.name}</span>
 
                 <div className="relative shrink-0 w-28">

@@ -5,6 +5,9 @@ import {
   calculateGameTotals,
   generateUniqueId,
   getVisDisplayValue,
+  findWinner,
+  validateRoundTokens,
+  bestOpponent,
 } from '../src/utils/gameHelpers';
 import { Game, GameRulesConfig, Player } from '../src/types';
 
@@ -545,5 +548,84 @@ describe('generateUniqueId', () => {
     const a = generateUniqueId();
     const b = generateUniqueId();
     expect(a).not.toBe(b);
+  });
+});
+
+// ─── parseScore — нульові штрафи (?? замість ||) ─────────────────────────────
+
+describe('parseScore with zero penalties', () => {
+  const zeroRules: GameRulesConfig = { ...rules, hvPenalty: 0, secondBPenalty: 0 };
+
+  it('ХВ returns 0 when hvPenalty is configured as 0', () => {
+    expect(parseScore('ХВ', '1', [], zeroRules)).toBe(0);
+  });
+
+  it('second Б returns 0 when secondBPenalty is configured as 0', () => {
+    const prior = [round(1, { '1': 'Б', '2': 50 })];
+    expect(parseScore('Б', '1', prior, zeroRules)).toBe(0);
+  });
+});
+
+// ─── findWinner ──────────────────────────────────────────────────────────────
+
+describe('findWinner', () => {
+  it('returns null when nobody reached the target', () => {
+    const g = game([round(1, { '1': 100, '2': 90 })]);
+    expect(findWinner(g, rules, 510)).toBeNull();
+  });
+
+  it('returns the single player at or above target', () => {
+    const g = game([round(1, { '1': 510, '2': 90 })]);
+    expect(findWinner(g, rules, 510)).toBe(1);
+  });
+
+  it('returns null when two contenders tie at the max score', () => {
+    const g = game([round(1, { '1': 520, '2': 520 })]);
+    expect(findWinner(g, rules, 510)).toBeNull();
+  });
+
+  it('returns the highest of several contenders', () => {
+    const g = game([round(1, { '1': 520, '2': 530 })]);
+    expect(findWinner(g, rules, 510)).toBe(2);
+  });
+});
+
+// ─── validateRoundTokens ─────────────────────────────────────────────────────
+
+describe('validateRoundTokens', () => {
+  it('returns null for a valid round', () => {
+    expect(validateRoundTokens({ '1': '120', '2': 'Б' })).toBeNull();
+  });
+
+  it("returns 'oneB' when two players have Б", () => {
+    expect(validateRoundTokens({ '1': 'Б', '2': 'Б' })).toBe('oneB');
+  });
+
+  it("returns 'oneVis' when two players have ВіС", () => {
+    expect(validateRoundTokens({ '1': 'ВІС', '2': 'віс' })).toBe('oneVis');
+  });
+
+  it('normalises case and whitespace', () => {
+    expect(validateRoundTokens({ '1': ' б ', '2': 'Б' })).toBe('oneB');
+  });
+
+  it('allows one Б and one ВіС in the same round', () => {
+    expect(validateRoundTokens({ '1': 'Б', '2': 'ВІС', '3': '50' })).toBeNull();
+  });
+});
+
+// ─── bestOpponent ────────────────────────────────────────────────────────────
+
+describe('bestOpponent', () => {
+  it('returns the highest-scoring opponent with their id', () => {
+    expect(bestOpponent({ '1': 50, '2': 90, '3': 70 }, 1)).toEqual({ playerId: 2, score: 90 });
+  });
+
+  it('treats token scores (Б/ХВ/ВіС) as 0', () => {
+    expect(bestOpponent({ '1': 50, '2': 'Б', '3': 'ВІС' }, 1)).toEqual({ playerId: 2, score: 0 });
+  });
+
+  it('ignores the own score even if it is the highest', () => {
+    expect(bestOpponent({ '1': 999, '2': 10 }, 1)).toEqual({ playerId: 2, score: 10 });
   });
 });

@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Player } from '../types';
 import { useCountUp } from '../hooks/useCountUp';
+import { Avatar } from './Avatar';
 
 interface ScoreBoardProps {
   players: Player[];
@@ -21,13 +22,13 @@ interface PlayerCardProps {
   isDealer: boolean;
   snapshotActive: boolean;
   delta?: number;
+  deltaKey?: number;
 }
 
-const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isLeader, isDealer, snapshotActive, delta }) => {
+const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isLeader, isDealer, snapshotActive, delta, deltaKey }) => {
   const { t } = useTranslation();
   const displayScore = useCountUp(score, snapshotActive ? 0 : 300);
   const progress = Math.min(Math.max(score / targetScore, 0), 1) * 100;
-  const initial = Array.from(player.name.trim())[0]?.toUpperCase() || '?';
   const isCloseToFinish = !snapshotActive && score > 0 && targetScore - score <= 100;
   const remaining = targetScore - score;
 
@@ -56,16 +57,10 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
 
       {/* Avatar + name */}
       <div className="flex items-center gap-2">
-        <div
-          className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-display shrink-0"
-          style={{
-            background: isCloseToFinish && !isLeader
-              ? 'linear-gradient(135deg, #c2410c, #ea580c)'
-              : 'linear-gradient(135deg, #15803D, #166534)',
-          }}
-        >
-          {initial}
-        </div>
+        <Avatar
+          name={player.name}
+          background={isCloseToFinish && !isLeader ? 'linear-gradient(135deg, #c2410c, #ea580c)' : undefined}
+        />
         <span className="text-white/80 font-sans text-sm font-medium truncate">{player.name}</span>
         <div className="ml-auto flex items-center gap-1">
           {isCloseToFinish && !isLeader && (
@@ -93,7 +88,8 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
           {displayScore}
         </div>
         {delta !== undefined && delta !== 0 && (
-          <div className={`score-delta ${delta > 0 ? 'pos' : 'neg'}`}>
+          // key restarts the CSS float animation each round without remounting the whole card
+          <div key={deltaKey} className={`score-delta ${delta > 0 ? 'pos' : 'neg'}`}>
             {delta > 0 ? '+' : ''}{delta}
           </div>
         )}
@@ -159,7 +155,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
       <div className={`grid ${gridClass} gap-3`}>
         {sorted.map((player) => (
           <PlayerCard
-            key={`${player.id}-${deltaKey ?? 0}`}
+            key={player.id}
             player={player}
             score={totals[String(player.id)] ?? 0}
             targetScore={targetScore}
@@ -167,6 +163,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
             isDealer={player.id === dealerId}
             snapshotActive={snapshotActive}
             delta={snapshotActive ? undefined : (deltas?.[String(player.id)] ?? undefined)}
+            deltaKey={deltaKey}
           />
         ))}
       </div>

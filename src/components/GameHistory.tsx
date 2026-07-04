@@ -2,19 +2,23 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Trophy } from 'lucide-react';
 import { Player } from '../types';
+import { Avatar } from './Avatar';
 
 interface GameHistoryProps {
   players: Player[];
 }
 
 const GameHistory: React.FC<GameHistoryProps> = ({ players }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
-  const victoryLabel = (n: number): string => {
-    if (n === 1) return t('gameHistory.wins.one');
-    if (n >= 2 && n <= 4) return t('gameHistory.wins.few');
-    return t('gameHistory.wins.many');
+  // Intl.PluralRules handles Ukrainian correctly (21 → one, 22 → few, 11 → many);
+  // for English it yields one/other, and 'other' maps onto the 'many' key.
+  const pluralCategory = (n: number): 'one' | 'few' | 'many' => {
+    const cat = new Intl.PluralRules(i18n.language).select(n);
+    return cat === 'one' || cat === 'few' ? cat : 'many';
   };
+
+  const victoryLabel = (n: number): string => t(`gameHistory.wins.${pluralCategory(n)}`);
 
   if (players.length === 0) return null;
 
@@ -27,11 +31,7 @@ const GameHistory: React.FC<GameHistoryProps> = ({ players }) => {
 
   const sorted = [...players].sort((a, b) => b.winCount - a.winCount);
 
-  const gamesLabel = totalGames === 1
-    ? t('gameHistory.games.one')
-    : totalGames < 5
-      ? t('gameHistory.games.few')
-      : t('gameHistory.games.many');
+  const gamesLabel = t(`gameHistory.games.${pluralCategory(totalGames)}`);
 
   return (
     <div className="bg-card-bg rounded-2xl border border-white/8 overflow-hidden">
@@ -51,7 +51,6 @@ const GameHistory: React.FC<GameHistoryProps> = ({ players }) => {
           const isChampion = isLeader && !isSharedLead;
           const isTied = isLeader && isSharedLead;
           const progress = hasWins ? (player.winCount / maxWins) * 100 : 0;
-          const initial = Array.from(player.name.trim())[0]?.toUpperCase() || String(idx + 1);
 
           return (
             <div key={player.id} className="flex items-center gap-3 px-4 py-3">
@@ -63,20 +62,20 @@ const GameHistory: React.FC<GameHistoryProps> = ({ players }) => {
               </span>
 
               {/* Avatar */}
-              <div
-                className={`w-9 h-9 rounded-full flex items-center justify-center font-display text-base shrink-0 ${
-                  isChampion ? 'ring-2 ring-gold-from' : ''
-                }`}
-                style={{
-                  background: isChampion
+              <Avatar
+                name={player.name}
+                fallback={String(idx + 1)}
+                className={`w-9 h-9 text-base text-white ${isChampion ? 'ring-2 ring-gold-from' : ''}`}
+                background={
+                  isChampion
                     ? 'linear-gradient(135deg, #78350F, #D97706)'
                     : isTied
                       ? 'linear-gradient(135deg, #92400E, #F59E0B)'
-                      : 'linear-gradient(135deg, #15803D, #166534)',
-                }}
+                      : undefined
+                }
               >
-                {isChampion ? '👑' : initial}
-              </div>
+                {isChampion ? '👑' : undefined}
+              </Avatar>
 
               {/* Name + bar */}
               <div className="flex-1 min-w-0">

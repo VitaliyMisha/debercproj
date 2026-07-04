@@ -23,6 +23,7 @@ export const uk = {
     playersSection: 'Гравці',
     dealerHint: '(👑 = дилер)',
     rulesLabel: 'Правила',
+    setDealer: 'Призначити дилером',
     startGame: '🎴 Почати гру',
     penaltyBLabel: 'Штраф за 2-гу "Б"',
     penaltyHVLabel: 'Штраф за "ХВ"',
@@ -75,6 +76,11 @@ export const uk = {
   },
   common: {
     cancel: 'Скасувати',
+    close: 'Закрити',
+    sheetCloseHint: 'Проведіть вниз або торкніться фону щоб закрити',
+  },
+  timeline: {
+    backToGame: '← Повернутись до гри',
   },
   stats: {
     title: 'Детальна статистика',

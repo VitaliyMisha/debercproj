@@ -25,6 +25,7 @@ export const en: typeof uk = {
     playersSection: 'Players',
     dealerHint: '(👑 = dealer)',
     rulesLabel: 'Rules',
+    setDealer: 'Make dealer',
     startGame: '🎴 Start Game',
     penaltyBLabel: 'Penalty for 2nd "Б"',
     penaltyHVLabel: 'Penalty for "ХВ"',
@@ -77,6 +78,11 @@ export const en: typeof uk = {
   },
   common: {
     cancel: 'Cancel',
+    close: 'Close',
+    sheetCloseHint: 'Swipe down or tap the backdrop to close',
+  },
+  timeline: {
+    backToGame: '← Back to game',
   },
   stats: {
     title: 'Detailed Statistics',

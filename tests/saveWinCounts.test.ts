@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { saveWinCounts, loadWinCounts } from '../src/utils/gameHelpers';
+import { saveWinCounts, loadWinCounts, winCountKey } from '../src/utils/gameHelpers';
 
 const localStorageMock = (() => {
     let store: Record<string, string> = {};
@@ -33,5 +33,16 @@ describe('Win Counts Persistence', () => {
         const loaded = loadWinCounts();
 
         expect(loaded).toEqual(testCounts);
+    });
+});
+
+describe('winCountKey', () => {
+    it('lowercases and trims the name so counts survive re-typed names', () => {
+        expect(winCountKey('  Заєць ')).toBe('заєць');
+        expect(winCountKey('ЗАЄЦЬ')).toBe(winCountKey('заєць'));
+    });
+
+    it('keeps easter-egg emoji prefixes as part of the key', () => {
+        expect(winCountKey('🐰 Заєць')).toBe('🐰 заєць');
     });
 });

@@ -4,6 +4,7 @@ import { Player } from '../types';
 import { CardSuitsRain } from './CardSuitsRain';
 import { Button } from './Button';
 import { GoldDivider } from './GoldDivider';
+import { Avatar } from './Avatar';
 import { useSound } from '../hooks/useSound';
 
 interface WinnerScreenProps {
@@ -50,12 +51,7 @@ export const WinnerScreen: React.FC<WinnerScreenProps> = ({
         className="w-full max-w-xs bg-card-bg rounded-2xl border-2 border-gold-from p-6 text-center"
         style={{ animation: 'goldPulse 3s ease-in-out infinite' }}
       >
-        <div
-          className="w-16 h-16 rounded-full mx-auto mb-3 flex items-center justify-center text-white text-2xl font-display"
-          style={{ background: 'linear-gradient(135deg, #15803D, #166534)' }}
-        >
-          {Array.from(winner.name.trim())[0]?.toUpperCase() || '?'}
-        </div>
+        <Avatar name={winner.name} className="w-16 h-16 text-2xl text-white mx-auto mb-3" />
         <p className="font-display text-2xl text-white mb-1">{winner.name}</p>
         <p className="text-muted text-sm">
           {t('winner.scoreRounds', { score: totals[String(winner.id)] ?? 0, rounds: roundCount })}

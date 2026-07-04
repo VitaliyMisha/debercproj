@@ -28,9 +28,9 @@ Single-page React app for scoring the Ukrainian card game Деберц (Deberc).
 
 **Core data flow:**
 - `src/types.ts` — `Player`, `Round`, `Game`, `GameRulesConfig`, `SavedGameState` interfaces (source of truth for shape)
-- `src/utils/gameHelpers.ts` — all pure game logic: `calculateGameTotals`, `parseScore`, `isValidScore`, `getVisDisplayValue`, `loadWinCounts`, `saveWinCounts`, `generateUniqueId`, `saveGameState`, `loadGameState`, `clearSavedGame`, `loadPlayerNames`, `savePlayerNames`
-- `src/hooks/useSound.ts` — Web Audio API hook: `fanfare` (used in WinnerScreen on mount), plus `chipClick`, `roundSubmit`, `undoPop` (implemented, not wired)
-- `src/App.tsx` — owns all game state, orchestrates components, calls helpers
+- `src/utils/gameHelpers.ts` — all pure game logic: `calculateGameTotals`, `parseScore`, `isValidScore`, `getVisDisplayValue`, `findWinner`, `validateRoundTokens`, `bestOpponent`, `winCountKey`, `DEFAULT_GAME_RULES`, `loadWinCounts`, `saveWinCounts`, `generateUniqueId`, `saveGameState`, `loadGameState`, `clearGameState`, `loadPlayerNames`, `savePlayerNames`
+- `src/hooks/useSound.ts` — Web Audio API hook: 12 sounds, all wired (fanfare, chipClick, roundSubmit, undoPop, bSound, secondBSound, hvSound, visPlay, visWin/visLose, closeFinish, newGame)
+- `src/App.tsx` — owns all game state, orchestrates components, calls helpers. `syncWinner` applies winCount transitions exactly once per winner change (null→id increments, id→null reverts, idA→idB does both) — round edits after a win must NOT double-increment
 
 **Key components:**
 - `SetupScreen.tsx` — game setup with `NameInput` for player names
@@ -38,9 +38,11 @@ Single-page React app for scoring the Ukrainian card game Деберц (Deberc).
 - `RecoverScreen.tsx` — shown at startup if saved game exists; offers Resume or New Game
 - `ScoreBoard.tsx` — live scores with leader highlight, progress bars, close-to-finish indicator
 - `RoundForm.tsx` — per-player score entry with casino chip buttons (Б/ХВ/ВіС)
-- `RoundHistory.tsx` — history table with undo chip, inline edit
+- `RoundHistory.tsx` — history table with undo chip, inline edit (validates one-Б/one-ВіС via `validateRoundTokens`; `onUpdateRound` returning `false` keeps the editor open)
 - `GameHeader.tsx` — sound toggle, undo, new game (via ConfirmSheet)
-- `ConfirmSheet.tsx` — reusable bottom sheet for confirmations
+- `BottomSheet.tsx` — shared bottom sheet primitive (backdrop, slide-up, swipe-down-to-close); used by `ConfirmSheet`, `PenaltySheet`, `ShareSheet`
+- `Avatar.tsx` — shared player avatar (`initialOf` helper); used in RoundForm, ScoreBoard, PlayerStatistics, GameHistory, WinnerScreen, RecoverScreen
+- `LangToggleButton.tsx` — shared УК/EN toggle; `LANG_STORAGE_KEY` exported from `src/i18n`
 - `WinnerScreen.tsx` — victory screen with CardSuitsRain + fanfare
 
 **Score entry values (stored in `Round.scores` as `Record<string, number | string>`):**
@@ -54,11 +56,12 @@ Single-page React app for scoring the Ukrainian card game Деберц (Deberc).
 `getVisDisplayValue` resolves what to show in the history for a ВіС cell — returns `'ВіС'` (lowercase U+0456, display token) when won/pending/tied, `'Б'` on first loss, or penalty number on subsequent losses. Accepts both `'ВіС'` and `'ВІС'` via `.toUpperCase()` normalization.
 
 **localStorage keys:**
-- `gameId` — auto-incrementing game counter
+- `gameId` — game counter within a "continue" series (reset to 1 on New Game)
 - `gameRules` — `GameRulesConfig` JSON
-- `playerWinCounts` — `Record<playerId, winCount>` persisted across games
-- `savedGame` — `SavedGameState` JSON: auto-saved active game; shown in RecoverScreen on next launch
+- `playerWinCounts` — `Record<winCountKey(name), winCount>`: keyed by normalised player NAME (ids are regenerated every game, so id keys would never match)
+- `savedGame` — `SavedGameState` JSON (game + targetScore + winnerPlayer + gameRules): auto-saved active game; shown in RecoverScreen on next launch. `gameRules` is optional (legacy saves)
 - `playerNames` — `string[]` JSON: deduped list of all player names used (powers NameInput dropdown)
+- `lang` — 'uk' | 'en' (`LANG_STORAGE_KEY` in `src/i18n`)
 
 ## Code style
 
@@ -75,6 +78,8 @@ Linter/formatter: **Biome** (not ESLint/Prettier). Config in `biome.json`:
 - **Logic**: Дотримуйся TDD для бізнес-логіки в `src/utils/` (Vitest). Повний набір тестів у `tests/helpers.test.ts`.
 - **Rules**: Джерело правди для правил гри — `docs/GAME_RULES.md`.
 - **Linting**: `bun run lint` (Biome) — обов'язково перед commit.
+- **Type-check**: `tsconfig.json` включає і `src`, і `tests` — тести теж перевіряються tsc.
+- **Penalties**: штрафи (`hvPenalty`, `secondBPenalty`) можуть бути `0` — використовуй `??`, ніколи `||`, для fallback.
 
 ## Continuity
 - **Session Start**: Читай `PROGRESS.md` ПЕРШИМ — там поточний стан та next steps.

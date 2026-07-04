@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { SavedGameState, GameRulesConfig } from '../types';
 import { calculateGameTotals } from '../utils/gameHelpers';
 import { Button } from './Button';
+import { Avatar } from './Avatar';
 
 interface RecoverScreenProps {
   savedState: SavedGameState;
@@ -19,7 +20,8 @@ export const RecoverScreen: React.FC<RecoverScreenProps> = ({
 }) => {
   const { game, targetScore, winnerPlayer } = savedState;
   const { t } = useTranslation();
-  const totals = calculateGameTotals(game, gameRules);
+  // Prefer the rules the saved game was played with; fall back for older saves.
+  const totals = calculateGameTotals(game, savedState.gameRules ?? gameRules);
   const roundCount = game.rounds.length;
   const isFinished = winnerPlayer !== null;
 
@@ -54,9 +56,11 @@ export const RecoverScreen: React.FC<RecoverScreenProps> = ({
               <div key={player.id} className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-sm font-display text-white/70">
-                      {Array.from(player.name.trim())[0]?.toUpperCase() ?? '?'}
-                    </div>
+                    <Avatar
+                      name={player.name}
+                      className="w-8 h-8 text-sm text-white/70 bg-white/10 border border-white/20"
+                      background={null}
+                    />
                     <span className="text-white text-sm font-medium font-sans">
                       {player.name}
                       {isWinner && <span className="ml-1.5 text-xs text-[#FBBF24]">👑</span>}

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface RoundTimelineProps {
   totalRounds: number;
@@ -15,6 +16,7 @@ export const RoundTimeline: React.FC<RoundTimelineProps> = ({
   onSelectRound,
   onExitSnapshot,
 }) => {
+  const { t } = useTranslation();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,7 +36,7 @@ export const RoundTimeline: React.FC<RoundTimelineProps> = ({
           onClick={onExitSnapshot}
           className="text-gold-to text-sm font-semibold text-center py-2 bg-gold-from/10 border border-gold-from/30 rounded-xl active:scale-[0.97] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-to/60"
         >
-          ← Повернутись до гри
+          {t('timeline.backToGame')}
         </button>
       )}
 

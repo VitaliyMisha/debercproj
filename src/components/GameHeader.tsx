@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmSheet } from './ConfirmSheet';
+import { LangToggleButton } from './LangToggleButton';
 
 interface GameHeaderProps {
   gameId: number;
@@ -76,18 +77,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
                 </button>
               )}
 
-              {onLangChange && (
-                <button
-                  type="button"
-                  onClick={onLangChange}
-                  aria-label={lang === 'uk' ? 'Switch to English' : 'Перейти на Українську'}
-                  className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 text-xs font-bold text-white/70
-                    hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]
-                    flex items-center justify-center"
-                >
-                  {t('header.langToggle')}
-                </button>
-              )}
+              {onLangChange && <LangToggleButton lang={lang} onClick={onLangChange} />}
 
               {onSoundToggle && (
                 <button

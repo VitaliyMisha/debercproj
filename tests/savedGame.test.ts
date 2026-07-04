@@ -52,4 +52,26 @@ describe('savedGame persistence', () => {
     clearGameState();
     expect(localStorage.getItem('savedGame')).toBeNull();
   });
+
+  it('persists gameRules and restores them on load', () => {
+    const withRules: SavedGameState = {
+      ...mockState,
+      gameRules: {
+        secondBPenalty: -200,
+        hvPenalty: -50,
+        allowVis: false,
+        customTargetScore: false,
+        targetScoreOptions: [510, 1020],
+      },
+    };
+    saveGameState(withRules);
+    expect(loadGameState()?.gameRules?.hvPenalty).toBe(-50);
+  });
+
+  it('legacy save without gameRules still loads (gameRules absent)', () => {
+    saveGameState(mockState);
+    const loaded = loadGameState();
+    expect(loaded).not.toBeNull();
+    expect(loaded?.gameRules).toBeUndefined();
+  });
 });

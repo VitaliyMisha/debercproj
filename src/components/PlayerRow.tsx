@@ -44,7 +44,7 @@ export const PlayerRow: React.FC<PlayerRowProps> = ({
       <button
         type="button"
         onClick={onSetDealer}
-        title="Призначити дилером"
+        title={t('setup.setDealer')}
         aria-pressed={isDealer}
         className={`w-10 h-10 rounded-full flex items-center justify-center font-display text-lg shrink-0
           transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-to/60

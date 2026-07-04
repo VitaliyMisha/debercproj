@@ -13,24 +13,51 @@ import ScoreBoard from './components/ScoreBoard';
 
 const WinnerScreen = lazy(() => import('./components/WinnerScreen'));
 const PlayerStatistics = lazy(() => import('./components/PlayerStatistics'));
-import { generateUniqueId, isValidScore, loadWinCounts, parseScore, saveWinCounts, calculateGameTotals, saveGameState, loadGameState, clearGameState, loadPlayerNames, savePlayerNames } from './utils/gameHelpers';
+import {
+  DEFAULT_GAME_RULES,
+  bestOpponent,
+  calculateGameTotals,
+  clearGameState,
+  findWinner,
+  generateUniqueId,
+  isValidScore,
+  loadGameState,
+  loadPlayerNames,
+  loadWinCounts,
+  parseScore,
+  saveGameState,
+  savePlayerNames,
+  saveWinCounts,
+  validateRoundTokens,
+  winCountKey,
+} from './utils/gameHelpers';
 import RecoverScreen from './components/RecoverScreen';
 import { useSound } from './hooks/useSound';
 import { useFirebaseSync } from './hooks/useFirebaseSync';
 import ShareSheet from './components/ShareSheet';
+import LangToggleButton from './components/LangToggleButton';
+import { LANG_STORAGE_KEY } from './i18n';
 
 const GAME_ID = 'gameId';
 const GAME_RULES_KEY = 'gameRules';
 const SOUND_KEY = 'soundEnabled';
-const LANG_KEY = 'lang';
 
-const defaultGameRules: GameRulesConfig = {
-  secondBPenalty: -100,
-  hvPenalty: -100,
-  allowVis: true,
-  customTargetScore: false,
-  targetScoreOptions: [510, 1020],
-};
+/** Show/hide toggle under the round history — shared by host and spectator layouts. */
+function StatsToggle({ shown, onToggle }: { shown: boolean; onToggle: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <div className="text-center">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="px-4 py-2 bg-card-bg border border-white/10 text-muted text-sm rounded-xl
+          hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]"
+      >
+        {shown ? t('stats.hide') : t('stats.show')}
+      </button>
+    </div>
+  );
+}
 
 export default function App() {
   const watchId = useMemo(() => new URLSearchParams(window.location.search).get('watch'), []);
@@ -57,18 +84,18 @@ export default function App() {
 
   const [gameRules, setGameRules] = useState<GameRulesConfig>(() => {
     const stored = localStorage.getItem(GAME_RULES_KEY);
-    return stored ? JSON.parse(stored) : defaultGameRules;
+    return stored ? JSON.parse(stored) : DEFAULT_GAME_RULES;
   });
 
   const [soundEnabled, setSoundEnabled] = useState<boolean>(() => localStorage.getItem(SOUND_KEY) !== 'false');
   const { i18n, t } = useTranslation();
   const [lang, setLang] = useState<'uk' | 'en'>(() =>
-    (localStorage.getItem(LANG_KEY) as 'uk' | 'en') ?? 'uk'
+    (localStorage.getItem(LANG_STORAGE_KEY) as 'uk' | 'en') ?? 'uk'
   );
   const handleLangChange = useCallback(() => {
     const next: 'uk' | 'en' = lang === 'uk' ? 'en' : 'uk';
     setLang(next);
-    localStorage.setItem(LANG_KEY, next);
+    localStorage.setItem(LANG_STORAGE_KEY, next);
     i18n.changeLanguage(next);
   }, [lang, i18n]);
   const handleShareOpen = useCallback(() => {
@@ -125,8 +152,8 @@ export default function App() {
       if (!recoveredState) clearGameState();
       return;
     }
-    saveGameState({ game, targetScore, winnerPlayer });
-  }, [game, targetScore, winnerPlayer, recoveredState]);
+    saveGameState({ game, targetScore, winnerPlayer, gameRules });
+  }, [game, targetScore, winnerPlayer, gameRules, recoveredState]);
 
   // Cleanup deltaTimerRef on unmount to prevent setState on unmounted component
   // warning in React 18 strict mode and tests.
@@ -139,7 +166,6 @@ export default function App() {
   const createGame = (
     reusePlayers?: Player[],
     showHistory = false,
-    preserveWinCounts = false,
     startingDealerId?: number,
   ) => {
     closeFinishFiredRef.current.clear();
@@ -148,11 +174,13 @@ export default function App() {
       savePlayerNames(names);
       setPlayerNames(loadPlayerNames());
     }
+    // Win counts are keyed by normalised name (ids are regenerated every game).
     const winCounts = loadWinCounts();
-    const players: Player[] = reusePlayers || names.map((name) => {
-      const id = generateUniqueId();
-      return { id, name, winCount: preserveWinCounts ? 0 : winCounts[id] || 0 };
-    });
+    const players: Player[] = reusePlayers || names.map((name) => ({
+      id: generateUniqueId(),
+      name,
+      winCount: winCounts[winCountKey(name)] || 0,
+    }));
     const createdGame: Game = {
       id: gameId,
       createdAt: new Date().toISOString(),
@@ -162,6 +190,7 @@ export default function App() {
     };
     setGame(createdGame);
     setWinnerPlayer(null);
+    setSnapshotRound(null);
     setScores(Object.fromEntries(players.map((p) => [p.id.toString(), ''])));
     setGameId((prev) => prev + 1);
     setError('');
@@ -169,46 +198,51 @@ export default function App() {
     setShowStatistics(false);
   };
 
-  const visCount = game
-    ? Object.values(scores).filter((v) => String(v).toUpperCase() === 'ВІС').length
-    : 0;
-  const bCount = game
-    ? Object.values(scores).filter((v) => String(v).toUpperCase() === 'Б').length
-    : 0;
+  const tokenViolation = game ? validateRoundTokens(scores) : null;
   const isAddDisabled = game
-    ? visCount > 1 || bCount > 1 || game.players.some((p) => !isValidScore(scores[String(p.id)], gameRules))
+    ? tokenViolation !== null || game.players.some((p) => !isValidScore(scores[String(p.id)], gameRules))
     : true;
 
-  const updateWinner = (currentGame: Game) => {
-    const totals = calculateGameTotals(currentGame, gameRules);
-    const contenders = currentGame.players.filter((p) => totals[p.id] >= targetScore);
-    if (contenders.length > 0) {
-      const maxScore = Math.max(...contenders.map((p) => totals[p.id]));
-      const winners = contenders.filter((p) => totals[p.id] === maxScore);
-      if (winners.length === 1) {
-        const winner = winners[0];
-        setWinnerPlayer(winner.id);
-        const updatedPlayers = currentGame.players.map((p) =>
-          p.id === winner.id ? { ...p, winCount: p.winCount + 1 } : p,
-        );
-        setGame({ ...currentGame, players: updatedPlayers });
-        const winCounts = loadWinCounts();
-        winCounts[winner.id] = (winCounts[winner.id] || 0) + 1;
-        saveWinCounts(winCounts);
-      } else {
-        setWinnerPlayer(null);
+  /**
+   * Recomputes the winner and applies winCount transitions exactly once per change:
+   * null → id increments, id → null reverts (a round edit removed the win),
+   * idA → idB reverts A and increments B. Re-running with the same winner is a no-op,
+   * so editing rounds after a win no longer double-increments winCount.
+   * Returns the game with adjusted player winCounts — caller passes it to setGame.
+   */
+  const syncWinner = (currentGame: Game): Game => {
+    const newWinner = findWinner(currentGame, gameRules, targetScore);
+    if (newWinner === winnerPlayer) return currentGame;
+
+    const winCounts = loadWinCounts();
+    let players = currentGame.players;
+
+    if (winnerPlayer !== null) {
+      const prev = players.find((p) => p.id === winnerPlayer);
+      if (prev) {
+        players = players.map((p) => (p.id === prev.id ? { ...p, winCount: Math.max(0, p.winCount - 1) } : p));
+        const key = winCountKey(prev.name);
+        winCounts[key] = Math.max(0, (winCounts[key] || 0) - 1);
       }
     }
+    if (newWinner !== null) {
+      const next = players.find((p) => p.id === newWinner);
+      if (next) {
+        players = players.map((p) => (p.id === next.id ? { ...p, winCount: p.winCount + 1 } : p));
+        const key = winCountKey(next.name);
+        winCounts[key] = (winCounts[key] || 0) + 1;
+      }
+    }
+
+    saveWinCounts(winCounts);
+    setWinnerPlayer(newWinner);
+    return { ...currentGame, players };
   };
 
   const addRound = () => {
     if (!game || winnerPlayer !== null) return;
-    if (bCount > 1) {
-      setError(t('error.oneB'));
-      return;
-    }
-    if (visCount > 1) {
-      setError(t('error.oneVis'));
+    if (tokenViolation !== null) {
+      setError(t(tokenViolation === 'oneB' ? 'error.oneB' : 'error.oneVis'));
       return;
     }
     if (isAddDisabled) {
@@ -239,7 +273,7 @@ export default function App() {
     setDeltaKey((k) => k + 1);
     deltaTimerRef.current = setTimeout(() => setRoundDeltas(null), 2000);
 
-    setGame(updatedGame);
+    setGame(syncWinner(updatedGame));
     setSnapshotRound(null);
     setScores(Object.fromEntries(updatedGame.players.map((p) => [p.id.toString(), ''])));
     setError('');
@@ -262,14 +296,10 @@ export default function App() {
           if (String(val).toUpperCase() === 'ВІС') {
             const playerId = Number(playerIdStr);
             const ownScore = typeof updatedScores[playerIdStr] === 'number' ? (updatedScores[playerIdStr] as number) : 0;
-            const bestOpponent = Math.max(
-              ...game.players
-                .filter((p) => p.id !== playerId)
-                .map((p) => (typeof updatedScores[String(p.id)] === 'number' ? (updatedScores[String(p.id)] as number) : 0)),
-            );
-            if (ownScore > bestOpponent) visWin();
-            else if (ownScore < bestOpponent) visLose();
-            // ownScore === bestOpponent → tie → no sound (ВіС carries forward)
+            const bestOppScore = bestOpponent(updatedScores, playerId).score;
+            if (ownScore > bestOppScore) visWin();
+            else if (ownScore < bestOppScore) visLose();
+            // ownScore === bestOppScore → tie → no sound (ВіС carries forward)
           }
         }
       }
@@ -277,25 +307,30 @@ export default function App() {
 
     // Haptic fires when sound is off (roundSubmit() already includes haptic when sound is on)
     if (!soundEnabled && 'vibrate' in navigator) navigator.vibrate(30);
-
-    updateWinner(updatedGame);
   };
 
-  const updateRound = (roundNumber: number, newScores: Record<string, string>) => {
-    if (!game) return;
+  /** Returns false when the edit violates the one-Б / one-ВіС rule (round is left unchanged). */
+  const updateRound = (roundNumber: number, newScores: Record<string, string>): boolean => {
+    if (!game) return false;
+    const violation = validateRoundTokens(newScores);
+    if (violation !== null) {
+      setError(t(violation === 'oneB' ? 'error.oneB' : 'error.oneVis'));
+      return false;
+    }
     const convertedScores: Record<string, number | string> = {};
-    // Exclude the round being edited so its own prior Б doesn't affect parseScore.
-    const roundsExcludingCurrent = game.rounds.filter((r) => r.number !== roundNumber);
+    // Only rounds played BEFORE the edited one count as "prior" for the Б penalty,
+    // otherwise a Б added to an early round would see later Бs as its predecessors.
+    const priorRounds = game.rounds.filter((r) => r.number < roundNumber);
     Object.entries(newScores).forEach(([playerId, scoreStr]) => {
-      convertedScores[playerId] = parseScore(scoreStr, playerId, roundsExcludingCurrent, gameRules);
+      convertedScores[playerId] = parseScore(scoreStr, playerId, priorRounds, gameRules);
     });
     const updatedRounds = game.rounds.map((r) =>
       r.number === roundNumber ? { ...r, scores: convertedScores } : r,
     );
     const updatedGame: Game = { ...game, rounds: updatedRounds };
-    setGame(updatedGame);
+    setGame(syncWinner(updatedGame));
     setError('');
-    updateWinner(updatedGame);
+    return true;
   };
 
   const totals = useMemo(() => {
@@ -348,6 +383,7 @@ export default function App() {
     setNames(Array(playerCount).fill(''));
     setDealerIndex((dealerIndex + 1) % playerCount);
     setWinnerPlayer(null);
+    setSnapshotRound(null);
     setError('');
     setHasHistoryShown(false);
     setShowStatistics(false);
@@ -358,7 +394,7 @@ export default function App() {
   const continueGame = () => {
     if (game) {
       clearGameState();
-      createGame(game.players, true, true, game.dealerId);
+      createGame(game.players, true, game.dealerId);
     }
   };
 
@@ -390,13 +426,16 @@ export default function App() {
 
   const handleRecover = () => {
     if (!recoveredState) return;
+    // Restore the rules the game was actually played with (older saves lack them).
+    const recoveredRules = recoveredState.gameRules ?? gameRules;
+    if (recoveredState.gameRules) setGameRules(recoveredState.gameRules);
     setGame(recoveredState.game);
     setTargetScore(recoveredState.targetScore);
     setWinnerPlayer(recoveredState.winnerPlayer);
     setScores(Object.fromEntries(recoveredState.game.players.map((p) => [p.id.toString(), ''])));
 
     // Pre-populate so close-finish sound doesn't re-fire for players already near target
-    const recoveredTotals = calculateGameTotals(recoveredState.game, gameRules);
+    const recoveredTotals = calculateGameTotals(recoveredState.game, recoveredRules);
     closeFinishFiredRef.current.clear();
     for (const p of recoveredState.game.players) {
       const score = recoveredTotals[p.id] ?? 0;
@@ -436,16 +475,11 @@ export default function App() {
         <>
           {/* Lang toggle — only on setup/recover screens; GameHeader handles it during active game */}
           {!game && (
-            <button
-              type="button"
+            <LangToggleButton
+              lang={lang}
               onClick={handleLangChange}
-              aria-label={lang === 'uk' ? 'Switch to English' : 'Перейти на Українську'}
-              className="fixed top-4 right-4 z-40 w-9 h-9 rounded-xl bg-card-bg border border-white/10 text-xs font-bold text-white/70
-                hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]
-                flex items-center justify-center"
-            >
-              {t('header.langToggle')}
-            </button>
+              className="fixed top-4 right-4 z-40 bg-card-bg border-white/10"
+            />
           )}
 
           {recoveredState && !game ? (
@@ -562,16 +596,7 @@ export default function App() {
               />
 
               {game.rounds.length > 0 && (
-                <div className="text-center">
-                  <button
-                    type="button"
-                    onClick={() => setShowStatistics(!showStatistics)}
-                    className="px-4 py-2 bg-card-bg border border-white/10 text-muted text-sm rounded-xl
-                      hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]"
-                  >
-                    {showStatistics ? t('stats.hide') : t('stats.show')}
-                  </button>
-                </div>
+                <StatsToggle shown={showStatistics} onToggle={() => setShowStatistics((prev) => !prev)} />
               )}
 
               {showStatistics && game.rounds.length > 0 && (
@@ -609,16 +634,7 @@ export default function App() {
                 <p className="flex-1 text-center text-sm font-semibold text-white/70">
                   {t('share.spectatorBanner', { id: spectator.game.id })}
                 </p>
-                <button
-                  type="button"
-                  onClick={handleLangChange}
-                  aria-label={lang === 'uk' ? 'Switch to English' : 'Перейти на Українську'}
-                  className="w-9 h-9 shrink-0 rounded-xl bg-white/5 border border-white/10 text-xs font-bold text-white/70
-                    hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]
-                    flex items-center justify-center"
-                >
-                  {t('header.langToggle')}
-                </button>
+                <LangToggleButton lang={lang} onClick={handleLangChange} className="shrink-0 bg-white/5 border-white/10" />
               </div>
               <ScoreBoard
                 players={spectator.game.players}
@@ -649,16 +665,7 @@ export default function App() {
                 readOnly
               />
               {spectator.game.rounds.length > 0 && (
-                <div className="text-center">
-                  <button
-                    type="button"
-                    onClick={() => setShowSpectatorStatistics((prev) => !prev)}
-                    className="px-4 py-2 bg-card-bg border border-white/10 text-muted text-sm rounded-xl
-                      hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]"
-                  >
-                    {showSpectatorStatistics ? t('stats.hide') : t('stats.show')}
-                  </button>
-                </div>
+                <StatsToggle shown={showSpectatorStatistics} onToggle={() => setShowSpectatorStatistics((prev) => !prev)} />
               )}
               {showSpectatorStatistics && spectator.game.rounds.length > 0 && spectator.gameRules && (
                 <Suspense fallback={null}>

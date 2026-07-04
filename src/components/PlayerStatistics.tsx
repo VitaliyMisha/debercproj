@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { BarChart3 } from 'lucide-react';
 import { Game, Player, GameRulesConfig } from '../types';
 import { calculateGameTotals, getVisDisplayValue } from '../utils/gameHelpers';
+import { Avatar } from './Avatar';
 
 interface PlayerStatisticsProps {
   game: Game;
@@ -38,8 +39,9 @@ const StatCell: React.FC<StatCellProps> = ({ label, value, valueClass = 'text-wh
 
 const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, gameRules }) => {
   const { t } = useTranslation();
-  const hvPenalty = gameRules?.hvPenalty ?? -100;
-  const secondBPenalty = gameRules?.secondBPenalty ?? -100;
+  const hvPenalty = gameRules.hvPenalty;
+  const secondBPenalty = gameRules.secondBPenalty;
+  const totals = calculateGameTotals(game, gameRules);
 
   const calculatePlayerStats = (playerId: number): PlayerStats => {
     let bCount = 0;
@@ -63,12 +65,10 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
       } else if (typeof score === 'string' && score.toUpperCase() === 'ВІС') {
         visCount++;
         countInRounds = false;
-        if (gameRules) {
-          const idx = game.rounds.findIndex((r) => r.id === round.id);
-          const resolved = getVisDisplayValue(idx, playerId, game.rounds, gameRules);
-          if (resolved === 'Б' || (typeof resolved === 'number' && resolved < 0)) {
-            bCount++;
-          }
+        const idx = game.rounds.findIndex((r) => r.id === round.id);
+        const resolved = getVisDisplayValue(idx, playerId, game.rounds, gameRules);
+        if (resolved === 'Б' || (typeof resolved === 'number' && resolved < 0)) {
+          bCount++;
         }
       } else if (typeof score === 'number') {
         effectiveScore = score;
@@ -82,7 +82,7 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
           effectiveScore = hvPenalty;
           negativeRounds++;
         } else {
-          const n = parseInt(score);
+          const n = parseInt(score, 10);
           if (!isNaN(n)) {
             effectiveScore = n;
             if (n === hvPenalty) hvCount++;
@@ -99,7 +99,6 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
       }
     });
 
-    const totals = calculateGameTotals(game, gameRules);
     const avg = roundScores.length > 0
       ? roundScores.reduce((s, v) => s + v, 0) / roundScores.length
       : 0;
@@ -132,18 +131,11 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
 
       <div className="divide-y divide-white/5">
         {allStats.map(({ player, stats }) => {
-          const initial = Array.from(player.name.trim())[0]?.toUpperCase() || '?';
-
           return (
             <div key={player.id} className="px-4 py-4">
               {/* Player header */}
               <div className="flex items-center gap-3 mb-3">
-                <div
-                  className="w-9 h-9 rounded-full flex items-center justify-center font-display text-base text-white shrink-0"
-                  style={{ background: 'linear-gradient(135deg, #15803D, #166534)' }}
-                >
-                  {initial}
-                </div>
+                <Avatar name={player.name} className="w-9 h-9 text-base text-white" />
                 <span className="text-white font-semibold text-sm flex-1 truncate">{player.name}</span>
                 <span className={`font-score text-xl font-bold tabular-nums ${
                   stats.totalScore >= 0 ? 'text-score-pos' : 'text-score-neg'
@@ -169,7 +161,7 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
               </div>
 
               {/* Tokens row — only shown if player has any */}
-              {(stats.bCount > 0 || stats.hvCount > 0 || (gameRules?.allowVis !== false && stats.visCount > 0)) && (
+              {(stats.bCount > 0 || stats.hvCount > 0 || (gameRules.allowVis !== false && stats.visCount > 0)) && (
                 <div className="flex gap-2">
                   {stats.bCount > 0 && (
                     <div className="flex-1 bg-white/5 rounded-lg px-3 py-2 flex items-center justify-between gap-1">
@@ -183,7 +175,7 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
                       <span className="font-score text-sm font-bold text-score-neg">{stats.hvCount}</span>
                     </div>
                   )}
-                  {gameRules?.allowVis !== false && stats.visCount > 0 && (
+                  {gameRules.allowVis !== false && stats.visCount > 0 && (
                     <div className="flex-1 bg-white/5 rounded-lg px-3 py-2 flex items-center justify-between gap-1">
                       <span className="text-muted text-xs">ВіС</span>
                       <span className="font-score text-sm font-bold text-token-vis">{stats.visCount}</span>

@@ -1,6 +1,21 @@
 import { Round, Game, GameRulesConfig, SavedGameState } from '../types';
 
+/** Single source of truth for default rules (used by App and the spectator hook). */
+export const DEFAULT_GAME_RULES: GameRulesConfig = {
+  secondBPenalty: -100,
+  hvPenalty: -100,
+  allowVis: true,
+  customTargetScore: false,
+  targetScoreOptions: [510, 1020],
+};
+
 const WIN_COUNTS_KEY = 'playerWinCounts';
+
+/**
+ * Key for the persisted win-counts record. Player ids are regenerated every
+ * game, so wins are keyed by normalised player name instead.
+ */
+export const winCountKey = (name: string): string => name.trim().toLowerCase();
 
 export const loadWinCounts = (): Record<string, number> => {
     const stored = localStorage.getItem(WIN_COUNTS_KEY);
@@ -30,8 +45,9 @@ export const parseScore = (
     if (typeof value === 'number') return value;
 
     const trimmed = value.toString().trim().toUpperCase();
-    const hvPenalty = gameRules?.hvPenalty || -100;
-    const secondBPenalty = gameRules?.secondBPenalty || -100;
+    // `??` (not `||`): a configured penalty of 0 is a valid value and must not fall back to -100.
+    const hvPenalty = gameRules?.hvPenalty ?? -100;
+    const secondBPenalty = gameRules?.secondBPenalty ?? -100;
 
     if (trimmed === 'ХВ') return hvPenalty;
 
@@ -73,12 +89,10 @@ export const getVisDisplayValue = (
     const resolveRound = rounds[resolveIdx];
     const resolveVal = resolveRound.scores[pid];
     const visScore = typeof resolveVal === 'number' ? resolveVal : 0;
-    const bestOpponent = Object.entries(resolveRound.scores)
-      .filter(([id]) => id !== pid)
-      .reduce((max, [, v]) => Math.max(max, typeof v === 'number' ? v : 0), -Infinity);
+    const bestOppScore = bestOpponent(resolveRound.scores, playerId).score;
 
-    if (visScore > bestOpponent) return 'ВіС'; // won — show original token
-    if (visScore < bestOpponent) break;         // lost — fall through to Б logic
+    if (visScore > bestOppScore) return 'ВіС'; // won — show original token
+    if (visScore < bestOppScore) break;         // lost — fall through to Б logic
     resolveIdx++;                               // tie — carry forward
   }
 
@@ -98,9 +112,7 @@ export const getVisDisplayValue = (
         const prevResRound = rounds[prevResolveIdx];
         const prevResVal = prevResRound.scores[pid];
         const prevVisScore = typeof prevResVal === 'number' ? prevResVal : 0;
-        const prevBestOpp = Object.entries(prevResRound.scores)
-          .filter(([id]) => id !== pid)
-          .reduce((max, [, v]) => Math.max(max, typeof v === 'number' ? v : 0), -Infinity);
+        const prevBestOpp = bestOpponent(prevResRound.scores, playerId).score;
         if (prevVisScore < prevBestOpp) { bCount++; break; }
         if (prevVisScore > prevBestOpp) break;
         prevResolveIdx++;
@@ -114,6 +126,46 @@ export const getVisDisplayValue = (
 export function generateUniqueId(): number {
     return Date.now() + Math.floor(Math.random() * 1000);
 }
+
+/**
+ * Returns the highest-scoring opponent of `playerId` in a round.
+ * Token scores (Б / ХВ / ВіС) count as 0. Used for ВіС resolution.
+ */
+export const bestOpponent = (
+  scores: Round['scores'],
+  playerId: number,
+): { playerId: number; score: number } =>
+  Object.entries(scores)
+    .filter(([id]) => Number(id) !== playerId)
+    .map(([id, val]) => ({ playerId: Number(id), score: typeof val === 'number' ? val : 0 }))
+    .reduce((best, curr) => (curr.score > best.score ? curr : best), { playerId: -1, score: -Infinity });
+
+/**
+ * Determines the winner of a game: the single player with the highest total
+ * at or above the target score. Returns null when nobody reached the target
+ * or when the top contenders are tied.
+ */
+export const findWinner = (game: Game, gameRules: GameRulesConfig, targetScore: number): number | null => {
+  const totals = calculateGameTotals(game, gameRules);
+  const contenders = game.players.filter((p) => totals[p.id] >= targetScore);
+  if (contenders.length === 0) return null;
+  const maxScore = Math.max(...contenders.map((p) => totals[p.id]));
+  const winners = contenders.filter((p) => totals[p.id] === maxScore);
+  return winners.length === 1 ? winners[0].id : null;
+};
+
+export type RoundTokenViolation = 'oneB' | 'oneVis';
+
+/**
+ * Game rule: at most one player may take Б and at most one may play ВіС per round.
+ * Accepts raw form input (numbers or unnormalised token strings).
+ */
+export const validateRoundTokens = (scores: Record<string, number | string>): RoundTokenViolation | null => {
+  const values = Object.values(scores).map((v) => String(v).trim().toUpperCase());
+  if (values.filter((v) => v === 'Б').length > 1) return 'oneB';
+  if (values.filter((v) => v === 'ВІС').length > 1) return 'oneVis';
+  return null;
+};
 
 export const calculateGameTotals = (game: Game, gameRules: GameRulesConfig): Record<number, number> => {
     const totals: Record<number, number> = {};
@@ -136,16 +188,7 @@ export const calculateGameTotals = (game: Game, gameRules: GameRulesConfig): Rec
                 ...Object.values(prevRound.scores)
                     .map(val => typeof val === 'number' ? val : 0)
             );
-            const opponentEntriesCurrent = Object.entries(round.scores)
-                .filter(([id]) => Number(id) !== visPlayerId)
-                .map(([id, val]) => ({
-                    playerId: Number(id),
-                    score: typeof val === 'number' ? val : 0
-                }));
-
-            const bestOpponentCurrent = opponentEntriesCurrent.reduce((best, curr) =>
-                curr.score > best.score ? curr : best, { playerId: -1, score: -Infinity }
-            );
+            const bestOpponentCurrent = bestOpponent(round.scores, visPlayerId);
 
             const rawVisVal = round.scores[visPlayerId];
             const visScore = typeof rawVisVal === 'number' ? rawVisVal : 0;

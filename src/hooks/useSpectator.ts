@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ref, onValue } from 'firebase/database';
 import { db } from '../config/firebase';
 import type { Game, GameRulesConfig } from '../types';
+import { DEFAULT_GAME_RULES } from '../utils/gameHelpers';
 
 export type SpectatorStatus = 'loading' | 'live' | 'ended' | 'not_found';
 
@@ -12,14 +13,6 @@ export interface SpectatorState {
   gameRules: GameRulesConfig | null;
   status: SpectatorStatus;
 }
-
-const DEFAULT_RULES: GameRulesConfig = {
-  secondBPenalty: -100,
-  hvPenalty: -100,
-  allowVis: true,
-  customTargetScore: false,
-  targetScoreOptions: [510, 1020],
-};
 
 export function useSpectator(watchId: string | null): SpectatorState {
   const [state, setState] = useState<SpectatorState>({
@@ -50,6 +43,8 @@ export function useSpectator(watchId: string | null): SpectatorState {
         } else {
           // Wait before committing 'ended' — a 'live' update may arrive within ms
           // if the host just continued the game (transient empty snapshot).
+          // Clear any earlier timer so repeated empty snapshots restart the debounce.
+          if (endedTimerRef.current !== null) clearTimeout(endedTimerRef.current);
           endedTimerRef.current = setTimeout(() => {
             setState((prev) => ({ ...prev, status: 'ended' }));
           }, 1500);
@@ -79,7 +74,7 @@ export function useSpectator(watchId: string | null): SpectatorState {
         game,
         targetScore: data.targetScore ?? 1020,
         winnerPlayer: data.winnerPlayer ?? null,
-        gameRules: data.gameRules ?? DEFAULT_RULES,
+        gameRules: data.gameRules ?? DEFAULT_GAME_RULES,
         status: 'live',
       });
     });

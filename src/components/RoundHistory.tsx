@@ -2,13 +2,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Player, Round } from '../types';
 import { GameRulesConfig } from '../types';
-import { isValidScore, getVisDisplayValue } from '../utils/gameHelpers';
+import { isValidScore, getVisDisplayValue, validateRoundTokens } from '../utils/gameHelpers';
 import { ConfirmSheet } from './ConfirmSheet';
 
 interface RoundHistoryProps {
   rounds: Round[];
   players: Player[];
-  onUpdateRound: (roundNumber: number, newScores: Record<string, string>) => void;
+  /** Return false to keep the editor open (e.g. the edit violates a game rule). */
+  onUpdateRound: (roundNumber: number, newScores: Record<string, string>) => boolean | void;
   gameRules?: GameRulesConfig;
   snapshotRound?: number | null;
   onUndoLastRound?: () => void;
@@ -54,7 +55,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
 
   const saveEdit = () => {
     if (editingRound !== null) {
-      onUpdateRound(editingRound, editScores);
+      if (onUpdateRound(editingRound, editScores) === false) return;
       setEditingRound(null);
       setEditScores({});
     }
@@ -158,7 +159,10 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
 
               {/* Scores */}
               <div className="px-4 pb-3">
-                {isEditing ? (
+                {isEditing ? (() => {
+                  const editViolation = validateRoundTokens(editScores);
+                  const allValid = Object.values(editScores).every((s) => isValidScore(s, gameRules));
+                  return (
                   <div className="space-y-2">
                     <div className="grid grid-cols-2 gap-2">
                       {players.map((player) => {
@@ -186,8 +190,13 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                         );
                       })}
                     </div>
-                    {!Object.values(editScores).every((s) => isValidScore(s, gameRules)) && (
+                    {!allValid && (
                       <p className="text-score-neg text-xs text-center">{t('history.invalidHint')}</p>
+                    )}
+                    {editViolation !== null && (
+                      <p className="text-score-neg text-xs text-center">
+                        {t(editViolation === 'oneB' ? 'error.oneB' : 'error.oneVis')}
+                      </p>
                     )}
                     <div className="flex justify-end gap-2 pt-1">
                       <button
@@ -200,14 +209,15 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                       <button
                         type="button"
                         onClick={saveEdit}
-                        disabled={!Object.values(editScores).every((s) => isValidScore(s, gameRules))}
+                        disabled={!allValid || editViolation !== null}
                         className="px-3 py-1.5 text-xs bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                       >
                         {t('history.save')}
                       </button>
                     </div>
                   </div>
-                ) : (
+                  );
+                })() : (
                   <div className="grid grid-cols-2 gap-2">
                     {players.map((player) => {
                       const displayVal = gameRules

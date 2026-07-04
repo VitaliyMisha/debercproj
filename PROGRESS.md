@@ -1,8 +1,51 @@
 # PROGRESS.md — Деберц Score App
 
-## Поточний стан (2026-05-26)
+## Поточний стан (2026-07-04)
 
-Проєкт у робочому стані. UI перероблено на "Card Table Dark - Vintage" тему. Логіка гри відповідає правилам. Тестів: **107** (усі зелені). PWA коректно працює на Android Chrome.
+Проєкт у робочому стані. Тестів: **125** (усі зелені, 5 файлів). Lint (Biome), type-check (tsc, тепер включно з `tests/`) і production build — чисті.
+
+### Code review + виправлення (2026-07-04)
+
+Проведено повне ревью проєкту, всі знайдені баги виправлено (TDD для логіки в `src/utils/`):
+
+**Виправлені баги:**
+1. **Подвійний інкремент winCount** — `updateWinner` замінено на `syncWinner` (`App.tsx`) з транзиціями: null→id інкремент, id→null відкат, idA→idB обидва. Редагування раунду після перемоги більше не накручує перемоги; якщо редагування опускає всіх нижче target — `winnerPlayer` скидається і інкремент відкочується. Чиста логіка визначення переможця — `findWinner` у `gameHelpers.ts` (з тестами).
+2. **Stale `snapshotRound`** — скидається у `createGame` і `resetGame`; нова гра зі снапшот-режиму більше не ховає RoundForm.
+3. **Штраф 0** — `parseScore`: `||` → `??` (тести на `hvPenalty: 0`, `secondBPenalty: 0`).
+4. **Валідація редагування раунду** — `validateRoundTokens` (нова утиліта, з тестами) у `updateRound` (App) + інлайн-підказка і disabled Save у `RoundHistory`; `onUpdateRound` повертає `false` → редактор лишається відкритим.
+5. **Хронологія Б при редагуванні** — `updateRound` передає у `parseScore` лише раунди ДО редагованого (було: всі крім поточного — ранній Б бачив пізніші як "попередні").
+6. **winCounts за іменами** — `winCountKey(name)` (trim+lowercase, з тестами): id гравців регенеруються щогри, тому старий ключ по id ніколи не збігався; тепер перемоги реально персистяться між іграми з тими ж іменами.
+7. **`SavedGameState.gameRules`** — правила зберігаються разом із грою (optional для старих збережень); `handleRecover` і `RecoverScreen` використовують збережені правила.
+8. **`useSpectator`** — попередній 'ended'-таймер очищається перед створенням нового (дебаунс перезапускається коректно).
+9. **ScoreBoard countUp** — key картки більше не містить `deltaKey` (карти не ремаунтяться щораунду, анімація рахунку знову працює); дельта отримала власний `key={deltaKey}`.
+10. **ShareSheet** — "Скопійовано" тільки при успішному записі в clipboard; cleanup таймера.
+11. **PlayerStatistics** — `parseInt(_, 10)`, прибрано optional chaining на required prop, `calculateGameTotals` викликається один раз (був O(гравці × раунди)).
+
+**Дедуплікація:**
+- `bestOpponent(scores, pid)` — ВіС-резолюція "мій рахунок vs найкращий опонент" тепер в одному місці (було 3: `calculateGameTotals`, `getVisDisplayValue` ×2, звуковий блок `addRound`).
+- `BottomSheet.tsx` — спільний примітив для `ConfirmSheet`/`PenaltySheet`/`ShareSheet` (backdrop, slide-up, swipe-down у всіх трьох).
+- `Avatar.tsx` + `initialOf()` — кружечок з ініціалом у 6 компонентах.
+- `LangToggleButton.tsx` — кнопка мови (було 3 копії JSX).
+- `StatsToggle` — кнопка показу статистики (хост/глядач) у `App.tsx`.
+- `DEFAULT_GAME_RULES` у `gameHelpers.ts` (було 2 копії: App + useSpectator); `LANG_STORAGE_KEY` у `src/i18n`.
+- **Видалено мертвий код**: `PlayerInput.tsx` (ніде не імпортувався, дублював easter-egg логіку PlayerRow).
+
+**i18n:**
+- Захардкоджені рядки → `t()`: `RoundTimeline` (кнопка "Повернутись до гри"), `PenaltySheet` (Закрити + підказка), `PlayerRow` (title дилера). Нові ключі: `timeline.backToGame`, `common.close`, `common.sheetCloseHint`, `setup.setDealer`.
+- `GameHistory` — плюралізація через `Intl.PluralRules` (виправлено «22 перемог» → «22 перемоги», «11 перемоги» → «11 перемог»).
+
+**Інфраструктура:**
+- `tsconfig.json` — до `include` додано `tests/` (раніше тести не проходили type-check взагалі).
+- Нові тести: parseScore zero penalties, `findWinner` (4), `validateRoundTokens` (5), `bestOpponent` (3), `winCountKey` (2), savedGame+gameRules (2). Разом 107 → 125.
+
+**Свідомо НЕ зроблено (відомі обмеження):**
+- Firebase-записи без TTL: якщо хост закриє браузер без "Зупинити шеринг", запис лишиться в RTDB. Потрібне server-side правило TTL по `hostUpdatedAt` — поза межами клієнтського коду.
+- Winner-транзиції (`syncWinner`) живуть у `App.tsx` і не покриті тестами (немає RTL) — але вся обчислювальна частина (`findWinner`) винесена в utils і покрита.
+
+
+### Стан на 2026-05-26 (попередні сесії)
+
+UI перероблено на "Card Table Dark - Vintage" тему. Логіка гри відповідає правилам. PWA коректно працює на Android Chrome.
 
 **Spectator Mode (Firebase)** задеплоєно: хост генерує QR-код, глядачі відкривають посилання `?watch=<code>` і бачать гру в реальному часі (read-only). Backend — Firebase Realtime Database (europe-west1). Глядач бачить ScoreBoard, RoundHistory, PlayerStatistics, WinnerScreen (без анімації та звуку). Виправлено два баги білого екрану у глядача (деталі нижче).
 
@@ -144,12 +187,13 @@
 - `NameInput.tsx` — окремий компонент, `SetupScreen` використовує замість звичайного `<input>`
 - iOS-специфічний фікс: `onMouseDown` на dropdown-item викликає `e.preventDefault()` щоб не розфокусовувати input до збереження вибору
 
-### Тести (107 tests, 5 files)
-- `tests/helpers.test.ts` — основний набір: `isValidScore`, `parseScore`, `calculateGameTotals`, `getVisDisplayValue`
+### Тести (125 tests, 5 files)
+- `tests/helpers.test.ts` — основний набір: `isValidScore`, `parseScore` (вкл. нульові штрафи), `calculateGameTotals`, `getVisDisplayValue`, `findWinner`, `validateRoundTokens`, `bestOpponent`
 - `tests/game.test.ts` — інтеграційні сценарії + 8 undo-сценаріїв + 3 regression-тести для updateRound+Б бугу
-- `tests/saveWinCounts.test.ts` — localStorage winCounts
-- `tests/savedGame.test.ts` — `SavedGameState` serialization + localStorage persistence
+- `tests/saveWinCounts.test.ts` — localStorage winCounts + `winCountKey`
+- `tests/savedGame.test.ts` — `SavedGameState` serialization (вкл. `gameRules`) + localStorage persistence
 - `tests/playerNames.test.ts` — `loadPlayerNames` / `savePlayerNames`
+- Тести проходять type-check: `tsconfig.json` include містить `tests/`
 
 **Не покрито тестами (навмисно):**
 - `useFirebaseSync` / `useSpectator` — Firebase integration hooks; потребують `@testing-library/react` + Firebase mock; логіка тривіальна і визначена зовнішнім SDK

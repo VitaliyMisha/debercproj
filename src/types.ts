@@ -31,4 +31,6 @@ export type SavedGameState = {
   game: Game;
   targetScore: number;
   winnerPlayer: number | null;
+  /** Rules active when the game was saved. Optional: older saves predate this field. */
+  gameRules?: GameRulesConfig;
 };
