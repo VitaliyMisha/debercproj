@@ -32,3 +32,6 @@ Thumbs.db
 
 # Superpowers plans/specs (local working docs)
 docs/superpowers/
+
+# Claude Code local session settings
+.claude/settings.local.json
