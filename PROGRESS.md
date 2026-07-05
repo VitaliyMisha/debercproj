@@ -2,7 +2,20 @@
 
 ## Поточний стан (2026-07-05)
 
-Проєкт у робочому стані. Тестів: **146** (усі зелені, 10 файлів: 5 unit + 5 RTL). Lint (Biome), type-check (tsc, включно з `tests/`) і production build — чисті.
+Проєкт у робочому стані. Тестів: **155** (усі зелені, 11 файлів: 5 unit + 6 RTL). Lint (Biome), type-check (tsc, включно з `tests/`) і production build — чисті.
+
+### UI/UX покращення (2026-07-05, вечірня сесія)
+
+1. **Numeric-клавіатура** (`RoundForm.tsx`): `inputMode="numeric"` на полях рахунку — мобільна клавіатура одразу цифрова. iOS numpad не має мінуса → доданий чіп **±** (togglе знаку) поруч із Б/ХВ/ВіС. Редагування в історії лишається text (там токени вводяться вручну).
+2. **Автофокус** (`RoundForm.tsx`): Enter або клік по чіпу → фокус на наступне порожнє поле; всі заповнені → фокус на кнопку "Додати раунд".
+3. **SVG-іконки (lucide)** замість структурних emoji: 📡→RadioTower, 🔊/🔇→Volume2/VolumeX (GameHeader), ✏️→Pencil, ↩→Undo2, ▶/▼→Chevron (RoundHistory). Лейбл `history.edit` тепер без emoji (оновлені RTL-тести). Контентні emoji (👑 🏆 🔥 🃏) лишились.
+4. **Odometer** (`src/components/Odometer.tsx` + CSS): рахунок у ScoreBoard тепер механічне табло — кожна цифра вертикальна стрічка 0-9, колонки keyed справа (одиниці стабільні при 99→102). `useCountUp` видалено (був єдиний споживач). aria-label з числом, цифри aria-hidden. RTL-тести в `tests/ui/odometer.test.tsx`.
+5. **Мітки прогрес-бару** (ScoreBoard): засічки на 25/50/75%.
+6. **Серія перемог**: `winStreak(rounds, playerId)` у gameHelpers (TDD, 5 тестів) — послідовні останні раунди зі строго найвищим рахунком (токени = 0, нічия рве серію). Бейдж 🔥N на картці від 3+. У снапшот-режимі рахується по зрізаних раундах.
+7. **Політ фішки дилера** (ScoreBoard): FLIP-анімація — при зміні дилера бейдж "Д" летить від старої картки до нової (WAAPI clone, дуга з scale 1.25; guards: reduced motion, відсутність `.animate` у jsdom).
+8. **Spectator skeleton** (`SpectatorSkeleton.tsx`): shimmer-плейсхолдер замість тексту "Завантаження…" — без стрибка макета.
+9. **Теми столу**: green (дефолт) / burgundy / navy — CSS vars `--color-felt` + `--felt-tint` через `[data-table]` на `<html>`; свотчі в SetupScreen; localStorage `tableTheme`. Кнопки/чіпи лишаються спільної палітри.
+10. **View Transitions API**: `withViewTransition()` в App — плавний crossfade між екранами (setup → гра, нова гра, recover/discard). Fallback для Safari/jsdom, вимикається при `prefers-reduced-motion` (сам media-query для CSS-анімацій вже був у index.css).
 
 ### Технічний борг закрито (2026-07-05)
 

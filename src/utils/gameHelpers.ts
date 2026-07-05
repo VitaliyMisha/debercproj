@@ -154,6 +154,22 @@ export const findWinner = (game: Game, gameRules: GameRulesConfig, targetScore: 
   return winners.length === 1 ? winners[0].id : null;
 };
 
+/**
+ * Number of consecutive rounds (counting back from the latest) that the player
+ * "won" — strictly outscored every opponent. Token scores (Б/ХВ/ВіС) count
+ * as 0, ties break the streak. Powers the 🔥 hot-streak badge in ScoreBoard.
+ */
+export const winStreak = (rounds: Round[], playerId: number): number => {
+  let streak = 0;
+  for (let i = rounds.length - 1; i >= 0; i--) {
+    const own = rounds[i].scores[String(playerId)];
+    const ownScore = typeof own === 'number' ? own : 0;
+    if (ownScore > bestOpponent(rounds[i].scores, playerId).score) streak++;
+    else break;
+  }
+  return streak;
+};
+
 export type RoundTokenViolation = 'oneB' | 'oneVis';
 
 /**

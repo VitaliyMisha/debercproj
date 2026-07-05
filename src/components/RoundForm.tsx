@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Player } from '../types';
 import { GameRulesConfig } from '../types';
@@ -48,8 +48,34 @@ const RoundForm: React.FC<RoundFormProps> = ({
   const placeholder = allowVis ? t('round.placeholder') : t('round.placeholderNoVis');
   const validTokens = allowVis ? TOKEN_HINTS : (['Б', 'ХВ'] as const);
 
+  const inputRefs = useRef(new Map<number, HTMLInputElement>());
+  const addButtonRef = useRef<HTMLButtonElement>(null);
+
   const isBToken = (v: string | number) => String(v).toUpperCase() === 'Б';
   const isVisToken = (v: string | number) => String(v).toUpperCase() === 'ВІС';
+
+  /** Moves focus to the next player with an empty score; all filled → the Add button. */
+  const focusNextEmpty = (afterId: number) => {
+    const order = players.map((p) => p.id);
+    const start = order.indexOf(afterId);
+    for (let i = 1; i < order.length; i++) {
+      const id = order[(start + i) % order.length];
+      if (String(scores[String(id)] ?? '').trim() === '') {
+        inputRefs.current.get(id)?.focus();
+        return;
+      }
+    }
+    addButtonRef.current?.focus();
+  };
+
+  /** ± chip: iOS numeric keypad has no minus key, so negatives are entered here. */
+  const toggleSign = (playerId: number) => {
+    const cur = String(scores[String(playerId)] ?? '').trim();
+    if (cur !== '' && !/^-?\d*$/.test(cur)) return; // tokens (Б/ХВ/ВіС) have no sign
+    const next = cur.startsWith('-') ? cur.slice(1) : `-${cur}`;
+    onChipClick?.('±');
+    onScoreChange({ target: { value: next } } as ChangeEvent<HTMLInputElement>, playerId);
+  };
 
   const tokenAlreadyTakenFor = (playerId: number, token: string): boolean => {
     if (token === 'Б') {
@@ -73,6 +99,7 @@ const RoundForm: React.FC<RoundFormProps> = ({
     if (tokenAlreadyTakenFor(playerId, token)) return;
     onChipClick?.(token);
     onScoreChange({ target: { value: token } } as ChangeEvent<HTMLInputElement>, playerId);
+    focusNextEmpty(playerId);
   };
 
   return (
@@ -100,13 +127,21 @@ const RoundForm: React.FC<RoundFormProps> = ({
 
                 <div className="relative shrink-0 w-28">
                   <input
+                    ref={(el) => {
+                      if (el) inputRefs.current.set(p.id, el);
+                      else inputRefs.current.delete(p.id);
+                    }}
                     id={`score-r${roundNumber}-p${p.id}`}
                     name={`score-r${roundNumber}-p${p.id}`}
                     type="text"
+                    inputMode="numeric"
                     autoComplete="off"
                     value={val}
                     onChange={(e) => onScoreChange(e, p.id)}
                     onBlur={(e) => handleBlur(e, p.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') focusNextEmpty(p.id);
+                    }}
                     placeholder={placeholder}
                     aria-label={t('round.scoreFor', { name: p.name })}
                     className={`w-full px-3 py-2 rounded-xl text-center text-base font-semibold
@@ -123,6 +158,15 @@ const RoundForm: React.FC<RoundFormProps> = ({
 
               {/* Token quick-fill chips for this player */}
               <div className="flex gap-1.5 pl-11">
+                <button
+                  type="button"
+                  onClick={() => toggleSign(p.id)}
+                  aria-label={t('round.toggleSign', { name: p.name })}
+                  className="h-7 px-2.5 rounded-full text-xs font-bold transition-all duration-150 active:scale-[0.93]
+                    bg-white/5 border border-white/15 text-white/70 hover:border-white/30 hover:text-white"
+                >
+                  ±
+                </button>
                 {validTokens.map((token) => {
                   const chip = CHIP_STYLES[token];
                   const isActive = isTokenActive(val, token);
@@ -161,6 +205,7 @@ const RoundForm: React.FC<RoundFormProps> = ({
       {/* Add button */}
       <div className="px-4 pb-4">
         <button
+          ref={addButtonRef}
           type="button"
           onClick={onAddRound}
           disabled={isAddDisabled}

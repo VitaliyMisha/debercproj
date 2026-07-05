@@ -22,7 +22,7 @@ const openEditor = async (onUpdateRound = vi.fn()) => {
     <RoundHistory rounds={rounds} players={players} onUpdateRound={onUpdateRound} gameRules={DEFAULT_GAME_RULES} />,
   );
   await user.click(screen.getByRole('button', { name: 'Показати або сховати історію раундів' }));
-  await user.click(screen.getByRole('button', { name: '✏️ Редагувати' }));
+  await user.click(screen.getByRole('button', { name: 'Редагувати' }));
   return { user, onUpdateRound };
 };
 
@@ -78,7 +78,7 @@ describe('RoundHistory — inline edit validation', () => {
       <RoundHistory rounds={rounds} players={players} onUpdateRound={vi.fn()} gameRules={DEFAULT_GAME_RULES} readOnly onUndoLastRound={vi.fn()} />,
     );
     await user.click(screen.getByRole('button', { name: 'Показати або сховати історію раундів' }));
-    expect(screen.queryByRole('button', { name: '✏️ Редагувати' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Редагувати' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Скасувати останній раунд' })).toBeNull();
   });
 });

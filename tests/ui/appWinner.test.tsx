@@ -33,7 +33,7 @@ const playRound = async (user: ReturnType<typeof userEvent.setup>, aliceScore: s
 
 /** Opens the history editor for round 1 and replaces Аліса's score. */
 const editRoundOneAlice = async (user: ReturnType<typeof userEvent.setup>, newScore: string) => {
-  await user.click(screen.getByRole('button', { name: '✏️ Редагувати' }));
+  await user.click(screen.getByRole('button', { name: 'Редагувати' }));
   const editInput = screen
     .getAllByLabelText('Рахунок для Аліса')
     .find((i) => (i as HTMLInputElement).value !== '') as HTMLElement;

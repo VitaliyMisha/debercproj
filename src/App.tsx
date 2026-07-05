@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Game, GameRulesConfig, Player, Round, SavedGameState } from './types';
 import { useSpectator } from './hooks/useSpectator';
@@ -35,12 +36,32 @@ import RecoverScreen from './components/RecoverScreen';
 import { useSound } from './hooks/useSound';
 import { useFirebaseSync } from './hooks/useFirebaseSync';
 import ShareSheet from './components/ShareSheet';
+import SpectatorSkeleton from './components/SpectatorSkeleton';
 import LangToggleButton from './components/LangToggleButton';
 import { LANG_STORAGE_KEY } from './i18n';
 
 const GAME_ID = 'gameId';
 const GAME_RULES_KEY = 'gameRules';
 const SOUND_KEY = 'soundEnabled';
+const TABLE_THEME_KEY = 'tableTheme';
+
+export type TableTheme = 'green' | 'burgundy' | 'navy';
+
+/**
+ * Smooth screen swap (setup → game → winner) via the View Transitions API.
+ * Falls back to a plain update in Safari/jsdom and under reduced motion.
+ */
+const withViewTransition = (update: () => void): void => {
+  const reducedMotion =
+    typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reducedMotion && 'startViewTransition' in document) {
+    (document as Document & { startViewTransition: (cb: () => void) => void }).startViewTransition(() =>
+      flushSync(update),
+    );
+  } else {
+    update();
+  }
+};
 
 /** Show/hide toggle under the round history — shared by host and spectator layouts. */
 function StatsToggle({ shown, onToggle }: { shown: boolean; onToggle: () => void }) {
@@ -88,6 +109,15 @@ export default function App() {
   });
 
   const [soundEnabled, setSoundEnabled] = useState<boolean>(() => localStorage.getItem(SOUND_KEY) !== 'false');
+  const [tableTheme, setTableTheme] = useState<TableTheme>(
+    () => (localStorage.getItem(TABLE_THEME_KEY) as TableTheme) ?? 'green',
+  );
+
+  useEffect(() => {
+    localStorage.setItem(TABLE_THEME_KEY, tableTheme);
+    if (tableTheme === 'green') delete document.documentElement.dataset.table;
+    else document.documentElement.dataset.table = tableTheme;
+  }, [tableTheme]);
   const { i18n, t } = useTranslation();
   const [lang, setLang] = useState<'uk' | 'en'>(() =>
     (localStorage.getItem(LANG_STORAGE_KEY) as 'uk' | 'en') ?? 'uk'
@@ -188,14 +218,16 @@ export default function App() {
       rounds: [],
       dealerId: startingDealerId ?? players[dealerIndex].id,
     };
-    setGame(createdGame);
-    setWinnerPlayer(null);
-    setSnapshotRound(null);
-    setScores(Object.fromEntries(players.map((p) => [p.id.toString(), ''])));
-    setGameId((prev) => prev + 1);
-    setError('');
-    setHasHistoryShown(showHistory);
-    setShowStatistics(false);
+    withViewTransition(() => {
+      setGame(createdGame);
+      setWinnerPlayer(null);
+      setSnapshotRound(null);
+      setScores(Object.fromEntries(players.map((p) => [p.id.toString(), ''])));
+      setGameId((prev) => prev + 1);
+      setError('');
+      setHasHistoryShown(showHistory);
+      setShowStatistics(false);
+    });
   };
 
   const tokenViolation = game ? validateRoundTokens(scores) : null;
@@ -375,20 +407,22 @@ export default function App() {
   }, [game, gameRules, snapshotRound, totals]);
 
   const resetGame = () => {
-    setIsSharing(false);
-    setShareCode(null);
-    setShowShareSheet(false);
     clearGameState();
-    setGame(null);
-    setNames(Array(playerCount).fill(''));
-    setDealerIndex((dealerIndex + 1) % playerCount);
-    setWinnerPlayer(null);
-    setSnapshotRound(null);
-    setError('');
-    setHasHistoryShown(false);
-    setShowStatistics(false);
-    setGameId(1);
     localStorage.removeItem(GAME_ID);
+    withViewTransition(() => {
+      setIsSharing(false);
+      setShareCode(null);
+      setShowShareSheet(false);
+      setGame(null);
+      setNames(Array(playerCount).fill(''));
+      setDealerIndex((dealerIndex + 1) % playerCount);
+      setWinnerPlayer(null);
+      setSnapshotRound(null);
+      setError('');
+      setHasHistoryShown(false);
+      setShowStatistics(false);
+      setGameId(1);
+    });
   };
 
   const continueGame = () => {
@@ -428,11 +462,13 @@ export default function App() {
     if (!recoveredState) return;
     // Restore the rules the game was actually played with (older saves lack them).
     const recoveredRules = recoveredState.gameRules ?? gameRules;
-    if (recoveredState.gameRules) setGameRules(recoveredState.gameRules);
-    setGame(recoveredState.game);
-    setTargetScore(recoveredState.targetScore);
-    setWinnerPlayer(recoveredState.winnerPlayer);
-    setScores(Object.fromEntries(recoveredState.game.players.map((p) => [p.id.toString(), ''])));
+    withViewTransition(() => {
+      if (recoveredState.gameRules) setGameRules(recoveredState.gameRules);
+      setGame(recoveredState.game);
+      setTargetScore(recoveredState.targetScore);
+      setWinnerPlayer(recoveredState.winnerPlayer);
+      setScores(Object.fromEntries(recoveredState.game.players.map((p) => [p.id.toString(), ''])));
+    });
 
     // Pre-populate so close-finish sound doesn't re-fire for players already near target
     const recoveredTotals = calculateGameTotals(recoveredState.game, recoveredRules);
@@ -449,7 +485,7 @@ export default function App() {
 
   const handleDiscard = () => {
     clearGameState();
-    setRecoveredState(null);
+    withViewTransition(() => setRecoveredState(null));
   };
 
   const handleChipClick = useCallback((token: string) => {
@@ -505,6 +541,8 @@ export default function App() {
                 gameRules={gameRules}
                 onRulesChange={setGameRules}
                 playerNames={playerNames}
+                tableTheme={tableTheme}
+                onTableThemeChange={setTableTheme}
                 onStart={() => createGame()}
               />
             </main>
@@ -548,6 +586,7 @@ export default function App() {
                 snapshotActive={snapshotRound !== null}
                 deltas={roundDeltas}
                 deltaKey={deltaKey}
+                rounds={snapshotRound !== null ? game.rounds.slice(0, snapshotRound) : game.rounds}
               />
 
               {winnerObj ? (
@@ -613,11 +652,7 @@ export default function App() {
         </>
       ) : (
         <>
-          {(spectator.status === 'loading' || (spectator.status === 'live' && !spectator.game)) && (
-            <main className="flex items-center justify-center min-h-dvh">
-              <p className="text-muted text-sm">{t('share.spectatorLoading')}</p>
-            </main>
-          )}
+          {(spectator.status === 'loading' || (spectator.status === 'live' && !spectator.game)) && <SpectatorSkeleton />}
           {(spectator.status === 'not_found' || spectator.status === 'ended') && (
             <main className="flex items-center justify-center min-h-dvh px-6 text-center">
               <p className="text-muted text-sm">
@@ -644,6 +679,7 @@ export default function App() {
                 snapshotActive={false}
                 deltas={null}
                 deltaKey={0}
+                rounds={spectator.game.rounds}
               />
               {spectatorWinnerObj && (
                 <Suspense fallback={null}>

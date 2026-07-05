@@ -28,7 +28,7 @@ Single-page React app for scoring the Ukrainian card game Деберц (Deberc).
 
 **Core data flow:**
 - `src/types.ts` — `Player`, `Round`, `Game`, `GameRulesConfig`, `SavedGameState` interfaces (source of truth for shape)
-- `src/utils/gameHelpers.ts` — all pure game logic: `calculateGameTotals`, `parseScore`, `isValidScore`, `getVisDisplayValue`, `findWinner`, `validateRoundTokens`, `bestOpponent`, `winCountKey`, `DEFAULT_GAME_RULES`, `loadWinCounts`, `saveWinCounts`, `generateUniqueId`, `saveGameState`, `loadGameState`, `clearGameState`, `loadPlayerNames`, `savePlayerNames`
+- `src/utils/gameHelpers.ts` — all pure game logic: `calculateGameTotals`, `parseScore`, `isValidScore`, `getVisDisplayValue`, `findWinner`, `validateRoundTokens`, `bestOpponent`, `winStreak`, `winCountKey`, `DEFAULT_GAME_RULES`, `loadWinCounts`, `saveWinCounts`, `generateUniqueId`, `saveGameState`, `loadGameState`, `clearGameState`, `loadPlayerNames`, `savePlayerNames`
 - `src/hooks/useSound.ts` — Web Audio API hook: 12 sounds, all wired (fanfare, chipClick, roundSubmit, undoPop, bSound, secondBSound, hvSound, visPlay, visWin/visLose, closeFinish, newGame)
 - `src/App.tsx` — owns all game state, orchestrates components, calls helpers. `syncWinner` applies winCount transitions exactly once per winner change (null→id increments, id→null reverts, idA→idB does both) — round edits after a win must NOT double-increment
 
@@ -36,8 +36,10 @@ Single-page React app for scoring the Ukrainian card game Деберц (Deberc).
 - `SetupScreen.tsx` — game setup with `NameInput` for player names
 - `NameInput.tsx` — input with dropdown autocomplete from player name history (iOS-safe)
 - `RecoverScreen.tsx` — shown at startup if saved game exists; offers Resume or New Game
-- `ScoreBoard.tsx` — live scores with leader highlight, progress bars, close-to-finish indicator
-- `RoundForm.tsx` — per-player score entry with casino chip buttons (Б/ХВ/ВіС)
+- `ScoreBoard.tsx` — live scores: leader highlight, Odometer digits, progress bars with quarter ticks, close-to-finish indicator, 🔥 win-streak badge (`winStreak`), FLIP flight of the Д dealer chip
+- `Odometer.tsx` — casino rolling-digit counter (columns keyed from the right so digits roll instead of remounting)
+- `SpectatorSkeleton.tsx` — shimmer placeholder for spectator loading
+- `RoundForm.tsx` — per-player score entry: casino chip buttons (Б/ХВ/ВіС), ± sign chip (iOS numpad lacks minus), `inputMode="numeric"`, Enter/chip advances focus to the next empty field
 - `RoundHistory.tsx` — history table with undo chip, inline edit (validates one-Б/one-ВіС via `validateRoundTokens`; `onUpdateRound` returning `false` keeps the editor open)
 - `GameHeader.tsx` — sound toggle, undo, new game (via ConfirmSheet)
 - `BottomSheet.tsx` — shared bottom sheet primitive (backdrop, slide-up, swipe-down-to-close); used by `ConfirmSheet`, `PenaltySheet`, `ShareSheet`
@@ -63,6 +65,7 @@ Single-page React app for scoring the Ukrainian card game Деберц (Deberc).
 - `savedGame` — `SavedGameState` JSON (game + targetScore + winnerPlayer + gameRules): auto-saved active game; shown in RecoverScreen on next launch. `gameRules` is optional (legacy saves)
 - `playerNames` — `string[]` JSON: deduped list of all player names used (powers NameInput dropdown)
 - `lang` — 'uk' | 'en' (`LANG_STORAGE_KEY` in `src/i18n`)
+- `tableTheme` — 'green' | 'burgundy' | 'navy': table colour theme, applied as `data-table` attribute on `<html>` (CSS vars in `index.css`)
 
 ## Code style
 
@@ -82,6 +85,8 @@ Linter/formatter: **Biome** (not ESLint/Prettier). Config in `biome.json`:
 - **Linting**: `bun run lint` (Biome) — обов'язково перед commit.
 - **Type-check**: `tsconfig.json` включає і `src`, і `tests` — тести теж перевіряються tsc.
 - **Penalties**: штрафи (`hvPenalty`, `secondBPenalty`) можуть бути `0` — використовуй `??`, ніколи `||`, для fallback.
+- **Icons**: структурні іконки — тільки `lucide-react` (SVG), не emoji. Контентні emoji (👑 🏆 🔥) — ок.
+- **Motion**: JS-анімації (WAAPI, View Transitions) мусять перевіряти `prefers-reduced-motion` і `typeof`-guard для jsdom; CSS-анімації глушаться media-query в `index.css`.
 
 ## Continuity
 - **Session Start**: Читай `PROGRESS.md` ПЕРШИМ — там поточний стан та next steps.

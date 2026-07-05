@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GameRulesConfig } from '../types';
+import type { TableTheme } from '../App';
 import { ChipGroup } from './ChipGroup';
 import { GoldDivider } from './GoldDivider';
 import { Button } from './Button';
 import { PlayerRow } from './PlayerRow';
 import { PenaltySheet } from './PenaltySheet';
+
+const TABLE_SWATCHES: Array<{ theme: TableTheme; color: string; labelKey: 'setup.tableGreen' | 'setup.tableBurgundy' | 'setup.tableNavy' }> = [
+  { theme: 'green', color: '#15803D', labelKey: 'setup.tableGreen' },
+  { theme: 'burgundy', color: '#9F1239', labelKey: 'setup.tableBurgundy' },
+  { theme: 'navy', color: '#1D4ED8', labelKey: 'setup.tableNavy' },
+];
 
 interface SetupScreenProps {
   playerCount: number;
@@ -19,6 +26,8 @@ interface SetupScreenProps {
   gameRules: GameRulesConfig;
   onRulesChange: (rules: GameRulesConfig) => void;
   playerNames?: string[];
+  tableTheme?: TableTheme;
+  onTableThemeChange?: (theme: TableTheme) => void;
   onStart: () => void;
 }
 
@@ -36,6 +45,8 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
   gameRules,
   onRulesChange,
   playerNames = [],
+  tableTheme = 'green',
+  onTableThemeChange,
   onStart,
 }) => {
   const { t } = useTranslation();
@@ -165,6 +176,28 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
           </button>
         </div>
       </section>
+
+      {/* Стіл (тема) */}
+      {onTableThemeChange && (
+        <section>
+          <h2 className="text-muted text-xs font-semibold uppercase tracking-widest mb-3">{t('setup.tableLabel')}</h2>
+          <div className="flex gap-3">
+            {TABLE_SWATCHES.map(({ theme, color, labelKey }) => (
+              <button
+                key={theme}
+                type="button"
+                onClick={() => onTableThemeChange(theme)}
+                aria-label={t(labelKey)}
+                aria-pressed={tableTheme === theme}
+                className={`w-10 h-10 rounded-full border-2 transition-all duration-150 active:scale-[0.93]
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-to/60
+                  ${tableTheme === theme ? 'border-gold-to scale-110' : 'border-white/20 hover:border-white/50'}`}
+                style={{ background: `radial-gradient(circle at 35% 35%, ${color}, ${color}66)` }}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Start button */}
       <Button

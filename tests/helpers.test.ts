@@ -8,6 +8,7 @@ import {
   findWinner,
   validateRoundTokens,
   bestOpponent,
+  winStreak,
 } from '../src/utils/gameHelpers';
 import { Game, GameRulesConfig, Player } from '../src/types';
 
@@ -627,5 +628,49 @@ describe('bestOpponent', () => {
 
   it('ignores the own score even if it is the highest', () => {
     expect(bestOpponent({ '1': 999, '2': 10 }, 1)).toEqual({ playerId: 2, score: 10 });
+  });
+});
+
+// ─── winStreak ───────────────────────────────────────────────────────────────
+
+describe('winStreak', () => {
+  it('returns 0 for no rounds', () => {
+    expect(winStreak([], 1)).toBe(0);
+  });
+
+  it('counts consecutive round wins from the latest round backwards', () => {
+    const rounds = [
+      round(1, { '1': 10, '2': 90 }),  // loss
+      round(2, { '1': 80, '2': 40 }),  // win
+      round(3, { '1': 120, '2': 60 }), // win
+      round(4, { '1': 70, '2': 30 }),  // win
+    ];
+    expect(winStreak(rounds, 1)).toBe(3);
+    expect(winStreak(rounds, 2)).toBe(0);
+  });
+
+  it('breaks the streak on a tie', () => {
+    const rounds = [
+      round(1, { '1': 80, '2': 40 }),
+      round(2, { '1': 50, '2': 50 }), // tie — not a win
+      round(3, { '1': 90, '2': 10 }),
+    ];
+    expect(winStreak(rounds, 1)).toBe(1);
+  });
+
+  it('treats token scores (Б/ХВ/ВіС) as 0', () => {
+    const rounds = [
+      round(1, { '1': 50, '2': 'Б' }),   // 50 > 0 — win
+      round(2, { '1': 30, '2': 'ВІС' }), // 30 > 0 — win
+    ];
+    expect(winStreak(rounds, 1)).toBe(2);
+  });
+
+  it('own token counts as 0 and usually breaks the streak', () => {
+    const rounds = [
+      round(1, { '1': 80, '2': 40 }),
+      round(2, { '1': 'Б', '2': 40 }), // 0 < 40 — loss
+    ];
+    expect(winStreak(rounds, 1)).toBe(0);
   });
 });

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ChevronDown, ChevronRight, Pencil, Undo2 } from 'lucide-react';
 import { Player, Round } from '../types';
 import { GameRulesConfig } from '../types';
 import { isValidScore, getVisDisplayValue, validateRoundTokens } from '../utils/gameHelpers';
@@ -89,7 +90,11 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
         aria-label={t('history.toggle')}
       >
         <div className="flex items-center gap-2">
-          <span className="text-muted text-xs" aria-hidden="true">{collapsed ? '▶' : '▼'}</span>
+          {collapsed ? (
+            <ChevronRight className="w-3.5 h-3.5 text-muted" aria-hidden="true" />
+          ) : (
+            <ChevronDown className="w-3.5 h-3.5 text-muted" aria-hidden="true" />
+          )}
           <h2 className="text-muted text-xs font-semibold uppercase tracking-widest">{t('history.title')}</h2>
         </div>
         <div className="flex items-center gap-2">
@@ -98,14 +103,14 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
               type="button"
               onClick={(e) => { e.stopPropagation(); setConfirmingUndo(true); }}
               aria-label={t('history.undoAriaLabel')}
-              className="h-7 px-3 rounded-full text-xs font-bold transition-all duration-150 active:scale-[0.93]"
+              className="h-7 px-3 rounded-full text-xs font-bold transition-all duration-150 active:scale-[0.93] inline-flex items-center gap-1"
               style={{
                 background: '#7F1D1D88',
                 color: '#FCA5A5',
                 border: '1px solid #DC262655',
               }}
             >
-              ↩ {t('history.undoBtn')}
+              <Undo2 className="w-3 h-3" aria-hidden="true" /> {t('history.undoBtn')}
             </button>
           )}
           <span className="text-muted text-xs bg-white/5 px-2 py-0.5 rounded-full">{t('history.total', { n: rounds.length })}</span>
@@ -150,9 +155,9 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
                   <button
                     type="button"
                     onClick={() => startEditing(round)}
-                    className="text-muted text-xs hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-white/5"
+                    className="text-muted text-xs hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-white/5 inline-flex items-center gap-1"
                   >
-                    {t('history.edit')}
+                    <Pencil className="w-3 h-3" aria-hidden="true" /> {t('history.edit')}
                   </button>
                 )}
               </div>

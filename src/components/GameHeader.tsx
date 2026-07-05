@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { RadioTower, Volume2, VolumeX } from 'lucide-react';
 import { ConfirmSheet } from './ConfirmSheet';
 import { LangToggleButton } from './LangToggleButton';
 
@@ -65,15 +66,15 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
                   type="button"
                   onClick={onShareOpen}
                   aria-label={t('share.title')}
-                  className={`w-9 h-9 rounded-xl border text-base
+                  className={`w-9 h-9 rounded-xl border
                     hover:border-white/30 transition-all duration-150 active:scale-[0.97]
                     flex items-center justify-center
                     ${isSharing
-                      ? 'bg-gold-from/20 border-gold-from/60'
-                      : 'bg-white/5 border-white/10'
+                      ? 'bg-gold-from/20 border-gold-from/60 text-gold-to'
+                      : 'bg-white/5 border-white/10 text-white/70'
                     }`}
                 >
-                  📡
+                  <RadioTower className="w-4 h-4" aria-hidden="true" />
                 </button>
               )}
 
@@ -84,11 +85,11 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
                   type="button"
                   onClick={onSoundToggle}
                   aria-label={soundEnabled ? t('header.soundOff') : t('header.soundOn')}
-                  className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 text-base
-                    hover:border-white/30 transition-all duration-150 active:scale-[0.97]
+                  className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 text-white/70
+                    hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]
                     flex items-center justify-center"
                 >
-                  {soundEnabled ? '🔊' : '🔇'}
+                  {soundEnabled ? <Volume2 className="w-4 h-4" aria-hidden="true" /> : <VolumeX className="w-4 h-4" aria-hidden="true" />}
                 </button>
               )}
             </div>
