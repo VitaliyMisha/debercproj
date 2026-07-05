@@ -1,8 +1,20 @@
 # PROGRESS.md — Деберц Score App
 
-## Поточний стан (2026-07-04)
+## Поточний стан (2026-07-05)
 
-Проєкт у робочому стані. Тестів: **125** (усі зелені, 5 файлів). Lint (Biome), type-check (tsc, тепер включно з `tests/`) і production build — чисті.
+Проєкт у робочому стані. Тестів: **146** (усі зелені, 10 файлів: 5 unit + 5 RTL). Lint (Biome), type-check (tsc, включно з `tests/`) і production build — чисті.
+
+### Технічний борг закрито (2026-07-05)
+
+1. **ErrorBoundary** (`src/components/ErrorBoundary.tsx`, підключений у `main.tsx`): рендер-краш більше не означає білий екран — fallback з поясненням (збережена гра відновлюється після перезавантаження) і кнопкою "Перезавантажити". i18n ключі `error.crashTitle/crashHint/crashReload`. Class component (у error boundaries немає hook-еквівалента), тому `i18next.t` напряму.
+2. **Firebase — покинуті ігри** (`useFirebaseSync`): серверне очищення через `onDisconnect(gameRef).remove()`. Слухач `.info/connected` перереєструє onDisconnect після кожного reconnect (сервер забуває його після спрацювання) і перезаписує актуальний стан (тимчасовий обрив міг стерти запис). Latest-стан для reconnect-хендлера — через ref. TTL-сканування не потрібне.
+3. **React Testing Library** — доданий (`@testing-library/react` + `user-event` + `jsdom`; env через `// @vitest-environment jsdom` прагму, без зміни глобального конфігу). Нові тести в `tests/ui/`:
+   - `appWinner.test.tsx` — **ключовий regression**: повний флоу через UI (setup → раунд → перемога → редагування) перевіряє, що winCount інкрементиться один раз, відкочується коли редагування скасовує перемогу, і НЕ подвоюється при повторній перемозі; + відновлення winCounts за іменем.
+   - `useSpectator.test.tsx` — not_found/live/ended, дебаунс 1.5с, перезапуск дебаунсу, відновлення порожніх масивів (мок firebase/database).
+   - `useFirebaseSync.test.tsx` — запис стану, реєстрація onDisconnect, перезапис при reconnect, cancel+remove при unmount.
+   - `roundHistory.test.tsx` — валідація редагування (2×Б / 2×ВіС disabled Save + підказка), `onUpdateRound === false` тримає редактор, readOnly ховає контроли.
+   - `errorBoundary.test.tsx` — fallback + reload.
+   - Нюанси jsdom: `Element.prototype.scrollIntoView` застаблений (RoundTimeline), звук безпечний (getCtx має try/catch), firebase мокається через `vi.mock`.
 
 ### ScoreBoard: layout для 3 гравців (2026-07-04)
 - Проблема: `grid-cols-3` на мобільному давав ~110px на картку — імена обрізались, бейджі (Д/👑) стискались.
@@ -42,9 +54,7 @@
 - `tsconfig.json` — до `include` додано `tests/` (раніше тести не проходили type-check взагалі).
 - Нові тести: parseScore zero penalties, `findWinner` (4), `validateRoundTokens` (5), `bestOpponent` (3), `winCountKey` (2), savedGame+gameRules (2). Разом 107 → 125.
 
-**Свідомо НЕ зроблено (відомі обмеження):**
-- Firebase-записи без TTL: якщо хост закриє браузер без "Зупинити шеринг", запис лишиться в RTDB. Потрібне server-side правило TTL по `hostUpdatedAt` — поза межами клієнтського коду.
-- Winner-транзиції (`syncWinner`) живуть у `App.tsx` і не покриті тестами (немає RTL) — але вся обчислювальна частина (`findWinner`) винесена в utils і покрита.
+**Оновлення 2026-07-05:** обидва пункти з "відомих обмежень" закриті — Firebase-записи чистяться через `onDisconnect`, winner-транзиції покриті RTL-тестом `tests/ui/appWinner.test.tsx`.
 
 
 ### Стан на 2026-05-26 (попередні сесії)
@@ -199,9 +209,7 @@ UI перероблено на "Card Table Dark - Vintage" тему. Логік�
 - `tests/playerNames.test.ts` — `loadPlayerNames` / `savePlayerNames`
 - Тести проходять type-check: `tsconfig.json` include містить `tests/`
 
-**Не покрито тестами (навмисно):**
-- `useFirebaseSync` / `useSpectator` — Firebase integration hooks; потребують `@testing-library/react` + Firebase mock; логіка тривіальна і визначена зовнішнім SDK
-- UI-компоненти (`ShareSheet`, spectator layout) — React render тести; проект не має RTL setup
+**Покриття (оновлено 2026-07-05):** `useFirebaseSync`, `useSpectator`, `RoundHistory` (edit), App winner-флоу та `ErrorBoundary` тепер покриті RTL-тестами у `tests/ui/`. Не покрито: решта UI-компонентів (ShareSheet, ScoreBoard-рендер тощо) — низький ризик.
 
 ### useSound hook (повністю підключено, 2026-05-19)
 - `src/hooks/useSound.ts` — Web Audio API без зовнішніх файлів
@@ -250,5 +258,7 @@ UI перероблено на "Card Table Dark - Vintage" тему. Логік�
 
 - Повна історія ігор між сесіями (localStorage зберігає тільки winCounts + поточну гру)
 - Поділитись результатом (share card для WhatsApp/Telegram)
+- Статистика всіх часів (вінрейт, серії) поверх історії ігор
+- Правила гри в UI (bottom sheet "?")
+- Лічильник глядачів для хоста (Firebase presence)
 - iPad layout improvements
-- React Testing Library для UI/hook тестів (ShareSheet, useSpectator, useFirebaseSync)

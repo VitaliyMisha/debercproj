@@ -43,6 +43,7 @@ Single-page React app for scoring the Ukrainian card game Деберц (Deberc).
 - `BottomSheet.tsx` — shared bottom sheet primitive (backdrop, slide-up, swipe-down-to-close); used by `ConfirmSheet`, `PenaltySheet`, `ShareSheet`
 - `Avatar.tsx` — shared player avatar (`initialOf` helper); used in RoundForm, ScoreBoard, PlayerStatistics, GameHistory, WinnerScreen, RecoverScreen
 - `LangToggleButton.tsx` — shared УК/EN toggle; `LANG_STORAGE_KEY` exported from `src/i18n`
+- `ErrorBoundary.tsx` — wraps `<App/>` in `main.tsx`; render crash → fallback with reload button (uses `i18next.t` directly, class component)
 - `WinnerScreen.tsx` — victory screen with CardSuitsRain + fanfare
 
 **Score entry values (stored in `Round.scores` as `Record<string, number | string>`):**
@@ -76,6 +77,7 @@ Linter/formatter: **Biome** (not ESLint/Prettier). Config in `biome.json`:
 ## Guidelines & Skills
 - **UI/UX**: Викликай skill `ui-ux-pro-max` для складних дизайн-рішень.
 - **Logic**: Дотримуйся TDD для бізнес-логіки в `src/utils/` (Vitest). Повний набір тестів у `tests/helpers.test.ts`.
+- **UI tests**: React Testing Library в `tests/ui/*.test.tsx` — jsdom вмикається прагмою `// @vitest-environment jsdom` на початку файлу (глобальний env — node). Firebase мокається через `vi.mock('firebase/database')` + `vi.mock('../../src/config/firebase')`; `Element.prototype.scrollIntoView` треба стабити для RoundTimeline.
 - **Rules**: Джерело правди для правил гри — `docs/GAME_RULES.md`.
 - **Linting**: `bun run lint` (Biome) — обов'язково перед commit.
 - **Type-check**: `tsconfig.json` включає і `src`, і `tests` — тести теж перевіряються tsc.

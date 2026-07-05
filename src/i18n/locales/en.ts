@@ -108,6 +108,9 @@ export const en: typeof uk = {
     },
   },
   error: {
+    crashTitle: 'Something went wrong',
+    crashHint: 'Your saved game is safe — reload the page and we will offer to restore it.',
+    crashReload: 'Reload',
     oneB: 'Only one player can take Б per round.',
     oneVis: 'Only one player can play ВіС per round.',
     invalidScores: 'Fill in all fields with valid values (number, Б, ХВ, or ВІС).',
