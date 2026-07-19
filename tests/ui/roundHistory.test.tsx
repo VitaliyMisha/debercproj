@@ -71,6 +71,31 @@ describe('RoundHistory — inline edit validation', () => {
     expect(screen.queryByRole('button', { name: 'Зберегти' })).toBeNull(); // editor closed
   });
 
+  it('toggles collapse with Enter/Space on the focused header', async () => {
+    const user = userEvent.setup();
+    render(<RoundHistory rounds={rounds} players={players} onUpdateRound={vi.fn()} gameRules={DEFAULT_GAME_RULES} />);
+    const header = screen.getByRole('button', { name: 'Показати або сховати історію раундів' });
+    header.focus();
+    await user.keyboard('{Enter}');
+    expect(header.getAttribute('aria-expanded')).toBe('true');
+    await user.keyboard(' ');
+    expect(header.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('Enter on the nested undo button opens the undo confirm, not the collapse toggle (regression)', async () => {
+    const user = userEvent.setup();
+    render(
+      <RoundHistory rounds={rounds} players={players} onUpdateRound={vi.fn()} gameRules={DEFAULT_GAME_RULES} onUndoLastRound={vi.fn()} />
+    );
+    await user.click(screen.getByRole('button', { name: 'Показати або сховати історію раундів' }));
+    screen.getByRole('button', { name: 'Скасувати останній раунд' }).focus();
+    await user.keyboard('{Enter}');
+
+    // the keydown bubbles to the header — it must NOT collapse the history nor swallow the button's click
+    expect(screen.getByText('Скасувати останній раунд?')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Показати або сховати історію раундів' }).getAttribute('aria-expanded')).toBe('true');
+  });
+
   it('hides undo and edit controls in readOnly (spectator) mode', async () => {
     const user = userEvent.setup();
     render(

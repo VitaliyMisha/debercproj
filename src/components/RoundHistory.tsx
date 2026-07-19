@@ -95,6 +95,8 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({
           style={{ borderBottom: collapsed ? 'none' : '1px solid rgba(255,255,255,0.08)' }}
           onClick={() => setCollapsed((c) => !c)}
           onKeyDown={(e) => {
+            // only when the header itself is focused — keydown bubbles up from the nested undo button
+            if (e.target !== e.currentTarget) return;
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
               setCollapsed((c) => !c);
