@@ -2,7 +2,15 @@
 
 ## Поточний стан (2026-07-19)
 
-Проєкт у робочому стані. Тестів: **155** (усі зелені, 11 файлів: 5 unit + 6 RTL). Lint (справжній Biome 2.5), type-check (tsc, включно з `tests/`) і production build — чисті.
+Проєкт у робочому стані. Тестів: **157** (усі зелені, 11 файлів: 5 unit + 6 RTL). Lint (справжній Biome 2.5), type-check (tsc, включно з `tests/`) і production build — чисті. Задеплоєно 2026-07-19 (push `7743197..4808298`, 4 коміти).
+
+### Регресія знайдена і виправлена самоперевіркою (2026-07-19)
+
+Після закриття лінт-беклогу знайдено баг, внесений новим `onKeyDown` на хедері RoundHistory: keydown від вкладеної кнопки Undo спливав до хедера, `preventDefault` ковтав нативний click кнопки — Enter на Undo згортав історію замість підтвердження скасування раунду. Суто клавіатурний баг (мишею/тачем працювало), тести його не бачили.
+
+- **Фікс**: guard `e.target === e.currentTarget` в обробнику хедера (`RoundHistory.tsx`).
+- **+2 RTL-тести** у `tests/ui/roundHistory.test.tsx`: клавіатурний toggle хедера (Enter/Space) і регресійний «Enter на вкладеній Undo відкриває confirm, а не згортає історію». Перевірено чесність тесту: без guard він падає. 155 → 157 тестів.
+- **Урок**: обробники клавіш на контейнерах із вкладеними інтерактивними елементами завжди мусять фільтрувати `e.target !== e.currentTarget` (keydown bubbles).
 
 ### Лінтер полагоджено: biome був фейковим (2026-07-19)
 
@@ -22,7 +30,7 @@
 - **Свідомі `biome-ignore` (усі з поясненням у коментарі)**: index-keys у Odometer (колонки keyed справа — механіка прокрутки), CardSuitsRain (статичний useMemo-масив), SetupScreen (позиційні слоти гравців); `useExhaustiveDependencies` у RoundTimeline (deps — тригери повторного скролу, ефект читає DOM); `!important` у CSS (reduced-motion kill-switch ×3 + close-finish override).
 - Дрібне: `Number.isNaN` замість `isNaN` ×2, `node:fs` протокол, `<title>Деберц</title>` у favicon.svg, dot-notation у тестах, explicit throw замість `call?.[1](...)` у useFirebaseSync.test.
 - `biome migrate --write`: конфіг оновлено під схему 2.5.4 (`recommended: true` → `preset: "recommended"`).
-- Верифікація: lint ✅, 155 тестів ✅, tsc ✅, build ✅.
+- Верифікація: lint ✅, тести ✅, tsc ✅, build ✅.
 
 ### Оновлення залежностей (2026-07-19, коміт "redesign app")
 
