@@ -1,5 +1,5 @@
+import { onValue, ref } from 'firebase/database';
 import { useEffect, useRef, useState } from 'react';
-import { ref, onValue } from 'firebase/database';
 import { db } from '../config/firebase';
 import type { Game, GameRulesConfig } from '../types';
 import { DEFAULT_GAME_RULES } from '../utils/gameHelpers';
@@ -66,9 +66,7 @@ export function useSpectator(watchId: string | null): SpectatorState {
       };
 
       // Firebase omits empty arrays — restore them so game.rounds is always an array.
-      const game: Game | null = data.game
-        ? { ...data.game, rounds: data.game.rounds ?? [], players: data.game.players ?? [] }
-        : null;
+      const game: Game | null = data.game ? { ...data.game, rounds: data.game.rounds ?? [], players: data.game.players ?? [] } : null;
 
       setState({
         game,

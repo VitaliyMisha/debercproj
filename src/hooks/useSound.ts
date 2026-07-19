@@ -6,14 +6,7 @@ import { useCallback, useRef } from 'react';
  * Uses an OscillatorNode routed through a GainNode so the volume envelope
  * decays exponentially — this avoids the audible "click" of an abrupt stop.
  */
-const tone = (
-  ctx: AudioContext,
-  freq: number,
-  start: number,
-  duration: number,
-  type: OscillatorType = 'sine',
-  vol = 0.22,
-): void => {
+const tone = (ctx: AudioContext, freq: number, start: number, duration: number, type: OscillatorType = 'sine', vol = 0.22): void => {
   const osc = ctx.createOscillator();
   const env = ctx.createGain();
   osc.connect(env);
@@ -97,8 +90,8 @@ export const useSound = () => {
     const c = getCtx();
     if (!c) return;
     const t = c.currentTime;
-    tone(c, 523, t,        0.13, 'sine', 0.2);
-    tone(c, 784, t + 0.14, 0.2,  'sine', 0.18);
+    tone(c, 523, t, 0.13, 'sine', 0.2);
+    tone(c, 784, t + 0.14, 0.2, 'sine', 0.18);
     haptic([12, 8, 12]);
   }, [getCtx]);
 
@@ -107,8 +100,8 @@ export const useSound = () => {
     const c = getCtx();
     if (!c) return;
     const t = c.currentTime;
-    tone(c, 440, t,        0.08, 'sine', 0.18);
-    tone(c, 330, t + 0.09, 0.1,  'sine', 0.15);
+    tone(c, 440, t, 0.08, 'sine', 0.18);
+    tone(c, 330, t + 0.09, 0.1, 'sine', 0.15);
     haptic([10, 8, 20]);
   }, [getCtx]);
 
@@ -153,8 +146,8 @@ export const useSound = () => {
     const c = getCtx();
     if (!c) return;
     const t = c.currentTime;
-    tone(c, 60, t,        0.3,  'sine', 0.4);
-    tone(c, 55, t + 0.12, 0.2,  'sine', 0.3);
+    tone(c, 60, t, 0.3, 'sine', 0.4);
+    tone(c, 55, t + 0.12, 0.2, 'sine', 0.3);
     haptic([40, 20, 60]);
   }, [getCtx]);
 
@@ -192,7 +185,7 @@ export const useSound = () => {
     const c = getCtx();
     if (!c) return;
     const t = c.currentTime;
-    tone(c, 523, t,        0.2, 'sine', 0.18);
+    tone(c, 523, t, 0.2, 'sine', 0.18);
     tone(c, 659, t + 0.12, 0.2, 'sine', 0.18);
     tone(c, 784, t + 0.24, 0.3, 'sine', 0.2);
     haptic([20, 15, 40]);
@@ -203,8 +196,8 @@ export const useSound = () => {
     const c = getCtx();
     if (!c) return;
     const t = c.currentTime;
-    tone(c, 392, t,        0.2,  'sine', 0.2);
-    tone(c, 330, t + 0.14, 0.2,  'sine', 0.2);
+    tone(c, 392, t, 0.2, 'sine', 0.2);
+    tone(c, 330, t + 0.14, 0.2, 'sine', 0.2);
     tone(c, 262, t + 0.28, 0.35, 'sine', 0.22);
     haptic([30, 20, 30, 20, 50]);
   }, [getCtx]);
@@ -214,8 +207,8 @@ export const useSound = () => {
     const c = getCtx();
     if (!c) return;
     const t = c.currentTime;
-    tone(c, 1200, t,        0.04, 'square', 0.12);
-    tone(c, 880,  t + 0.07, 0.08, 'sine',   0.15);
+    tone(c, 1200, t, 0.04, 'square', 0.12);
+    tone(c, 880, t + 0.07, 0.08, 'sine', 0.15);
     haptic(15);
   }, [getCtx]);
 

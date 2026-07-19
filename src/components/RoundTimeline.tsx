@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+import type React from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface RoundTimelineProps {
@@ -40,11 +41,7 @@ export const RoundTimeline: React.FC<RoundTimelineProps> = ({
         </button>
       )}
 
-      <div
-        ref={scrollRef}
-        className="flex gap-2 overflow-x-auto pb-1 scrollbar-none"
-        style={{ scrollbarWidth: 'none' }}
-      >
+      <div ref={scrollRef} className="flex gap-2 overflow-x-auto pb-1 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
         {pills.map((round) => {
           const isPast = round < currentRound;
           const isCurrent = round === currentRound;
@@ -54,9 +51,10 @@ export const RoundTimeline: React.FC<RoundTimelineProps> = ({
           if (isSnapshot) {
             pillClass = 'bg-gold-from/30 border-gold-to text-gold-to font-bold';
           } else if (isCurrent) {
-            pillClass = snapshotRound !== null
-              ? 'bg-primary border-primary text-white font-bold cursor-pointer hover:bg-primary-dark'
-              : 'bg-primary border-primary text-white font-bold';
+            pillClass =
+              snapshotRound !== null
+                ? 'bg-primary border-primary text-white font-bold cursor-pointer hover:bg-primary-dark'
+                : 'bg-primary border-primary text-white font-bold';
           } else if (isPast) {
             pillClass = 'bg-score-pos/20 border-score-pos/50 text-score-pos cursor-pointer hover:bg-score-pos/30';
           } else {
@@ -68,13 +66,7 @@ export const RoundTimeline: React.FC<RoundTimelineProps> = ({
               key={round}
               type="button"
               data-active={isSnapshot || isCurrent ? 'true' : 'false'}
-              onClick={
-                isPast
-                  ? () => onSelectRound(round)
-                  : isCurrent && snapshotRound !== null
-                    ? onExitSnapshot
-                    : undefined
-              }
+              onClick={isPast ? () => onSelectRound(round) : isCurrent && snapshotRound !== null ? onExitSnapshot : undefined}
               disabled={!isPast && !(isCurrent && snapshotRound !== null)}
               className={`
                 shrink-0 w-9 h-9 rounded-full border text-sm flex items-center justify-center

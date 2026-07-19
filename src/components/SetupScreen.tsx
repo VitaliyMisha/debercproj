@@ -1,14 +1,19 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GameRulesConfig } from '../types';
 import type { TableTheme } from '../App';
+import type { GameRulesConfig } from '../types';
+import { Button } from './Button';
 import { ChipGroup } from './ChipGroup';
 import { GoldDivider } from './GoldDivider';
-import { Button } from './Button';
-import { PlayerRow } from './PlayerRow';
 import { PenaltySheet } from './PenaltySheet';
+import { PlayerRow } from './PlayerRow';
 
-const TABLE_SWATCHES: Array<{ theme: TableTheme; color: string; labelKey: 'setup.tableGreen' | 'setup.tableBurgundy' | 'setup.tableNavy' }> = [
+const TABLE_SWATCHES: Array<{
+  theme: TableTheme;
+  color: string;
+  labelKey: 'setup.tableGreen' | 'setup.tableBurgundy' | 'setup.tableNavy';
+}> = [
   { theme: 'green', color: '#15803D', labelKey: 'setup.tableGreen' },
   { theme: 'burgundy', color: '#9F1239', labelKey: 'setup.tableBurgundy' },
   { theme: 'navy', color: '#1D4ED8', labelKey: 'setup.tableNavy' },
@@ -76,9 +81,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
     { label: t('setup.target510'), value: 510 as const },
     { label: t('setup.target1020'), value: 1020 as const },
     ...(gameRules.customTargetScore
-      ? gameRules.targetScoreOptions
-          .filter((s) => s !== 510 && s !== 1020)
-          .map((s) => ({ label: String(s), value: s as number }))
+      ? gameRules.targetScoreOptions.filter((s) => s !== 510 && s !== 1020).map((s) => ({ label: String(s), value: s as number }))
       : []),
   ];
 
@@ -88,7 +91,10 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
     <div className="w-full max-w-md mx-auto flex flex-col gap-6 py-6 px-4">
       {/* Header */}
       <div className="text-center relative">
-        <div className="absolute inset-0 flex items-center justify-center text-8xl text-white/5 font-display pointer-events-none select-none" aria-hidden="true">
+        <div
+          className="absolute inset-0 flex items-center justify-center text-8xl text-white/5 font-display pointer-events-none select-none"
+          aria-hidden="true"
+        >
           ♥♦♣
         </div>
         <h1 className="font-display text-4xl gold-gradient-text relative z-10">{t('app.title')} ♠</h1>
@@ -97,21 +103,13 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
       {/* Кількість гравців */}
       <section>
         <h2 className="text-muted text-xs font-semibold uppercase tracking-widest mb-3">{t('setup.playersLabel')}</h2>
-        <ChipGroup
-          options={PLAYER_COUNT_OPTIONS}
-          value={playerCount}
-          onChange={handlePlayerCountChange}
-        />
+        <ChipGroup options={PLAYER_COUNT_OPTIONS} value={playerCount} onChange={handlePlayerCountChange} />
       </section>
 
       {/* До перемоги */}
       <section>
         <h2 className="text-muted text-xs font-semibold uppercase tracking-widest mb-3">{t('setup.targetLabel')}</h2>
-        <ChipGroup
-          options={targetOptions}
-          value={targetScore}
-          onChange={onTargetScoreChange}
-        />
+        <ChipGroup options={targetOptions} value={targetScore} onChange={onTargetScoreChange} />
       </section>
 
       <GoldDivider />
@@ -149,9 +147,10 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
             aria-pressed={gameRules.allowVis}
             className={`px-4 py-2 rounded-full text-sm font-semibold border transition-all duration-150 active:scale-[0.97]
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-to/60
-              ${gameRules.allowVis
-                ? 'bg-token-vis/20 border-token-vis text-token-vis'
-                : 'bg-card-bg border-white/10 text-muted hover:border-white/30'
+              ${
+                gameRules.allowVis
+                  ? 'bg-token-vis/20 border-token-vis text-token-vis'
+                  : 'bg-card-bg border-white/10 text-muted hover:border-white/30'
               }`}
           >
             ВІС {gameRules.allowVis ? '✓' : '✗'}
@@ -200,12 +199,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
       )}
 
       {/* Start button */}
-      <Button
-        fullWidth
-        disabled={!canStart}
-        onClick={onStart}
-        className="py-4 text-lg mt-2"
-      >
+      <Button fullWidth disabled={!canStart} onClick={onStart} className="py-4 text-lg mt-2">
         {t('setup.startGame')}
       </Button>
 

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { RadioTower, Volume2, VolumeX } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ConfirmSheet } from './ConfirmSheet';
 import { LangToggleButton } from './LangToggleButton';
 
@@ -46,7 +47,10 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
     <>
       <div className="relative rounded-2xl overflow-hidden bg-card-bg border border-white/8 p-4">
         {/* Watermark suits */}
-        <div className="absolute inset-0 flex items-center justify-center text-7xl text-white/4 font-display pointer-events-none select-none tracking-widest" aria-hidden="true">
+        <div
+          className="absolute inset-0 flex items-center justify-center text-7xl text-white/4 font-display pointer-events-none select-none tracking-widest"
+          aria-hidden="true"
+        >
           ♠ ♥ ♦ ♣
         </div>
 
@@ -55,9 +59,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
           <div className="flex items-start justify-between">
             <div>
               <h1 className="font-display text-2xl gold-gradient-text">{t('app.title')}</h1>
-              <p className="text-muted text-sm">
-                {t('header.gameInfo', { id: gameId, score: targetScore })}
-              </p>
+              <p className="text-muted text-sm">{t('header.gameInfo', { id: gameId, score: targetScore })}</p>
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
@@ -69,10 +71,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
                   className={`w-9 h-9 rounded-xl border
                     hover:border-white/30 transition-all duration-150 active:scale-[0.97]
                     flex items-center justify-center
-                    ${isSharing
-                      ? 'bg-gold-from/20 border-gold-from/60 text-gold-to'
-                      : 'bg-white/5 border-white/10 text-white/70'
-                    }`}
+                    ${isSharing ? 'bg-gold-from/20 border-gold-from/60 text-gold-to' : 'bg-white/5 border-white/10 text-white/70'}`}
                 >
                   <RadioTower className="w-4 h-4" aria-hidden="true" />
                 </button>
@@ -103,7 +102,9 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
                   <span className="text-sm">👑</span>
                   <span className="text-sm text-white/80 font-sans">{dealerName}</span>
                 </div>
-              ) : <div />}
+              ) : (
+                <div />
+              )}
 
               {onNewGame && (
                 <button
@@ -126,7 +127,10 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
           title={t('header.confirmNewGame')}
           description={t('header.confirmDesc')}
           confirmLabel={t('header.newGame')}
-          onConfirm={() => { setConfirming(false); onNewGame?.(); }}
+          onConfirm={() => {
+            setConfirming(false);
+            onNewGame?.();
+          }}
           onCancel={() => setConfirming(false)}
         />
       )}

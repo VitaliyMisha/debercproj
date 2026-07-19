@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, waitFor, cleanup } from '@testing-library/react';
+
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import '../../src/i18n';
 
 vi.mock('../../src/config/firebase', () => ({ db: {} }));
@@ -34,9 +35,7 @@ const playRound = async (user: ReturnType<typeof userEvent.setup>, aliceScore: s
 /** Opens the history editor for round 1 and replaces Аліса's score. */
 const editRoundOneAlice = async (user: ReturnType<typeof userEvent.setup>, newScore: string) => {
   await user.click(screen.getByRole('button', { name: 'Редагувати' }));
-  const editInput = screen
-    .getAllByLabelText('Рахунок для Аліса')
-    .find((i) => (i as HTMLInputElement).value !== '') as HTMLElement;
+  const editInput = screen.getAllByLabelText('Рахунок для Аліса').find((i) => (i as HTMLInputElement).value !== '') as HTMLElement;
   await user.clear(editInput);
   await user.type(editInput, newScore);
   await user.click(screen.getByRole('button', { name: 'Зберегти' }));
@@ -83,7 +82,7 @@ describe('App — winner winCount transitions (regression)', () => {
   });
 
   it('starts a game with win counts restored by player name', async () => {
-    localStorage.setItem('playerWinCounts', JSON.stringify({ 'аліса': 3 }));
+    localStorage.setItem('playerWinCounts', JSON.stringify({ аліса: 3 }));
     const user = userEvent.setup();
     render(<App />);
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { useTranslation } from 'react-i18next';
 import { NameInput } from './NameInput';
 
@@ -28,14 +28,7 @@ interface PlayerRowProps {
   suggestions?: string[];
 }
 
-export const PlayerRow: React.FC<PlayerRowProps> = ({
-  index,
-  name,
-  isDealer,
-  onNameChange,
-  onSetDealer,
-  suggestions = [],
-}) => {
+export const PlayerRow: React.FC<PlayerRowProps> = ({ index, name, isDealer, onNameChange, onSetDealer, suggestions = [] }) => {
   const { t } = useTranslation();
   const initial = Array.from(name.trim())[0]?.toUpperCase() || String(index + 1);
 
@@ -48,10 +41,7 @@ export const PlayerRow: React.FC<PlayerRowProps> = ({
         aria-pressed={isDealer}
         className={`w-10 h-10 rounded-full flex items-center justify-center font-display text-lg shrink-0
           transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-to/60
-          ${isDealer
-            ? 'text-gold-to ring-2 ring-gold-from'
-            : 'text-white'
-          }`}
+          ${isDealer ? 'text-gold-to ring-2 ring-gold-from' : 'text-white'}`}
         style={{ background: isDealer ? 'linear-gradient(135deg, #78350F, #92400E)' : 'linear-gradient(135deg, #15803D, #166534)' }}
       >
         {isDealer ? '👑' : initial}

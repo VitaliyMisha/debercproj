@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 import { renderHook } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Game, GameRulesConfig } from '../../src/types';
 
 const setMock = vi.fn((..._args: unknown[]) => {});
@@ -44,9 +45,7 @@ const params = { game, targetScore: 510, winnerPlayer: null, gameRules: rules, i
 
 /** Fires the '.info/connected' listener registered by the hook. */
 const emitConnected = (connected: boolean) => {
-  const call = onValueMock.mock.calls.find(
-    (c) => (c[0] as { path?: string })?.path === '.info/connected',
-  );
+  const call = onValueMock.mock.calls.find((c) => (c[0] as { path?: string })?.path === '.info/connected');
   expect(call).toBeDefined();
   (call?.[1] as (snap: { val: () => boolean }) => void)({ val: () => connected });
 };
@@ -60,7 +59,7 @@ describe('useFirebaseSync — onDisconnect cleanup', () => {
     renderHook(() => useFirebaseSync(params));
     expect(setMock).toHaveBeenCalledWith(
       expect.objectContaining({ path: 'games/abc123' }),
-      expect.objectContaining({ game, targetScore: 510 }),
+      expect.objectContaining({ game, targetScore: 510 })
     );
   });
 
@@ -75,10 +74,7 @@ describe('useFirebaseSync — onDisconnect cleanup', () => {
     renderHook(() => useFirebaseSync(params));
     setMock.mockClear();
     emitConnected(true);
-    expect(setMock).toHaveBeenCalledWith(
-      expect.objectContaining({ path: 'games/abc123' }),
-      expect.objectContaining({ game }),
-    );
+    expect(setMock).toHaveBeenCalledWith(expect.objectContaining({ path: 'games/abc123' }), expect.objectContaining({ game }));
   });
 
   it('does not register onDisconnect while not sharing', () => {

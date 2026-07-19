@@ -1,9 +1,9 @@
-import React from 'react';
+import type React from 'react';
 import { useTranslation } from 'react-i18next';
-import { SavedGameState, GameRulesConfig } from '../types';
+import type { GameRulesConfig, SavedGameState } from '../types';
 import { calculateGameTotals } from '../utils/gameHelpers';
-import { Button } from './Button';
 import { Avatar } from './Avatar';
+import { Button } from './Button';
 
 interface RecoverScreenProps {
   savedState: SavedGameState;
@@ -12,12 +12,7 @@ interface RecoverScreenProps {
   onDiscard: () => void;
 }
 
-export const RecoverScreen: React.FC<RecoverScreenProps> = ({
-  savedState,
-  gameRules,
-  onRecover,
-  onDiscard,
-}) => {
+export const RecoverScreen: React.FC<RecoverScreenProps> = ({ savedState, gameRules, onRecover, onDiscard }) => {
   const { game, targetScore, winnerPlayer } = savedState;
   const { t } = useTranslation();
   // Prefer the rules the saved game was played with; fall back for older saves.
@@ -29,7 +24,9 @@ export const RecoverScreen: React.FC<RecoverScreenProps> = ({
     <div className="w-full max-w-md mx-auto flex flex-col gap-6 py-6 px-4">
       {/* Header */}
       <div className="text-center">
-        <h1 className="font-display text-4xl gold-gradient-text">{t('app.title')} <span aria-hidden="true">♠</span></h1>
+        <h1 className="font-display text-4xl gold-gradient-text">
+          {t('app.title')} <span aria-hidden="true">♠</span>
+        </h1>
       </div>
 
       {/* Card */}
@@ -39,9 +36,7 @@ export const RecoverScreen: React.FC<RecoverScreenProps> = ({
           <h2 className="font-display text-xl gold-gradient-text">
             {isFinished ? t('recover.finishedGame', { id: game.id }) : t('recover.unfinishedGame', { id: game.id })}
           </h2>
-          <p className="text-muted text-sm mt-0.5">
-            {t('recover.roundInfo', { n: roundCount, score: targetScore })}
-          </p>
+          <p className="text-muted text-sm mt-0.5">{t('recover.roundInfo', { n: roundCount, score: targetScore })}</p>
         </div>
 
         {/* Mini scoreboard */}
@@ -77,8 +72,8 @@ export const RecoverScreen: React.FC<RecoverScreenProps> = ({
                       background: isWinner
                         ? 'linear-gradient(90deg, #D97706, #FBBF24)'
                         : score >= safeTarget * 0.85
-                        ? 'linear-gradient(90deg, #EA580C, #FBBF24)'
-                        : 'linear-gradient(90deg, #1D4ED8, #3B82F6)',
+                          ? 'linear-gradient(90deg, #EA580C, #FBBF24)'
+                          : 'linear-gradient(90deg, #1D4ED8, #3B82F6)',
                     }}
                   />
                 </div>

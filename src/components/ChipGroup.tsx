@@ -10,12 +10,7 @@ interface ChipGroupProps<T> {
   className?: string;
 }
 
-export function ChipGroup<T extends string | number>({
-  options,
-  value,
-  onChange,
-  className = '',
-}: ChipGroupProps<T>) {
+export function ChipGroup<T extends string | number>({ options, value, onChange, className = '' }: ChipGroupProps<T>) {
   return (
     <div className={`flex flex-wrap gap-2 ${className}`}>
       {options.map((opt) => {

@@ -12,8 +12,6 @@
     "preview": "bun x vite preview"
   },
   "dependencies": {
-    "axios": "^1.18.1",
-    "biome": "^0.3.3",
     "firebase": "^12.16.0",
     "i18next": "^26.3.6",
     "qrcode.react": "^4.2.0",
@@ -22,6 +20,7 @@
     "react-i18next": "^17.0.10"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.4",
     "@tailwindcss/postcss": "^4.3.3",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",

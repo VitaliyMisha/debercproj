@@ -1,22 +1,22 @@
 export interface Player {
-    id: number;
-    name: string;
-    winCount: number
+  id: number;
+  name: string;
+  winCount: number;
 }
 
 export interface Round {
-    id: number;
-    number: number;
-    scores: Record<string, number | string>;
-    dealerId?: number;
+  id: number;
+  number: number;
+  scores: Record<string, number | string>;
+  dealerId?: number;
 }
 
 export interface Game {
-    id: number;
-    createdAt: string;
-    players: Player[];
-    rounds: Round[];
-    dealerId: number;
+  id: number;
+  createdAt: string;
+  players: Player[];
+  rounds: Round[];
+  dealerId: number;
 }
 
 export interface GameRulesConfig {

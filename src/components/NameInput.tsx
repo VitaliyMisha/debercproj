@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 
 interface NameInputProps {
   id?: string;
@@ -9,23 +10,13 @@ interface NameInputProps {
   onChange: (value: string) => void;
 }
 
-export const NameInput: React.FC<NameInputProps> = ({
-  id,
-  name,
-  value,
-  placeholder,
-  suggestions,
-  onChange,
-}) => {
+export const NameInput: React.FC<NameInputProps> = ({ id, name, value, placeholder, suggestions, onChange }) => {
   const [open, setOpen] = useState(false);
 
-  const filtered = value.trim().length > 0
-    ? suggestions.filter(
-        (s) =>
-          s.toLowerCase().includes(value.trim().toLowerCase()) &&
-          s.toLowerCase() !== value.trim().toLowerCase(),
-      )
-    : [];
+  const filtered =
+    value.trim().length > 0
+      ? suggestions.filter((s) => s.toLowerCase().includes(value.trim().toLowerCase()) && s.toLowerCase() !== value.trim().toLowerCase())
+      : [];
 
   const showDropdown = open && filtered.length > 0;
 

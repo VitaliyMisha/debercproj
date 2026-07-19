@@ -1,7 +1,7 @@
 import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { uk } from './locales/uk';
 import { en } from './locales/en';
+import { uk } from './locales/uk';
 
 /** localStorage key for the chosen language — shared with App. */
 export const LANG_STORAGE_KEY = 'lang';

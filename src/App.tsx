@@ -1,24 +1,31 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { Game, GameRulesConfig, Player, Round, SavedGameState } from './types';
-import { useSpectator } from './hooks/useSpectator';
-
-import SetupScreen from './components/SetupScreen';
+import GameHeader from './components/GameHeader';
+import GameHistory from './components/GameHistory';
 import RoundForm from './components/RoundForm';
 import RoundHistory from './components/RoundHistory';
 import RoundTimeline from './components/RoundTimeline';
-import GameHeader from './components/GameHeader';
-import GameHistory from './components/GameHistory';
 import ScoreBoard from './components/ScoreBoard';
+import SetupScreen from './components/SetupScreen';
+import { useSpectator } from './hooks/useSpectator';
+import type { Game, GameRulesConfig, Player, Round, SavedGameState } from './types';
 
 const WinnerScreen = lazy(() => import('./components/WinnerScreen'));
 const PlayerStatistics = lazy(() => import('./components/PlayerStatistics'));
+
+import LangToggleButton from './components/LangToggleButton';
+import RecoverScreen from './components/RecoverScreen';
+import ShareSheet from './components/ShareSheet';
+import SpectatorSkeleton from './components/SpectatorSkeleton';
+import { useFirebaseSync } from './hooks/useFirebaseSync';
+import { useSound } from './hooks/useSound';
+import { LANG_STORAGE_KEY } from './i18n';
 import {
-  DEFAULT_GAME_RULES,
   bestOpponent,
   calculateGameTotals,
   clearGameState,
+  DEFAULT_GAME_RULES,
   findWinner,
   generateUniqueId,
   isValidScore,
@@ -32,13 +39,6 @@ import {
   validateRoundTokens,
   winCountKey,
 } from './utils/gameHelpers';
-import RecoverScreen from './components/RecoverScreen';
-import { useSound } from './hooks/useSound';
-import { useFirebaseSync } from './hooks/useFirebaseSync';
-import ShareSheet from './components/ShareSheet';
-import SpectatorSkeleton from './components/SpectatorSkeleton';
-import LangToggleButton from './components/LangToggleButton';
-import { LANG_STORAGE_KEY } from './i18n';
 
 const GAME_ID = 'gameId';
 const GAME_RULES_KEY = 'gameRules';
@@ -52,12 +52,9 @@ export type TableTheme = 'green' | 'burgundy' | 'navy';
  * Falls back to a plain update in Safari/jsdom and under reduced motion.
  */
 const withViewTransition = (update: () => void): void => {
-  const reducedMotion =
-    typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reducedMotion = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (!reducedMotion && 'startViewTransition' in document) {
-    (document as Document & { startViewTransition: (cb: () => void) => void }).startViewTransition(() =>
-      flushSync(update),
-    );
+    (document as Document & { startViewTransition: (cb: () => void) => void }).startViewTransition(() => flushSync(update));
   } else {
     update();
   }
@@ -109,9 +106,7 @@ export default function App() {
   });
 
   const [soundEnabled, setSoundEnabled] = useState<boolean>(() => localStorage.getItem(SOUND_KEY) !== 'false');
-  const [tableTheme, setTableTheme] = useState<TableTheme>(
-    () => (localStorage.getItem(TABLE_THEME_KEY) as TableTheme) ?? 'green',
-  );
+  const [tableTheme, setTableTheme] = useState<TableTheme>(() => (localStorage.getItem(TABLE_THEME_KEY) as TableTheme) ?? 'green');
 
   useEffect(() => {
     localStorage.setItem(TABLE_THEME_KEY, tableTheme);
@@ -119,9 +114,7 @@ export default function App() {
     else document.documentElement.dataset.table = tableTheme;
   }, [tableTheme]);
   const { i18n, t } = useTranslation();
-  const [lang, setLang] = useState<'uk' | 'en'>(() =>
-    (localStorage.getItem(LANG_STORAGE_KEY) as 'uk' | 'en') ?? 'uk'
-  );
+  const [lang, setLang] = useState<'uk' | 'en'>(() => (localStorage.getItem(LANG_STORAGE_KEY) as 'uk' | 'en') ?? 'uk');
   const handleLangChange = useCallback(() => {
     const next: 'uk' | 'en' = lang === 'uk' ? 'en' : 'uk';
     setLang(next);
@@ -170,7 +163,9 @@ export default function App() {
 
   useEffect(() => {
     if (!game || game.rounds.length === 0) return;
-    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
     window.addEventListener('beforeunload', handler);
     return () => window.removeEventListener('beforeunload', handler);
   }, [game]);
@@ -193,11 +188,7 @@ export default function App() {
     };
   }, []);
 
-  const createGame = (
-    reusePlayers?: Player[],
-    showHistory = false,
-    startingDealerId?: number,
-  ) => {
+  const createGame = (reusePlayers?: Player[], showHistory = false, startingDealerId?: number) => {
     closeFinishFiredRef.current.clear();
     if (soundEnabled) newGame();
     if (!reusePlayers) {
@@ -206,11 +197,13 @@ export default function App() {
     }
     // Win counts are keyed by normalised name (ids are regenerated every game).
     const winCounts = loadWinCounts();
-    const players: Player[] = reusePlayers || names.map((name) => ({
-      id: generateUniqueId(),
-      name,
-      winCount: winCounts[winCountKey(name)] || 0,
-    }));
+    const players: Player[] =
+      reusePlayers ||
+      names.map((name) => ({
+        id: generateUniqueId(),
+        name,
+        winCount: winCounts[winCountKey(name)] || 0,
+      }));
     const createdGame: Game = {
       id: gameId,
       createdAt: new Date().toISOString(),
@@ -231,9 +224,7 @@ export default function App() {
   };
 
   const tokenViolation = game ? validateRoundTokens(scores) : null;
-  const isAddDisabled = game
-    ? tokenViolation !== null || game.players.some((p) => !isValidScore(scores[String(p.id)], gameRules))
-    : true;
+  const isAddDisabled = game ? tokenViolation !== null || game.players.some((p) => !isValidScore(scores[String(p.id)], gameRules)) : true;
 
   /**
    * Recomputes the winner and applies winCount transitions exactly once per change:
@@ -315,7 +306,11 @@ export default function App() {
 
       // Б sound — check raw input vs parsed result to distinguish 1st vs 2nd+ Б
       for (const p of game.players) {
-        if (String(scores[String(p.id)] ?? '').trim().toUpperCase() === 'Б') {
+        if (
+          String(scores[String(p.id)] ?? '')
+            .trim()
+            .toUpperCase() === 'Б'
+        ) {
           if (updatedScores[String(p.id)] === 'Б') bSound();
           else secondBSound();
         }
@@ -356,9 +351,7 @@ export default function App() {
     Object.entries(newScores).forEach(([playerId, scoreStr]) => {
       convertedScores[playerId] = parseScore(scoreStr, playerId, priorRounds, gameRules);
     });
-    const updatedRounds = game.rounds.map((r) =>
-      r.number === roundNumber ? { ...r, scores: convertedScores } : r,
-    );
+    const updatedRounds = game.rounds.map((r) => (r.number === roundNumber ? { ...r, scores: convertedScores } : r));
     const updatedGame: Game = { ...game, rounds: updatedRounds };
     setGame(syncWinner(updatedGame));
     setError('');
@@ -380,7 +373,7 @@ export default function App() {
       spectator.game && spectator.winnerPlayer !== null
         ? (spectator.game.players.find((p) => p.id === spectator.winnerPlayer) ?? null)
         : null,
-    [spectator.game, spectator.winnerPlayer],
+    [spectator.game, spectator.winnerPlayer]
   );
 
   useEffect(() => {
@@ -397,7 +390,7 @@ export default function App() {
 
   const winnerObj = useMemo(
     () => (game && winnerPlayer !== null ? (game.players.find((p) => p.id === winnerPlayer) ?? null) : null),
-    [game, winnerPlayer],
+    [game, winnerPlayer]
   );
 
   const displayTotals = useMemo((): Record<string, number> => {
@@ -488,20 +481,19 @@ export default function App() {
     withViewTransition(() => setRecoveredState(null));
   };
 
-  const handleChipClick = useCallback((token: string) => {
-    if (token === 'ВІС') visPlay();
-    else if (token === 'ХВ') hvSound();
-    else chipClick();
-  }, [visPlay, hvSound, chipClick]);
+  const handleChipClick = useCallback(
+    (token: string) => {
+      if (token === 'ВІС') visPlay();
+      else if (token === 'ХВ') hvSound();
+      else chipClick();
+    },
+    [visPlay, hvSound, chipClick]
+  );
 
   return (
     <div className="felt-bg min-h-dvh w-full overflow-x-hidden">
       {/* Corner card suit silhouettes — decorative table atmosphere */}
-      <div
-        className="pointer-events-none fixed inset-0"
-        style={{ clipPath: 'inset(0)', contain: 'strict' }}
-        aria-hidden="true"
-      >
+      <div className="pointer-events-none fixed inset-0" style={{ clipPath: 'inset(0)', contain: 'strict' }} aria-hidden="true">
         <span className="absolute -top-4 -left-4 text-[22vw] opacity-[0.035] text-white leading-none select-none">♠</span>
         <span className="absolute -top-4 -right-4 text-[22vw] opacity-[0.035] text-white leading-none select-none">♥</span>
         <span className="absolute -bottom-4 -left-4 text-[22vw] opacity-[0.035] text-white leading-none select-none">♣</span>
@@ -511,21 +503,12 @@ export default function App() {
         <>
           {/* Lang toggle — only on setup/recover screens; GameHeader handles it during active game */}
           {!game && (
-            <LangToggleButton
-              lang={lang}
-              onClick={handleLangChange}
-              className="fixed top-4 right-4 z-40 bg-card-bg border-white/10"
-            />
+            <LangToggleButton lang={lang} onClick={handleLangChange} className="fixed top-4 right-4 z-40 bg-card-bg border-white/10" />
           )}
 
           {recoveredState && !game ? (
             <main className="flex items-center justify-center min-h-dvh py-4 px-4">
-              <RecoverScreen
-                savedState={recoveredState}
-                gameRules={gameRules}
-                onRecover={handleRecover}
-                onDiscard={handleDiscard}
-              />
+              <RecoverScreen savedState={recoveredState} gameRules={gameRules} onRecover={handleRecover} onDiscard={handleDiscard} />
             </main>
           ) : !game ? (
             <main className="flex items-center justify-center min-h-dvh py-4 px-4">
@@ -578,11 +561,7 @@ export default function App() {
                 players={game.players}
                 totals={displayTotals}
                 targetScore={targetScore}
-                dealerId={
-                  snapshotRound !== null
-                    ? game.rounds[snapshotRound - 1]?.dealerId
-                    : game.dealerId
-                }
+                dealerId={snapshotRound !== null ? game.rounds[snapshotRound - 1]?.dealerId : game.dealerId}
                 snapshotActive={snapshotRound !== null}
                 deltas={roundDeltas}
                 deltaKey={deltaKey}
@@ -634,17 +613,11 @@ export default function App() {
                 onUndoLastRound={winnerObj === null ? handleUndoLastRound : undefined}
               />
 
-              {game.rounds.length > 0 && (
-                <StatsToggle shown={showStatistics} onToggle={() => setShowStatistics((prev) => !prev)} />
-              )}
+              {game.rounds.length > 0 && <StatsToggle shown={showStatistics} onToggle={() => setShowStatistics((prev) => !prev)} />}
 
               {showStatistics && game.rounds.length > 0 && (
                 <Suspense fallback={null}>
-                  <PlayerStatistics
-                    game={game}
-                    players={game.players}
-                    gameRules={gameRules}
-                  />
+                  <PlayerStatistics game={game} players={game.players} gameRules={gameRules} />
                 </Suspense>
               )}
             </main>
@@ -656,9 +629,7 @@ export default function App() {
           {(spectator.status === 'not_found' || spectator.status === 'ended') && (
             <main className="flex items-center justify-center min-h-dvh px-6 text-center">
               <p className="text-muted text-sm">
-                {spectator.status === 'not_found'
-                  ? t('share.spectatorNotFound')
-                  : t('share.spectatorEnded')}
+                {spectator.status === 'not_found' ? t('share.spectatorNotFound') : t('share.spectatorEnded')}
               </p>
             </main>
           )}
@@ -705,11 +676,7 @@ export default function App() {
               )}
               {showSpectatorStatistics && spectator.game.rounds.length > 0 && spectator.gameRules && (
                 <Suspense fallback={null}>
-                  <PlayerStatistics
-                    game={spectator.game}
-                    players={spectator.game.players}
-                    gameRules={spectator.gameRules}
-                  />
+                  <PlayerStatistics game={spectator.game} players={spectator.game.players} gameRules={spectator.gameRules} />
                 </Suspense>
               )}
             </main>

@@ -1,8 +1,7 @@
-import React from 'react';
+import type React from 'react';
 
 /** First letter of the (trimmed) name, uppercased — emoji-safe via Array.from. */
-export const initialOf = (name: string, fallback = '?'): string =>
-  Array.from(name.trim())[0]?.toUpperCase() || fallback;
+export const initialOf = (name: string, fallback = '?'): string => Array.from(name.trim())[0]?.toUpperCase() || fallback;
 
 const GREEN_GRADIENT = 'linear-gradient(135deg, #15803D, #166534)';
 

@@ -1,11 +1,12 @@
-import React, { useEffect } from 'react';
+import type React from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Player } from '../types';
-import { CardSuitsRain } from './CardSuitsRain';
-import { Button } from './Button';
-import { GoldDivider } from './GoldDivider';
-import { Avatar } from './Avatar';
 import { useSound } from '../hooks/useSound';
+import type { Player } from '../types';
+import { Avatar } from './Avatar';
+import { Button } from './Button';
+import { CardSuitsRain } from './CardSuitsRain';
+import { GoldDivider } from './GoldDivider';
 
 interface WinnerScreenProps {
   winner: Player;
@@ -53,9 +54,7 @@ export const WinnerScreen: React.FC<WinnerScreenProps> = ({
       >
         <Avatar name={winner.name} className="w-16 h-16 text-2xl text-white mx-auto mb-3" />
         <p className="font-display text-2xl text-white mb-1">{winner.name}</p>
-        <p className="text-muted text-sm">
-          {t('winner.scoreRounds', { score: totals[String(winner.id)] ?? 0, rounds: roundCount })}
-        </p>
+        <p className="text-muted text-sm">{t('winner.scoreRounds', { score: totals[String(winner.id)] ?? 0, rounds: roundCount })}</p>
       </div>
 
       <GoldDivider className="w-full max-w-xs" />
@@ -76,11 +75,10 @@ export const WinnerScreen: React.FC<WinnerScreenProps> = ({
               <div key={player.id} className="px-4 py-3 border-b border-white/5 last:border-0">
                 <div className="flex items-center justify-between mb-1">
                   <span className={`text-sm font-semibold ${isWinner ? 'text-gold-to' : 'text-white/80'}`}>
-                    {isWinner && '👑 '}{player.name}
+                    {isWinner && '👑 '}
+                    {player.name}
                   </span>
-                  <span className={`text-sm font-bold ${score < 0 ? 'text-score-neg' : 'text-score-pos'}`}>
-                    {score}
-                  </span>
+                  <span className={`text-sm font-bold ${score < 0 ? 'text-score-neg' : 'text-score-pos'}`}>{score}</span>
                 </div>
                 <div className="h-1 bg-white/10 rounded-full overflow-hidden">
                   <div

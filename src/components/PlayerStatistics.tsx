@@ -1,7 +1,7 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { BarChart3 } from 'lucide-react';
-import { Game, Player, GameRulesConfig } from '../types';
+import type React from 'react';
+import { useTranslation } from 'react-i18next';
+import type { Game, GameRulesConfig, Player } from '../types';
 import { calculateGameTotals, getVisDisplayValue } from '../utils/gameHelpers';
 import { Avatar } from './Avatar';
 
@@ -99,9 +99,7 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
       }
     });
 
-    const avg = roundScores.length > 0
-      ? roundScores.reduce((s, v) => s + v, 0) / roundScores.length
-      : 0;
+    const avg = roundScores.length > 0 ? roundScores.reduce((s, v) => s + v, 0) / roundScores.length : 0;
 
     return {
       totalScore: totals[playerId] ?? 0,
@@ -124,9 +122,7 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
       <div className="px-4 py-3 border-b border-white/8 flex items-center gap-2">
         <BarChart3 className="w-4 h-4 text-gold-from shrink-0" />
         <h2 className="text-muted text-xs font-semibold uppercase tracking-widest flex-1">{t('stats.title')}</h2>
-        <span className="text-muted text-xs bg-white/5 px-2 py-0.5 rounded-full">
-          {t('stats.rounds', { n: game.rounds.length })}
-        </span>
+        <span className="text-muted text-xs bg-white/5 px-2 py-0.5 rounded-full">{t('stats.rounds', { n: game.rounds.length })}</span>
       </div>
 
       <div className="divide-y divide-white/5">
@@ -137,9 +133,9 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
               <div className="flex items-center gap-3 mb-3">
                 <Avatar name={player.name} className="w-9 h-9 text-base text-white" />
                 <span className="text-white font-semibold text-sm flex-1 truncate">{player.name}</span>
-                <span className={`font-score text-xl font-bold tabular-nums ${
-                  stats.totalScore >= 0 ? 'text-score-pos' : 'text-score-neg'
-                }`}>
+                <span
+                  className={`font-score text-xl font-bold tabular-nums ${stats.totalScore >= 0 ? 'text-score-pos' : 'text-score-neg'}`}
+                >
                   {stats.totalScore}
                 </span>
               </div>
@@ -147,12 +143,12 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
               {/* Main stats */}
               <div className="grid grid-cols-2 gap-2 mb-2">
                 <StatCell label={t('stats.avg')} value={stats.averageScore.toFixed(1)} valueClass="text-score-chalk" />
-                <StatCell label={t('stats.roundsStat')} value={`+${stats.positiveRounds} / −${stats.negativeRounds}`} valueClass="text-white/60" />
                 <StatCell
-                  label={t('stats.best')}
-                  value={String(stats.bestRound)}
-                  valueClass="text-score-pos"
+                  label={t('stats.roundsStat')}
+                  value={`+${stats.positiveRounds} / −${stats.negativeRounds}`}
+                  valueClass="text-white/60"
                 />
+                <StatCell label={t('stats.best')} value={String(stats.bestRound)} valueClass="text-score-pos" />
                 <StatCell
                   label={t('stats.worst')}
                   value={String(stats.worstRound)}

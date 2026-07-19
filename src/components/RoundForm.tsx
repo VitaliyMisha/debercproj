@@ -1,7 +1,7 @@
-import React, { ChangeEvent, useRef } from 'react';
+import type React from 'react';
+import { type ChangeEvent, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Player } from '../types';
-import { GameRulesConfig } from '../types';
+import type { GameRulesConfig, Player } from '../types';
 import { Avatar } from './Avatar';
 
 interface RoundFormProps {
@@ -25,13 +25,12 @@ const TOKEN_COLORS: Record<string, string> = {
 
 /* Колір чіпа-кнопки */
 const CHIP_STYLES: Record<string, { bg: string; accent: string; textColor: string }> = {
-  Б:   { bg: '#78350F', accent: '#D97706', textColor: '#FCD34D' },
-  ХВ:  { bg: '#7F1D1D', accent: '#DC2626', textColor: '#FCA5A5' },
+  Б: { bg: '#78350F', accent: '#D97706', textColor: '#FCD34D' },
+  ХВ: { bg: '#7F1D1D', accent: '#DC2626', textColor: '#FCA5A5' },
   ВІС: { bg: '#3B0764', accent: '#7C3AED', textColor: '#C4B5FD' },
 };
 
-const isTokenActive = (value: string, token: string): boolean =>
-  value.trim().toUpperCase() === token;
+const isTokenActive = (value: string, token: string): boolean => value.trim().toUpperCase() === token;
 
 const RoundForm: React.FC<RoundFormProps> = ({
   players,
@@ -148,9 +147,13 @@ const RoundForm: React.FC<RoundFormProps> = ({
                       bg-felt border transition-all duration-150
                       focus:outline-none focus:ring-2 focus:ring-gold-from/40
                       text-white
-                      ${activeToken
-                        ? TOKEN_COLORS[activeToken].split(' ').filter((c) => c.startsWith('border')).join(' ')
-                        : 'border-white/15'
+                      ${
+                        activeToken
+                          ? TOKEN_COLORS[activeToken]
+                              .split(' ')
+                              .filter((c) => c.startsWith('border'))
+                              .join(' ')
+                          : 'border-white/15'
                       }`}
                   />
                 </div>
@@ -180,9 +183,7 @@ const RoundForm: React.FC<RoundFormProps> = ({
                       aria-label={t('round.setToken', { token, name: p.name })}
                       className="h-7 px-2.5 rounded-full text-xs font-bold transition-all duration-150 active:scale-[0.93] disabled:opacity-30 disabled:cursor-not-allowed"
                       style={{
-                        background: isActive
-                          ? `radial-gradient(circle at 35% 35%, ${chip.accent}dd, ${chip.bg})`
-                          : `${chip.bg}88`,
+                        background: isActive ? `radial-gradient(circle at 35% 35%, ${chip.accent}dd, ${chip.bg})` : `${chip.bg}88`,
                         color: chip.textColor,
                         border: `1px solid ${isActive ? chip.accent : chip.accent + '55'}`,
                         boxShadow: isActive
@@ -211,10 +212,7 @@ const RoundForm: React.FC<RoundFormProps> = ({
           disabled={isAddDisabled}
           className={`w-full py-3 rounded-xl font-semibold text-base transition-all duration-150 active:scale-[0.97]
             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-to/60
-            ${isAddDisabled
-              ? 'bg-white/5 text-muted cursor-not-allowed'
-              : 'bg-primary hover:bg-primary-dark text-white shadow-lg'
-            }`}
+            ${isAddDisabled ? 'bg-white/5 text-muted cursor-not-allowed' : 'bg-primary hover:bg-primary-dark text-white shadow-lg'}`}
         >
           {isAddDisabled ? t('round.fillAll') : t('round.addRound')}
         </button>

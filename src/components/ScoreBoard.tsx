@@ -1,6 +1,7 @@
-import React, { useLayoutEffect, useRef } from 'react';
+import type React from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Player, Round } from '../types';
+import type { Player, Round } from '../types';
 import { winStreak } from '../utils/gameHelpers';
 import { Avatar } from './Avatar';
 import { Odometer } from './Odometer';
@@ -33,42 +34,51 @@ interface PlayerCardProps {
   dealerBadgeRef?: React.Ref<HTMLSpanElement>;
 }
 
-const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isLeader, isDealer, snapshotActive, delta, deltaKey, spanFull = false, streak = 0, dealerBadgeRef }) => {
+const PlayerCard: React.FC<PlayerCardProps> = ({
+  player,
+  score,
+  targetScore,
+  isLeader,
+  isDealer,
+  snapshotActive,
+  delta,
+  deltaKey,
+  spanFull = false,
+  streak = 0,
+  dealerBadgeRef,
+}) => {
   const { t } = useTranslation();
   const progress = Math.min(Math.max(score / targetScore, 0), 1) * 100;
   const isCloseToFinish = !snapshotActive && score > 0 && targetScore - score <= 100;
   const remaining = targetScore - score;
 
-  const leaderStyle = isLeader ? {
-    background: 'linear-gradient(#192134, #192134) padding-box, linear-gradient(135deg, #78350F, #FCD34D 45%, #D97706 55%, #78350F) border-box',
-    border: '1.5px solid transparent',
-    boxShadow: '0 4px 24px rgba(120, 53, 15, 0.28), inset 0 0 0 0 transparent',
-    animation: 'goldPulse 5s ease-in-out infinite',
-  } : isCloseToFinish ? {
-    border: '1.5px solid rgba(251, 191, 36, 0.35)',
-  } : undefined;
+  const leaderStyle = isLeader
+    ? {
+        background:
+          'linear-gradient(#192134, #192134) padding-box, linear-gradient(135deg, #78350F, #FCD34D 45%, #D97706 55%, #78350F) border-box',
+        border: '1.5px solid transparent',
+        boxShadow: '0 4px 24px rgba(120, 53, 15, 0.28), inset 0 0 0 0 transparent',
+        animation: 'goldPulse 5s ease-in-out infinite',
+      }
+    : isCloseToFinish
+      ? {
+          border: '1.5px solid rgba(251, 191, 36, 0.35)',
+        }
+      : undefined;
 
   return (
     <div
       className={`relative flex flex-col gap-2 p-4 rounded-2xl transition-all duration-300
         ${spanFull ? 'col-span-2' : ''}
-        ${isLeader
-          ? 'bg-card-bg'
-          : 'bg-card-bg/60 border border-white/8'
-        }`}
+        ${isLeader ? 'bg-card-bg' : 'bg-card-bg/60 border border-white/8'}`}
       style={leaderStyle}
     >
       {/* Warm overlay pulse when close to finish */}
-      {isCloseToFinish && !isLeader && (
-        <div className="absolute inset-0 rounded-2xl pointer-events-none close-finish-overlay" />
-      )}
+      {isCloseToFinish && !isLeader && <div className="absolute inset-0 rounded-2xl pointer-events-none close-finish-overlay" />}
 
       {/* Avatar + name */}
       <div className="flex items-center gap-2">
-        <Avatar
-          name={player.name}
-          background={isCloseToFinish && !isLeader ? 'linear-gradient(135deg, #c2410c, #ea580c)' : undefined}
-        />
+        <Avatar name={player.name} background={isCloseToFinish && !isLeader ? 'linear-gradient(135deg, #c2410c, #ea580c)' : undefined} />
         <span className="text-white/80 font-sans text-sm font-medium truncate">{player.name}</span>
         <div className="ml-auto flex items-center gap-1">
           {streak >= 3 && (
@@ -79,9 +89,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
               🔥{streak}
             </span>
           )}
-          {isCloseToFinish && !isLeader && (
-            <span className="text-base leading-none">🔥</span>
-          )}
+          {isCloseToFinish && !isLeader && <span className="text-base leading-none">🔥</span>}
           {isDealer && (
             <span
               ref={dealerBadgeRef}
@@ -109,7 +117,8 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
         {delta !== undefined && delta !== 0 && (
           // key restarts the CSS float animation each round without remounting the whole card
           <div key={deltaKey} className={`score-delta ${delta > 0 ? 'pos' : 'neg'}`}>
-            {delta > 0 ? '+' : ''}{delta}
+            {delta > 0 ? '+' : ''}
+            {delta}
           </div>
         )}
       </div>
@@ -125,10 +134,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, score, targetScore, isL
       )}
 
       {/* Progress bar — inset / embossed into the felt, with quarter ticks */}
-      <div
-        className="relative h-1.5 bg-black/40 rounded-full overflow-hidden"
-        style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.7)' }}
-      >
+      <div className="relative h-1.5 bg-black/40 rounded-full overflow-hidden" style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.7)' }}>
         <div
           className="h-full rounded-full transition-all duration-600"
           style={{
@@ -174,8 +180,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
   useLayoutEffect(() => {
     const badge = dealerBadgeRef.current;
     const prev = prevDealerRectRef.current;
-    const reducedMotion =
-      typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reducedMotion = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (badge && prev && dealerId !== undefined && prev.dealerId !== dealerId && !reducedMotion && typeof badge.animate === 'function') {
       const to = badge.getBoundingClientRect();
@@ -197,7 +202,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
           { transform: `translate(${(to.left - from.left) / 2}px, ${(to.top - from.top) / 2 - 12}px) scale(1.25)` },
           { transform: `translate(${to.left - from.left}px, ${to.top - from.top}px) scale(1)` },
         ],
-        { duration: 550, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+        { duration: 550, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
       );
       flight.onfinish = () => {
         clone.remove();

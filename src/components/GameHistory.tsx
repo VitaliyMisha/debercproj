@@ -1,7 +1,7 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { Trophy } from 'lucide-react';
-import { Player } from '../types';
+import type React from 'react';
+import { useTranslation } from 'react-i18next';
+import type { Player } from '../types';
 import { Avatar } from './Avatar';
 
 interface GameHistoryProps {
@@ -55,9 +55,11 @@ const GameHistory: React.FC<GameHistoryProps> = ({ players }) => {
           return (
             <div key={player.id} className="flex items-center gap-3 px-4 py-3">
               {/* Rank */}
-              <span className={`w-5 text-xs font-semibold text-center tabular-nums shrink-0 ${
-                isChampion ? 'text-gold-to' : isTied ? 'text-gold-from' : 'text-muted'
-              }`}>
+              <span
+                className={`w-5 text-xs font-semibold text-center tabular-nums shrink-0 ${
+                  isChampion ? 'text-gold-to' : isTied ? 'text-gold-from' : 'text-muted'
+                }`}
+              >
                 {isChampion || isTied ? '—' : `#${idx + 1}`}
               </span>
 
@@ -80,14 +82,18 @@ const GameHistory: React.FC<GameHistoryProps> = ({ players }) => {
               {/* Name + bar */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-1">
-                  <span className={`text-sm font-semibold truncate ${
-                    isChampion ? 'text-gold-to' : isTied ? 'text-gold-from' : 'text-white/80'
-                  }`}>
+                  <span
+                    className={`text-sm font-semibold truncate ${
+                      isChampion ? 'text-gold-to' : isTied ? 'text-gold-from' : 'text-white/80'
+                    }`}
+                  >
                     {player.name}
                   </span>
-                  <span className={`font-score text-sm font-bold shrink-0 ${
-                    isChampion ? 'text-gold-to' : isTied ? 'text-gold-from' : 'text-white/50'
-                  }`}>
+                  <span
+                    className={`font-score text-sm font-bold shrink-0 ${
+                      isChampion ? 'text-gold-to' : isTied ? 'text-gold-from' : 'text-white/50'
+                    }`}
+                  >
                     {player.winCount} {victoryLabel(player.winCount)}
                   </span>
                 </div>
@@ -98,9 +104,10 @@ const GameHistory: React.FC<GameHistoryProps> = ({ players }) => {
                       className="h-full rounded-full transition-all duration-500"
                       style={{
                         width: `${progress}%`,
-                        background: isChampion || isTied
-                          ? 'linear-gradient(90deg, var(--color-gold-from), var(--color-gold-to))'
-                          : 'var(--color-primary)',
+                        background:
+                          isChampion || isTied
+                            ? 'linear-gradient(90deg, var(--color-gold-from), var(--color-gold-to))'
+                            : 'var(--color-primary)',
                       }}
                     />
                   </div>

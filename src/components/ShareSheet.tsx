@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { QRCodeSVG } from 'qrcode.react';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BottomSheet } from './BottomSheet';
 
 interface ShareSheetProps {

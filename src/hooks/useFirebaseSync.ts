@@ -1,5 +1,5 @@
+import { onDisconnect, onValue, ref, remove, set } from 'firebase/database';
 import { useEffect, useRef } from 'react';
-import { ref, set, remove, onValue, onDisconnect } from 'firebase/database';
 import { db } from '../config/firebase';
 import type { Game, GameRulesConfig } from '../types';
 
@@ -12,14 +12,7 @@ interface FirebaseSyncParams {
   shareCode: string | null;
 }
 
-export function useFirebaseSync({
-  game,
-  targetScore,
-  winnerPlayer,
-  gameRules,
-  isSharing,
-  shareCode,
-}: FirebaseSyncParams): void {
+export function useFirebaseSync({ game, targetScore, winnerPlayer, gameRules, isSharing, shareCode }: FirebaseSyncParams): void {
   // Latest state snapshot for the reconnect handler (it lives in an effect
   // keyed only by shareCode, so it can't close over fresh props).
   const latestRef = useRef({ game, targetScore, winnerPlayer, gameRules });

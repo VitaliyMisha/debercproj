@@ -1,16 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import type { Game, GameRulesConfig, Player } from '../src/types';
 import {
-  isValidScore,
-  parseScore,
+  bestOpponent,
   calculateGameTotals,
+  findWinner,
   generateUniqueId,
   getVisDisplayValue,
-  findWinner,
+  isValidScore,
+  parseScore,
   validateRoundTokens,
-  bestOpponent,
   winStreak,
 } from '../src/utils/gameHelpers';
-import { Game, GameRulesConfig, Player } from '../src/types';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -83,10 +83,8 @@ describe('isValidScore', () => {
     it('rejects floats', () => expect(isValidScore('50.5', rules)).toBe(false));
     it('rejects scientific notation', () => expect(isValidScore('1e5', rules)).toBe(false));
     it('rejects lone minus sign', () => expect(isValidScore('-', rules)).toBe(false));
-    it('rejects ВіС when allowVis is false', () =>
-      expect(isValidScore('ВІС', strictRules)).toBe(false));
-    it('rejects lowercase ВіС when allowVis is false', () =>
-      expect(isValidScore('віс', strictRules)).toBe(false));
+    it('rejects ВіС when allowVis is false', () => expect(isValidScore('ВІС', strictRules)).toBe(false));
+    it('rejects lowercase ВіС when allowVis is false', () => expect(isValidScore('віс', strictRules)).toBe(false));
   });
 });
 
@@ -94,32 +92,22 @@ describe('isValidScore', () => {
 
 describe('parseScore', () => {
   describe('numeric values', () => {
-    it('parses positive integer string', () =>
-      expect(parseScore('150', '1', [], rules)).toBe(150));
-    it('parses negative integer string', () =>
-      expect(parseScore('-20', '1', [], rules)).toBe(-20));
-    it('parses zero', () =>
-      expect(parseScore('0', '1', [], rules)).toBe(0));
-    it('returns number type as-is', () =>
-      expect(parseScore(99, '1', [], rules)).toBe(99));
-    it('returns 0 for unrecognised string', () =>
-      expect(parseScore('xyz', '1', [], rules)).toBe(0));
+    it('parses positive integer string', () => expect(parseScore('150', '1', [], rules)).toBe(150));
+    it('parses negative integer string', () => expect(parseScore('-20', '1', [], rules)).toBe(-20));
+    it('parses zero', () => expect(parseScore('0', '1', [], rules)).toBe(0));
+    it('returns number type as-is', () => expect(parseScore(99, '1', [], rules)).toBe(99));
+    it('returns 0 for unrecognised string', () => expect(parseScore('xyz', '1', [], rules)).toBe(0));
   });
 
   describe('ХВ token', () => {
-    it('returns hvPenalty', () =>
-      expect(parseScore('ХВ', '1', [], rules)).toBe(-100));
-    it('handles lowercase хв', () =>
-      expect(parseScore('  хв  ', '1', [], rules)).toBe(-100));
-    it('uses custom hvPenalty', () =>
-      expect(parseScore('ХВ', '1', [], customRules)).toBe(-50));
+    it('returns hvPenalty', () => expect(parseScore('ХВ', '1', [], rules)).toBe(-100));
+    it('handles lowercase хв', () => expect(parseScore('  хв  ', '1', [], rules)).toBe(-100));
+    it('uses custom hvPenalty', () => expect(parseScore('ХВ', '1', [], customRules)).toBe(-50));
   });
 
   describe('Б token', () => {
-    it('returns Б string on first occurrence', () =>
-      expect(parseScore('Б', '1', [], rules)).toBe('Б'));
-    it('handles lowercase б', () =>
-      expect(parseScore('б', '1', [], rules)).toBe('Б'));
+    it('returns Б string on first occurrence', () => expect(parseScore('Б', '1', [], rules)).toBe('Б'));
+    it('handles lowercase б', () => expect(parseScore('б', '1', [], rules)).toBe('Б'));
     it('returns secondBPenalty on second Б', () => {
       const prevRounds = [round(1, { '1': 'Б', '2': 50 })];
       expect(parseScore('Б', '1', prevRounds, rules)).toBe(-100);
@@ -134,18 +122,16 @@ describe('parseScore', () => {
     });
     it('returns secondBPenalty on third Б', () => {
       const prevRounds = [
-        round(1, { '1': 'Б', '2': 50 }),   // 1st Б stored as string
-        round(2, { '1': -100, '2': 50 }),   // 2nd Б stored as penalty number
+        round(1, { '1': 'Б', '2': 50 }), // 1st Б stored as string
+        round(2, { '1': -100, '2': 50 }), // 2nd Б stored as penalty number
       ];
       expect(parseScore('Б', '1', prevRounds, rules)).toBe(-100);
     });
   });
 
   describe('ВіС token', () => {
-    it('returns ВіС string when allowed', () =>
-      expect(parseScore('ВІС', '1', [], rules)).toBe('ВІС'));
-    it('returns 0 when allowVis is false', () =>
-      expect(parseScore('ВІС', '1', [], strictRules)).toBe(0));
+    it('returns ВіС string when allowed', () => expect(parseScore('ВІС', '1', [], rules)).toBe('ВІС'));
+    it('returns 0 when allowVis is false', () => expect(parseScore('ВІС', '1', [], strictRules)).toBe(0));
   });
 });
 
@@ -160,10 +146,7 @@ describe('calculateGameTotals', () => {
     });
 
     it('accumulates numeric scores across rounds', () => {
-      const g = game([
-        round(1, { '1': 100, '2': 200 }),
-        round(2, { '1': 50,  '2': 70  }),
-      ]);
+      const g = game([round(1, { '1': 100, '2': 200 }), round(2, { '1': 50, '2': 70 })]);
       const totals = calculateGameTotals(g, rules);
       expect(totals[1]).toBe(150);
       expect(totals[2]).toBe(270);
@@ -177,10 +160,7 @@ describe('calculateGameTotals', () => {
     });
 
     it('accumulates negative scores over multiple rounds', () => {
-      const g = game([
-        round(1, { '1': -20, '2': 100 }),
-        round(2, { '1': -30, '2': 50  }),
-      ]);
+      const g = game([round(1, { '1': -20, '2': 100 }), round(2, { '1': -30, '2': 50 })]);
       const totals = calculateGameTotals(g, rules);
       expect(totals[1]).toBe(-50);
       expect(totals[2]).toBe(150);
@@ -196,30 +176,20 @@ describe('calculateGameTotals', () => {
     });
 
     it('second Б applies secondBPenalty', () => {
-      const g = game([
-        round(1, { '1': 'Б', '2': 50 }),
-        round(2, { '1': 'Б', '2': 30 }),
-      ]);
+      const g = game([round(1, { '1': 'Б', '2': 50 }), round(2, { '1': 'Б', '2': 30 })]);
       const totals = calculateGameTotals(g, rules);
       expect(totals[1]).toBe(-100);
       expect(totals[2]).toBe(80);
     });
 
     it('uses custom secondBPenalty', () => {
-      const g = game([
-        round(1, { '1': 'Б', '2': 50 }),
-        round(2, { '1': 'Б', '2': 30 }),
-      ]);
+      const g = game([round(1, { '1': 'Б', '2': 50 }), round(2, { '1': 'Б', '2': 30 })]);
       const totals = calculateGameTotals(g, customRules);
       expect(totals[1]).toBe(-200);
     });
 
     it('third Б also applies secondBPenalty', () => {
-      const g = game([
-        round(1, { '1': 'Б', '2': 10 }),
-        round(2, { '1': 'Б', '2': 10 }),
-        round(3, { '1': 'Б', '2': 10 }),
-      ]);
+      const g = game([round(1, { '1': 'Б', '2': 10 }), round(2, { '1': 'Б', '2': 10 }), round(3, { '1': 'Б', '2': 10 })]);
       const totals = calculateGameTotals(g, rules);
       // 2nd Б: -100; 3rd Б: another -100
       expect(totals[1]).toBe(-200);
@@ -242,10 +212,7 @@ describe('calculateGameTotals', () => {
     });
 
     it('multiple ХВ accumulate separately per player', () => {
-      const g = game([
-        round(1, { '1': 'ХВ', '2': 50 }),
-        round(2, { '1': 'ХВ', '2': 30 }),
-      ]);
+      const g = game([round(1, { '1': 'ХВ', '2': 50 }), round(2, { '1': 'ХВ', '2': 30 })]);
       const totals = calculateGameTotals(g, rules);
       expect(totals[1]).toBe(-200);
     });
@@ -259,10 +226,7 @@ describe('calculateGameTotals', () => {
 
   describe('ВіС logic', () => {
     it('ВіС win: earns the hanging score in next round', () => {
-      const g = game([
-        round(1, { '1': 50, '2': 'ВІС' }),
-        round(2, { '1': 40, '2': 60  }),
-      ]);
+      const g = game([round(1, { '1': 50, '2': 'ВІС' }), round(2, { '1': 40, '2': 60 })]);
       const totals = calculateGameTotals(g, rules);
       // p2 wins vis: earns hanging (50) + round2 score (60) = 110
       // p1: round1 (50) + round2 (40) = 90
@@ -271,10 +235,7 @@ describe('calculateGameTotals', () => {
     });
 
     it('ВіС loss: vis player gets Б, opponent earns hanging score', () => {
-      const g = game([
-        round(1, { '1': 100, '2': 'ВІС' }),
-        round(2, { '1': 70,  '2': 30  }),
-      ]);
+      const g = game([round(1, { '1': 100, '2': 'ВІС' }), round(2, { '1': 70, '2': 30 })]);
       const totals = calculateGameTotals(g, rules);
       // p2 loses vis: gets Б (first, no penalty), p1 earns hanging (100) as bonus
       // p1: 100 + 70 + 100 (bonus) = 270; p2: 0 (vis pending) + 30 = 30
@@ -284,9 +245,9 @@ describe('calculateGameTotals', () => {
 
     it('ВіС loss triggers second Б penalty when player already had one Б', () => {
       const g = game([
-        round(1, { '1': 'Б',  '2': 50 }),   // p1 first Б
-        round(2, { '1': 'ВІС', '2': 30 }),   // p1 plays ВіС, hanging = 30
-        round(3, { '1': 40,   '2': 50 }),    // p1 loses vis (40 < 50) → 2nd Б
+        round(1, { '1': 'Б', '2': 50 }), // p1 first Б
+        round(2, { '1': 'ВІС', '2': 30 }), // p1 plays ВіС, hanging = 30
+        round(3, { '1': 40, '2': 50 }), // p1 loses vis (40 < 50) → 2nd Б
       ]);
       const totals = calculateGameTotals(g, rules);
       // p1: 0 (Б) + 0 (vis pending) + 40 (round3) - 100 (2nd Б penalty) = -60
@@ -297,9 +258,9 @@ describe('calculateGameTotals', () => {
 
     it('ВіС tie carry-forward then win: tie-round scores are counted', () => {
       const g = game([
-        round(1, { '1': 50, '2': 'ВІС' }),  // hanging = 50
-        round(2, { '1': 60, '2': 60 }),       // tie → carry forward; both scores counted
-        round(3, { '1': 40, '2': 80 }),       // p2 wins (80 > 40)
+        round(1, { '1': 50, '2': 'ВІС' }), // hanging = 50
+        round(2, { '1': 60, '2': 60 }), // tie → carry forward; both scores counted
+        round(3, { '1': 40, '2': 80 }), // p2 wins (80 > 40)
       ]);
       const totals = calculateGameTotals(g, rules);
       // p2: 0 (vis) + 60 (tie, counted) + 80 (win) + 50 (hanging) = 190
@@ -310,9 +271,9 @@ describe('calculateGameTotals', () => {
 
     it('ВіС tie carry-forward then loss: vis player gets Б, opponent gets hanging', () => {
       const g = game([
-        round(1, { '1': 50, '2': 'ВІС' }),  // hanging = 50
-        round(2, { '1': 60, '2': 60 }),       // tie → carry forward; both scores counted
-        round(3, { '1': 90, '2': 30 }),       // p2 loses (30 < 90) → 1st Б, p1 gets hanging
+        round(1, { '1': 50, '2': 'ВІС' }), // hanging = 50
+        round(2, { '1': 60, '2': 60 }), // tie → carry forward; both scores counted
+        round(3, { '1': 90, '2': 30 }), // p2 loses (30 < 90) → 1st Б, p1 gets hanging
       ]);
       const totals = calculateGameTotals(g, rules);
       // p2: 0 (vis) + 60 (tie) + 30 (loss) = 90; 1st Б, no penalty
@@ -323,10 +284,10 @@ describe('calculateGameTotals', () => {
 
     it('ВіС loss as 3rd Б applies another penalty', () => {
       const g = game([
-        round(1, { '1': 'Б',  '2': 50  }),  // p1 1st Б
-        round(2, { '1': 'Б',  '2': 50  }),  // p1 2nd Б → -100
-        round(3, { '1': 'ВІС', '2': 30  }), // p1 plays ВіС, hanging = 30
-        round(4, { '1': 10,   '2': 50  }),  // p1 loses vis (10 < 50) → 3rd Б → -100 again
+        round(1, { '1': 'Б', '2': 50 }), // p1 1st Б
+        round(2, { '1': 'Б', '2': 50 }), // p1 2nd Б → -100
+        round(3, { '1': 'ВІС', '2': 30 }), // p1 plays ВіС, hanging = 30
+        round(4, { '1': 10, '2': 50 }), // p1 loses vis (10 < 50) → 3rd Б → -100 again
       ]);
       const totals = calculateGameTotals(g, rules);
       // p1: 0 + (-100) + 0(vis) + 10 + (-100)(3rd Б) = -190
@@ -337,8 +298,8 @@ describe('calculateGameTotals', () => {
 
     it('ВіС with all non-numeric opponent scores: hangingScore is 0', () => {
       const g = game([
-        round(1, { '1': 'Б',  '2': 'ВІС' }), // both non-numeric → hangingScore = 0
-        round(2, { '1': 30,   '2': 50  }),    // p2 wins vis (50 > 30)
+        round(1, { '1': 'Б', '2': 'ВІС' }), // both non-numeric → hangingScore = 0
+        round(2, { '1': 30, '2': 50 }), // p2 wins vis (50 > 30)
       ]);
       const totals = calculateGameTotals(g, rules);
       // hanging = max(0, 0) = 0; p2 wins: earns 0 bonus + 50 round score
@@ -348,10 +309,7 @@ describe('calculateGameTotals', () => {
     });
 
     it('ВіС treated as 0 when allowVis is false', () => {
-      const g = game([
-        round(1, { '1': 'ВІС', '2': 50 }),
-        round(2, { '1': 80,    '2': 40 }),
-      ]);
+      const g = game([round(1, { '1': 'ВІС', '2': 50 }), round(2, { '1': 80, '2': 40 })]);
       const totals = calculateGameTotals(g, strictRules);
       // p1 ВіС stored but not pushed to pendingVis → contributes 0
       expect(totals[1]).toBe(80);
@@ -359,10 +317,13 @@ describe('calculateGameTotals', () => {
     });
 
     it('3 players: ВіС loss bonus goes to player with best current-round score', () => {
-      const g = game([
-        round(1, { '1': 'ВІС', '2': 40, '3': 20 }),  // hanging = 40
-        round(2, { '1': 30,    '2': 25, '3': 50  }),  // p3 best opponent (50 > 30)
-      ], [p1, p2, p3]);
+      const g = game(
+        [
+          round(1, { '1': 'ВІС', '2': 40, '3': 20 }), // hanging = 40
+          round(2, { '1': 30, '2': 25, '3': 50 }), // p3 best opponent (50 > 30)
+        ],
+        [p1, p2, p3]
+      );
       const totals = calculateGameTotals(g, rules);
       // p1 loses vis: p3 gets hanging (40) bonus
       // p1: 0 (vis) + 30 = 30; p2: 40 + 25 = 65; p3: 20 + 50 + 40 = 110
@@ -373,10 +334,7 @@ describe('calculateGameTotals', () => {
 
     it('ВіС win hanging score is max of numeric scores in vis round', () => {
       // If vis round has another player with a high score, that is the prize
-      const g = game([
-        round(1, { '1': 300, '2': 'ВІС' }),
-        round(2, { '1': 100, '2': 200  }),
-      ]);
+      const g = game([round(1, { '1': 300, '2': 'ВІС' }), round(2, { '1': 100, '2': 200 })]);
       const totals = calculateGameTotals(g, rules);
       // hanging = 300; p2 wins (200 > 100): earns 300 + 200 = 500
       expect(totals[2]).toBe(500);
@@ -386,29 +344,20 @@ describe('calculateGameTotals', () => {
 
   describe('mixed scenarios', () => {
     it('combines Б + ХВ correctly', () => {
-      const g = game([
-        round(1, { '1': 'Б',  '2': 100 }),
-        round(2, { '1': 'ХВ', '2': 80  }),
-      ]);
+      const g = game([round(1, { '1': 'Б', '2': 100 }), round(2, { '1': 'ХВ', '2': 80 })]);
       const totals = calculateGameTotals(g, rules);
       expect(totals[1]).toBe(-100); // 0 (Б) + (-100) (ХВ)
       expect(totals[2]).toBe(180);
     });
 
     it('player with all-zero rounds stays at 0', () => {
-      const g = game([
-        round(1, { '1': 0, '2': 50 }),
-        round(2, { '1': 0, '2': 70 }),
-      ]);
+      const g = game([round(1, { '1': 0, '2': 50 }), round(2, { '1': 0, '2': 70 })]);
       const totals = calculateGameTotals(g, rules);
       expect(totals[1]).toBe(0);
     });
 
     it('three players — independent score tracking', () => {
-      const g = game([
-        round(1, { '1': 100, '2': 200, '3': 50  }),
-        round(2, { '1': 50,  '2': 100, '3': 150 }),
-      ], [p1, p2, p3]);
+      const g = game([round(1, { '1': 100, '2': 200, '3': 50 }), round(2, { '1': 50, '2': 100, '3': 150 })], [p1, p2, p3]);
       const totals = calculateGameTotals(g, rules);
       expect(totals[1]).toBe(150);
       expect(totals[2]).toBe(300);
@@ -459,19 +408,15 @@ describe('getVisDisplayValue', () => {
 
   it('returns secondBPenalty when vis loss is second Б (had regular Б before)', () => {
     const rounds = [
-      round(1, { '1': 'Б', '2': 50 }),     // p1 first Б
-      round(2, { '1': 'ВіС', '2': 30 }),   // p1 plays ВіС
-      round(3, { '1': 40,   '2': 50 }),    // p1 loses vis → 2nd Б
+      round(1, { '1': 'Б', '2': 50 }), // p1 first Б
+      round(2, { '1': 'ВіС', '2': 30 }), // p1 plays ВіС
+      round(3, { '1': 40, '2': 50 }), // p1 loses vis → 2nd Б
     ];
     expect(getVisDisplayValue(1, 1, rounds, rules)).toBe(-100);
   });
 
   it('returns secondBPenalty with custom value', () => {
-    const rounds = [
-      round(1, { '1': 'Б', '2': 50 }),
-      round(2, { '1': 'ВіС', '2': 30 }),
-      round(3, { '1': 40, '2': 50 }),
-    ];
+    const rounds = [round(1, { '1': 'Б', '2': 50 }), round(2, { '1': 'ВіС', '2': 30 }), round(3, { '1': 40, '2': 50 })];
     expect(getVisDisplayValue(1, 1, rounds, customRules)).toBe(-200);
   });
 
@@ -487,8 +432,8 @@ describe('getVisDisplayValue', () => {
   it('returns ВіС when tie then win', () => {
     const rounds = [
       round(1, { '1': 'ВіС', '2': 80 }),
-      round(2, { '1': 60, '2': 60 }),  // tie
-      round(3, { '1': 90, '2': 50 }),  // p1 wins (90 > 50)
+      round(2, { '1': 60, '2': 60 }), // tie
+      round(3, { '1': 90, '2': 50 }), // p1 wins (90 > 50)
     ];
     expect(getVisDisplayValue(0, 1, rounds, rules)).toBe('ВіС');
   });
@@ -496,18 +441,18 @@ describe('getVisDisplayValue', () => {
   it('returns Б when tie then loss (first Б)', () => {
     const rounds = [
       round(1, { '1': 'ВіС', '2': 80 }),
-      round(2, { '1': 60, '2': 60 }),  // tie
-      round(3, { '1': 40, '2': 90 }),  // p1 loses (40 < 90)
+      round(2, { '1': 60, '2': 60 }), // tie
+      round(3, { '1': 40, '2': 90 }), // p1 loses (40 < 90)
     ];
     expect(getVisDisplayValue(0, 1, rounds, rules)).toBe('Б');
   });
 
   it('second ВіС loss counts previous ВіС loss as prior Б', () => {
     const rounds = [
-      round(1, { '1': 'ВіС', '2': 50 }),  // vis round 1 — hanging = 50
-      round(2, { '1': 30, '2': 60 }),      // p1 loses 1st ВіС → counts as 1st Б
-      round(3, { '1': 'ВіС', '2': 50 }),  // vis round 2
-      round(4, { '1': 20, '2': 80 }),      // p1 loses 2nd ВіС → should be 2nd Б = penalty
+      round(1, { '1': 'ВіС', '2': 50 }), // vis round 1 — hanging = 50
+      round(2, { '1': 30, '2': 60 }), // p1 loses 1st ВіС → counts as 1st Б
+      round(3, { '1': 'ВіС', '2': 50 }), // vis round 2
+      round(4, { '1': 20, '2': 80 }), // p1 loses 2nd ВіС → should be 2nd Б = penalty
     ];
     expect(getVisDisplayValue(2, 1, rounds, rules)).toBe(-100);
   });
@@ -515,7 +460,7 @@ describe('getVisDisplayValue', () => {
   it('handles uppercase ВІС token (production stored format) — loss', () => {
     const rounds = [
       round(1, { '1': 'ВІС', '2': 80 }), // uppercase І (U+0406) — actual stored format
-      round(2, { '1': 50, '2': 90 }),     // p1 loses (50 < 90)
+      round(2, { '1': 50, '2': 90 }), // p1 loses (50 < 90)
     ];
     expect(getVisDisplayValue(0, 1, rounds, rules)).toBe('Б');
   });
@@ -523,16 +468,13 @@ describe('getVisDisplayValue', () => {
   it('handles uppercase ВІС token (production stored format) — win', () => {
     const rounds = [
       round(1, { '1': 'ВІС', '2': 80 }), // uppercase І (U+0406)
-      round(2, { '1': 100, '2': 40 }),    // p1 wins (100 > 40)
+      round(2, { '1': 100, '2': 40 }), // p1 wins (100 > 40)
     ];
     expect(getVisDisplayValue(0, 1, rounds, rules)).toBe('ВіС');
   });
 
   it('does not affect non-ВіС players in same round', () => {
-    const rounds = [
-      round(1, { '1': 'ВіС', '2': 80 }),
-      round(2, { '1': 50, '2': 90 }),
-    ];
+    const rounds = [round(1, { '1': 'ВіС', '2': 80 }), round(2, { '1': 50, '2': 90 })];
     // p2's score in round 1 is 80 — not ВіС, returned as-is
     expect(getVisDisplayValue(0, 2, rounds, rules)).toBe(80);
   });
@@ -640,10 +582,10 @@ describe('winStreak', () => {
 
   it('counts consecutive round wins from the latest round backwards', () => {
     const rounds = [
-      round(1, { '1': 10, '2': 90 }),  // loss
-      round(2, { '1': 80, '2': 40 }),  // win
+      round(1, { '1': 10, '2': 90 }), // loss
+      round(2, { '1': 80, '2': 40 }), // win
       round(3, { '1': 120, '2': 60 }), // win
-      round(4, { '1': 70, '2': 30 }),  // win
+      round(4, { '1': 70, '2': 30 }), // win
     ];
     expect(winStreak(rounds, 1)).toBe(3);
     expect(winStreak(rounds, 2)).toBe(0);
@@ -660,7 +602,7 @@ describe('winStreak', () => {
 
   it('treats token scores (Б/ХВ/ВіС) as 0', () => {
     const rounds = [
-      round(1, { '1': 50, '2': 'Б' }),   // 50 > 0 — win
+      round(1, { '1': 50, '2': 'Б' }), // 50 > 0 — win
       round(2, { '1': 30, '2': 'ВІС' }), // 30 > 0 — win
     ];
     expect(winStreak(rounds, 1)).toBe(2);

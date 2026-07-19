@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-import { describe, it, expect, afterEach, vi } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/react';
+
+import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import '../../src/i18n';
 import { ErrorBoundary } from '../../src/components/ErrorBoundary';
 
@@ -15,7 +16,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <p>все добре</p>
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
     expect(screen.getByText('все добре')).toBeTruthy();
   });
@@ -26,7 +27,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <Boom />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
     expect(screen.getByText('Щось пішло не так')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Перезавантажити' })).toBeTruthy();
@@ -43,7 +44,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <Boom />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
     screen.getByRole('button', { name: 'Перезавантажити' }).click();
     expect(reload).toHaveBeenCalled();

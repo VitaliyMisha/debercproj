@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import type React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface Suit {
   char: string;
@@ -22,7 +23,7 @@ export const CardSuitsRain: React.FC = () => {
         duration: 1.5 + Math.random() * 1.5,
         red: i % 4 === 1 || i % 4 === 2,
       })),
-    [],
+    []
   );
 
   useEffect(() => {

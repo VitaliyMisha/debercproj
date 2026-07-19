@@ -1,4 +1,5 @@
-import React, { useCallback, useRef } from 'react';
+import type React from 'react';
+import { useCallback, useRef } from 'react';
 
 interface BottomSheetProps {
   onClose: () => void;
@@ -26,7 +27,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ onClose, ariaLabelledB
       if (delta > 80) onClose();
       touchStartY.current = null;
     },
-    [onClose],
+    [onClose]
   );
 
   return (

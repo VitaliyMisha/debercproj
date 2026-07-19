@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
-import { describe, it, expect, afterEach, vi } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/react';
+
+import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import '../../src/i18n';
 import RoundHistory from '../../src/components/RoundHistory';
-import { DEFAULT_GAME_RULES } from '../../src/utils/gameHelpers';
 import type { Player, Round } from '../../src/types';
+import { DEFAULT_GAME_RULES } from '../../src/utils/gameHelpers';
 
 const players: Player[] = [
   { id: 1, name: 'Аліса', winCount: 0 },
@@ -18,9 +19,7 @@ afterEach(cleanup);
 
 const openEditor = async (onUpdateRound = vi.fn()) => {
   const user = userEvent.setup();
-  render(
-    <RoundHistory rounds={rounds} players={players} onUpdateRound={onUpdateRound} gameRules={DEFAULT_GAME_RULES} />,
-  );
+  render(<RoundHistory rounds={rounds} players={players} onUpdateRound={onUpdateRound} gameRules={DEFAULT_GAME_RULES} />);
   await user.click(screen.getByRole('button', { name: 'Показати або сховати історію раундів' }));
   await user.click(screen.getByRole('button', { name: 'Редагувати' }));
   return { user, onUpdateRound };
@@ -75,7 +74,14 @@ describe('RoundHistory — inline edit validation', () => {
   it('hides undo and edit controls in readOnly (spectator) mode', async () => {
     const user = userEvent.setup();
     render(
-      <RoundHistory rounds={rounds} players={players} onUpdateRound={vi.fn()} gameRules={DEFAULT_GAME_RULES} readOnly onUndoLastRound={vi.fn()} />,
+      <RoundHistory
+        rounds={rounds}
+        players={players}
+        onUpdateRound={vi.fn()}
+        gameRules={DEFAULT_GAME_RULES}
+        readOnly
+        onUndoLastRound={vi.fn()}
+      />
     );
     await user.click(screen.getByRole('button', { name: 'Показати або сховати історію раундів' }));
     expect(screen.queryByRole('button', { name: 'Редагувати' })).toBeNull();

@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { useTranslation } from 'react-i18next';
 import { BottomSheet } from './BottomSheet';
 
@@ -10,30 +10,17 @@ interface ConfirmSheetProps {
   onCancel: () => void;
 }
 
-export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
-  title,
-  description,
-  confirmLabel,
-  onConfirm,
-  onCancel,
-}) => {
+export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({ title, description, confirmLabel, onConfirm, onCancel }) => {
   const { t } = useTranslation();
   return (
     <BottomSheet onClose={onCancel} ariaLabelledBy="confirm-sheet-title">
       {/* Title */}
-      <h3
-        id="confirm-sheet-title"
-        className="text-white text-lg font-semibold text-center font-sans mb-1"
-      >
+      <h3 id="confirm-sheet-title" className="text-white text-lg font-semibold text-center font-sans mb-1">
         {title}
       </h3>
 
       {/* Description */}
-      {description && (
-        <p className="text-white/45 text-sm text-center font-sans leading-relaxed mb-6">
-          {description}
-        </p>
-      )}
+      {description && <p className="text-white/45 text-sm text-center font-sans leading-relaxed mb-6">{description}</p>}
 
       <div className={`flex flex-col gap-3 ${description ? '' : 'mt-6'}`}>
         {/* Confirm — danger style */}

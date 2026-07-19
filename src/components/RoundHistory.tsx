@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { ChevronDown, ChevronRight, Pencil, Undo2 } from 'lucide-react';
-import { Player, Round } from '../types';
-import { GameRulesConfig } from '../types';
-import { isValidScore, getVisDisplayValue, validateRoundTokens } from '../utils/gameHelpers';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { GameRulesConfig, Player, Round } from '../types';
+import { getVisDisplayValue, isValidScore, validateRoundTokens } from '../utils/gameHelpers';
 import { ConfirmSheet } from './ConfirmSheet';
 
 interface RoundHistoryProps {
@@ -17,7 +17,15 @@ interface RoundHistoryProps {
   readOnly?: boolean;
 }
 
-const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRound, gameRules, snapshotRound, onUndoLastRound, readOnly = false }) => {
+const RoundHistory: React.FC<RoundHistoryProps> = ({
+  rounds,
+  players,
+  onUpdateRound,
+  gameRules,
+  snapshotRound,
+  onUndoLastRound,
+  readOnly = false,
+}) => {
   const { t } = useTranslation();
   const [editingRound, setEditingRound] = useState<number | null>(null);
   const [editScores, setEditScores] = useState<Record<string, string>>({});
@@ -80,192 +88,196 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({ rounds, players, onUpdateRo
 
   return (
     <>
-    <div className="bg-card-bg rounded-2xl border border-white/8 overflow-hidden">
-      <div
-        className="px-4 py-3 flex items-center justify-between cursor-pointer select-none"
-        style={{ borderBottom: collapsed ? 'none' : '1px solid rgba(255,255,255,0.08)' }}
-        onClick={() => setCollapsed((c) => !c)}
-        role="button"
-        aria-expanded={!collapsed}
-        aria-label={t('history.toggle')}
-      >
-        <div className="flex items-center gap-2">
-          {collapsed ? (
-            <ChevronRight className="w-3.5 h-3.5 text-muted" aria-hidden="true" />
-          ) : (
-            <ChevronDown className="w-3.5 h-3.5 text-muted" aria-hidden="true" />
-          )}
-          <h2 className="text-muted text-xs font-semibold uppercase tracking-widest">{t('history.title')}</h2>
+      <div className="bg-card-bg rounded-2xl border border-white/8 overflow-hidden">
+        <div
+          className="px-4 py-3 flex items-center justify-between cursor-pointer select-none"
+          style={{ borderBottom: collapsed ? 'none' : '1px solid rgba(255,255,255,0.08)' }}
+          onClick={() => setCollapsed((c) => !c)}
+          role="button"
+          aria-expanded={!collapsed}
+          aria-label={t('history.toggle')}
+        >
+          <div className="flex items-center gap-2">
+            {collapsed ? (
+              <ChevronRight className="w-3.5 h-3.5 text-muted" aria-hidden="true" />
+            ) : (
+              <ChevronDown className="w-3.5 h-3.5 text-muted" aria-hidden="true" />
+            )}
+            <h2 className="text-muted text-xs font-semibold uppercase tracking-widest">{t('history.title')}</h2>
+          </div>
+          <div className="flex items-center gap-2">
+            {!collapsed && onUndoLastRound && !readOnly && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setConfirmingUndo(true);
+                }}
+                aria-label={t('history.undoAriaLabel')}
+                className="h-7 px-3 rounded-full text-xs font-bold transition-all duration-150 active:scale-[0.93] inline-flex items-center gap-1"
+                style={{
+                  background: '#7F1D1D88',
+                  color: '#FCA5A5',
+                  border: '1px solid #DC262655',
+                }}
+              >
+                <Undo2 className="w-3 h-3" aria-hidden="true" /> {t('history.undoBtn')}
+              </button>
+            )}
+            <span className="text-muted text-xs bg-white/5 px-2 py-0.5 rounded-full">{t('history.total', { n: rounds.length })}</span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          {!collapsed && onUndoLastRound && !readOnly && (
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); setConfirmingUndo(true); }}
-              aria-label={t('history.undoAriaLabel')}
-              className="h-7 px-3 rounded-full text-xs font-bold transition-all duration-150 active:scale-[0.93] inline-flex items-center gap-1"
-              style={{
-                background: '#7F1D1D88',
-                color: '#FCA5A5',
-                border: '1px solid #DC262655',
-              }}
-            >
-              <Undo2 className="w-3 h-3" aria-hidden="true" /> {t('history.undoBtn')}
-            </button>
-          )}
-          <span className="text-muted text-xs bg-white/5 px-2 py-0.5 rounded-full">{t('history.total', { n: rounds.length })}</span>
-        </div>
-      </div>
 
-      {!collapsed && <div className="divide-y divide-white/5">
-        {[...rounds].sort((a, b) => b.number - a.number).map((round) => {
-          const isEditing = editingRound === round.number;
-          const isSnapshot = round.number === snapshotRound;
-          const isNew = round.number === newRoundId;
-          const dealerName = round.dealerId !== undefined
-            ? players.find((p) => p.id === round.dealerId)?.name
-            : undefined;
+        {!collapsed && (
+          <div className="divide-y divide-white/5">
+            {[...rounds]
+              .sort((a, b) => b.number - a.number)
+              .map((round) => {
+                const isEditing = editingRound === round.number;
+                const isSnapshot = round.number === snapshotRound;
+                const isNew = round.number === newRoundId;
+                const dealerName = round.dealerId !== undefined ? players.find((p) => p.id === round.dealerId)?.name : undefined;
 
-          return (
-            <div
-              key={round.number}
-              className={`transition-all duration-200
+                return (
+                  <div
+                    key={round.number}
+                    className={`transition-all duration-200
                 ${isSnapshot ? 'border-l-2 border-gold-from bg-gold-from/5' : ''}
                 ${isNew ? 'animate-[slideInStagger_300ms_ease_both]' : ''}
               `}
-            >
-              {/* Header row */}
-              <div className="flex items-center justify-between px-4 py-3">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`text-sm font-semibold ${isSnapshot ? 'text-gold-to' : 'text-white/60'}`}>
-                    {t('history.round', { n: round.number })}
-                  </span>
-                  {dealerName && (
-                    <span className="text-xs bg-primary/20 border border-primary/40 text-score-pos px-2 py-0.5 rounded-full leading-none">
-                      {t('history.dealer', { name: dealerName })}
-                    </span>
-                  )}
-                  {isSnapshot && (
-                    <span className="text-xs text-gold-from bg-gold-from/10 border border-gold-from/30 px-2 py-0.5 rounded-full">
-                      {t('history.preview')}
-                    </span>
-                  )}
-                </div>
-                {!isEditing && !readOnly && (
-                  <button
-                    type="button"
-                    onClick={() => startEditing(round)}
-                    className="text-muted text-xs hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-white/5 inline-flex items-center gap-1"
                   >
-                    <Pencil className="w-3 h-3" aria-hidden="true" /> {t('history.edit')}
-                  </button>
-                )}
-              </div>
+                    {/* Header row */}
+                    <div className="flex items-center justify-between px-4 py-3">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`text-sm font-semibold ${isSnapshot ? 'text-gold-to' : 'text-white/60'}`}>
+                          {t('history.round', { n: round.number })}
+                        </span>
+                        {dealerName && (
+                          <span className="text-xs bg-primary/20 border border-primary/40 text-score-pos px-2 py-0.5 rounded-full leading-none">
+                            {t('history.dealer', { name: dealerName })}
+                          </span>
+                        )}
+                        {isSnapshot && (
+                          <span className="text-xs text-gold-from bg-gold-from/10 border border-gold-from/30 px-2 py-0.5 rounded-full">
+                            {t('history.preview')}
+                          </span>
+                        )}
+                      </div>
+                      {!isEditing && !readOnly && (
+                        <button
+                          type="button"
+                          onClick={() => startEditing(round)}
+                          className="text-muted text-xs hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-white/5 inline-flex items-center gap-1"
+                        >
+                          <Pencil className="w-3 h-3" aria-hidden="true" /> {t('history.edit')}
+                        </button>
+                      )}
+                    </div>
 
-              {/* Scores */}
-              <div className="px-4 pb-3">
-                {isEditing ? (() => {
-                  const editViolation = validateRoundTokens(editScores);
-                  const allValid = Object.values(editScores).every((s) => isValidScore(s, gameRules));
-                  return (
-                  <div className="space-y-2">
-                    <div className="grid grid-cols-2 gap-2">
-                      {players.map((player) => {
-                        const val = editScores[String(player.id)] ?? '';
-                        const valid = isValidScore(val, gameRules);
-                        return (
-                          <div key={player.id}>
-                            <label className="text-muted text-xs mb-1 block">{player.name}</label>
-                            <input
-                              id={`edit-r${round.number}-p${player.id}`}
-                              name={`edit-r${round.number}-p${player.id}`}
-                              type="text"
-                              autoComplete="off"
-                              value={val}
-                              onChange={(e) =>
-                                setEditScores((prev) => ({ ...prev, [String(player.id)]: e.target.value }))
-                              }
-                              aria-label={t('round.scoreFor', { name: player.name })}
-                              placeholder={placeholder}
-                              className={`w-full px-3 py-2 rounded-xl text-sm text-center bg-felt border transition-colors
+                    {/* Scores */}
+                    <div className="px-4 pb-3">
+                      {isEditing ? (
+                        (() => {
+                          const editViolation = validateRoundTokens(editScores);
+                          const allValid = Object.values(editScores).every((s) => isValidScore(s, gameRules));
+                          return (
+                            <div className="space-y-2">
+                              <div className="grid grid-cols-2 gap-2">
+                                {players.map((player) => {
+                                  const val = editScores[String(player.id)] ?? '';
+                                  const valid = isValidScore(val, gameRules);
+                                  return (
+                                    <div key={player.id}>
+                                      <label className="text-muted text-xs mb-1 block">{player.name}</label>
+                                      <input
+                                        id={`edit-r${round.number}-p${player.id}`}
+                                        name={`edit-r${round.number}-p${player.id}`}
+                                        type="text"
+                                        autoComplete="off"
+                                        value={val}
+                                        onChange={(e) => setEditScores((prev) => ({ ...prev, [String(player.id)]: e.target.value }))}
+                                        aria-label={t('round.scoreFor', { name: player.name })}
+                                        placeholder={placeholder}
+                                        className={`w-full px-3 py-2 rounded-xl text-sm text-center bg-felt border transition-colors
                                 focus:outline-none focus:ring-2 focus:ring-gold-from/40 text-white
                                 ${valid ? 'border-white/15' : 'border-score-neg/60'}`}
-                            />
-                          </div>
-                        );
-                      })}
-                    </div>
-                    {!allValid && (
-                      <p className="text-score-neg text-xs text-center">{t('history.invalidHint')}</p>
-                    )}
-                    {editViolation !== null && (
-                      <p className="text-score-neg text-xs text-center">
-                        {t(editViolation === 'oneB' ? 'error.oneB' : 'error.oneVis')}
-                      </p>
-                    )}
-                    <div className="flex justify-end gap-2 pt-1">
-                      <button
-                        type="button"
-                        onClick={cancelEdit}
-                        className="px-3 py-1.5 text-xs text-muted border border-white/10 rounded-lg hover:text-white hover:border-white/30 transition-colors"
-                      >
-                        {t('history.cancelEdit')}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={saveEdit}
-                        disabled={!allValid || editViolation !== null}
-                        className="px-3 py-1.5 text-xs bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                      >
-                        {t('history.save')}
-                      </button>
-                    </div>
-                  </div>
-                  );
-                })() : (
-                  <div className="grid grid-cols-2 gap-2">
-                    {players.map((player) => {
-                      const displayVal = gameRules
-                        ? getVisDisplayValue(round.number - 1, player.id, rounds, gameRules)
-                        : (round.scores[String(player.id)] ?? 0);
-                      const isNeg = typeof displayVal === 'number' && displayVal < 0;
-                      const isVis = displayVal === 'ВіС';
-                      const isB = displayVal === 'Б';
-                      const colorClass = isNeg
-                        ? 'text-score-neg'
-                        : isB
-                          ? 'text-token-b'
-                          : isVis
-                            ? 'text-token-vis'
-                            : 'text-score-chalk';
-                      return (
-                        <div key={player.id} className="flex justify-between items-center px-2 py-1.5 rounded-lg bg-white/3">
-                          <span className="text-white/50 text-xs">{player.name}</span>
-                          <span className={`text-sm font-semibold ${colorClass}`}>
-                            {displayVal}
-                          </span>
+                                      />
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              {!allValid && <p className="text-score-neg text-xs text-center">{t('history.invalidHint')}</p>}
+                              {editViolation !== null && (
+                                <p className="text-score-neg text-xs text-center">
+                                  {t(editViolation === 'oneB' ? 'error.oneB' : 'error.oneVis')}
+                                </p>
+                              )}
+                              <div className="flex justify-end gap-2 pt-1">
+                                <button
+                                  type="button"
+                                  onClick={cancelEdit}
+                                  className="px-3 py-1.5 text-xs text-muted border border-white/10 rounded-lg hover:text-white hover:border-white/30 transition-colors"
+                                >
+                                  {t('history.cancelEdit')}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={saveEdit}
+                                  disabled={!allValid || editViolation !== null}
+                                  className="px-3 py-1.5 text-xs bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                >
+                                  {t('history.save')}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })()
+                      ) : (
+                        <div className="grid grid-cols-2 gap-2">
+                          {players.map((player) => {
+                            const displayVal = gameRules
+                              ? getVisDisplayValue(round.number - 1, player.id, rounds, gameRules)
+                              : (round.scores[String(player.id)] ?? 0);
+                            const isNeg = typeof displayVal === 'number' && displayVal < 0;
+                            const isVis = displayVal === 'ВіС';
+                            const isB = displayVal === 'Б';
+                            const colorClass = isNeg
+                              ? 'text-score-neg'
+                              : isB
+                                ? 'text-token-b'
+                                : isVis
+                                  ? 'text-token-vis'
+                                  : 'text-score-chalk';
+                            return (
+                              <div key={player.id} className="flex justify-between items-center px-2 py-1.5 rounded-lg bg-white/3">
+                                <span className="text-white/50 text-xs">{player.name}</span>
+                                <span className={`text-sm font-semibold ${colorClass}`}>{displayVal}</span>
+                              </div>
+                            );
+                          })}
                         </div>
-                      );
-                    })}
+                      )}
+                    </div>
                   </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>}
-    </div>
+                );
+              })}
+          </div>
+        )}
+      </div>
 
-    {confirmingUndo && (
-      <ConfirmSheet
-        title={t('history.confirmUndo')}
-        description={t('history.confirmUndoDesc')}
-        confirmLabel={t('history.undoConfirmLabel')}
-        onConfirm={() => { setConfirmingUndo(false); onUndoLastRound?.(); }}
-        onCancel={() => setConfirmingUndo(false)}
-      />
-    )}
-  </>
+      {confirmingUndo && (
+        <ConfirmSheet
+          title={t('history.confirmUndo')}
+          description={t('history.confirmUndoDesc')}
+          confirmLabel={t('history.undoConfirmLabel')}
+          onConfirm={() => {
+            setConfirmingUndo(false);
+            onUndoLastRound?.();
+          }}
+          onCancel={() => setConfirmingUndo(false)}
+        />
+      )}
+    </>
   );
 };
 

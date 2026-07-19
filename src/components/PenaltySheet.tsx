@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { useTranslation } from 'react-i18next';
 import { BottomSheet } from './BottomSheet';
 
@@ -9,19 +9,16 @@ interface PenaltySheetProps {
   onClose: () => void;
 }
 
-export const PenaltySheet: React.FC<PenaltySheetProps> = ({
-  label,
-  value,
-  onChange,
-  onClose,
-}) => {
+export const PenaltySheet: React.FC<PenaltySheetProps> = ({ label, value, onChange, onClose }) => {
   const { t } = useTranslation();
 
   return (
     <BottomSheet onClose={onClose} ariaLabelledBy="penalty-sheet-title">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h3 id="penalty-sheet-title" className="text-white font-sans font-semibold text-lg">{label}</h3>
+        <h3 id="penalty-sheet-title" className="text-white font-sans font-semibold text-lg">
+          {label}
+        </h3>
         <button
           type="button"
           onClick={onClose}
@@ -55,9 +52,7 @@ export const PenaltySheet: React.FC<PenaltySheetProps> = ({
         </span>
       </div>
 
-      <p className="text-muted text-sm text-center mt-4">
-        {t('common.sheetCloseHint')}
-      </p>
+      <p className="text-muted text-sm text-center mt-4">{t('common.sheetCloseHint')}</p>
     </BottomSheet>
   );
 };
