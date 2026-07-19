@@ -60,7 +60,7 @@ describe('App — winner winCount transitions (regression)', () => {
     // Round 1: Аліса reaches the target and wins
     await playRound(user, '510', '20');
     expect(await screen.findByText('ПЕРЕМОЖЕЦЬ')).toBeTruthy();
-    expect(winCounts()['аліса']).toBe(1);
+    expect(winCounts().аліса).toBe(1);
 
     // Open history (needed for editing)
     await user.click(screen.getByRole('button', { name: 'Показати або сховати історію раундів' }));
@@ -68,17 +68,17 @@ describe('App — winner winCount transitions (regression)', () => {
     // Edit the winning round below the target — winner must be reverted
     await editRoundOneAlice(user, '100');
     await waitFor(() => expect(screen.queryByText('ПЕРЕМОЖЕЦЬ')).toBeNull());
-    expect(winCounts()['аліса']).toBe(0);
+    expect(winCounts().аліса).toBe(0);
 
     // Edit it back above the target — winner returns, but the count must be 1, not 2
     await editRoundOneAlice(user, '520');
     expect(await screen.findByText('ПЕРЕМОЖЕЦЬ')).toBeTruthy();
-    expect(winCounts()['аліса']).toBe(1);
+    expect(winCounts().аліса).toBe(1);
 
     // Editing an unrelated value while the winner stays must NOT bump the count again
     await editRoundOneAlice(user, '530');
     expect(await screen.findByText('ПЕРЕМОЖЕЦЬ')).toBeTruthy();
-    expect(winCounts()['аліса']).toBe(1);
+    expect(winCounts().аліса).toBe(1);
   });
 
   it('starts a game with win counts restored by player name', async () => {
@@ -93,6 +93,6 @@ describe('App — winner winCount transitions (regression)', () => {
     // Win a quick game and confirm the count builds on the restored value
     await playRound(user, '1020', '0');
     expect(await screen.findByText('ПЕРЕМОЖЕЦЬ')).toBeTruthy();
-    expect(winCounts()['аліса']).toBe(4);
+    expect(winCounts().аліса).toBe(4);
   });
 });

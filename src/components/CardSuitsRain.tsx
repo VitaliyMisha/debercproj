@@ -37,6 +37,7 @@ export const CardSuitsRain: React.FC = () => {
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-40">
       {suits.map((s, i) => (
         <span
+          // biome-ignore lint/suspicious/noArrayIndexKey: static useMemo([]) array — order never changes, there is no other identity
           key={i}
           className={`absolute text-3xl select-none ${s.red ? 'text-red-500' : 'text-white'}`}
           style={{

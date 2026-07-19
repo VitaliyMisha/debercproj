@@ -83,7 +83,7 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
           negativeRounds++;
         } else {
           const n = parseInt(score, 10);
-          if (!isNaN(n)) {
+          if (!Number.isNaN(n)) {
             effectiveScore = n;
             if (n === hvPenalty) hvCount++;
             if (n > 0) positiveRounds++;

@@ -20,6 +20,7 @@ export const RoundTimeline: React.FC<RoundTimelineProps> = ({
   const { t } = useTranslation();
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: deps are re-scroll triggers — the effect reads [data-active] from the DOM, not the props
   useEffect(() => {
     if (scrollRef.current) {
       const active = scrollRef.current.querySelector('[data-active="true"]') as HTMLElement | null;

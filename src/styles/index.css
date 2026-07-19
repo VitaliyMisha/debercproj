@@ -194,6 +194,7 @@
 }
 
 .score-close-finish {
+  /* biome-ignore lint/complexity/noImportantStyles: must win over the inline transition/animation styles on the odometer digits */
   animation: closeFinishScore 1.6s ease-in-out infinite !important;
 }
 
@@ -268,8 +269,11 @@
   *,
   *::before,
   *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: standard reduced-motion kill-switch — must override every animation */
     animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: standard reduced-motion kill-switch — must override every animation */
     animation-iteration-count: 1 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: standard reduced-motion kill-switch — must override every animation */
     transition-duration: 0.01ms !important;
   }
 }

@@ -2,7 +2,7 @@
 
 ## Поточний стан (2026-07-19)
 
-Проєкт у робочому стані. Тестів: **155** (усі зелені, 11 файлів: 5 unit + 6 RTL). Type-check (tsc, включно з `tests/`) і production build — чисті. Lint (справжній Biome) має відомий беклог — див. нижче.
+Проєкт у робочому стані. Тестів: **155** (усі зелені, 11 файлів: 5 unit + 6 RTL). Lint (справжній Biome 2.5), type-check (tsc, включно з `tests/`) і production build — чисті.
 
 ### Лінтер полагоджено: biome був фейковим (2026-07-19)
 
@@ -15,13 +15,14 @@
 4. Верифікація після фіксів: 155 тестів ✅, tsc ✅, production build ✅.
 5. CLAUDE.md: додано секцію Spectator Mode / Firebase (useFirebaseSync, useSpectator, env vars, гоча `?? []`), прибрано неіснуючий `mcp_config.json`.
 
-**Беклог lint (20 errors / 7 warnings / 9 infos — потребують ручних рішень, НЕ авто-фікс):**
-- `useExhaustiveDependencies` ×3 (зміна deps hook-ів може змінити поведінку — обережно)
-- `noUnsafeOptionalChaining` ×1 (потенційний реальний баг — глянути першим)
-- a11y: `useKeyWithClickEvents` ×2, `useFocusableInteractive` ×2, `noNoninteractiveElementToInteractiveRole` ×2, `noSvgWithoutTitle`, `noLabelWithoutControl`, `useSemanticElements`, `useValidAriaRole`, `useAriaPropsSupportedByRole`
-- `noArrayIndexKey` ×3, `noImportantStyles` ×4 (CSS), `noGlobalIsNan` ×2, дрібні infos (`useLiteralKeys` ×5 тощо)
-- Основні файли: `RoundHistory.tsx` (6), `NameInput.tsx` (4), `Odometer.tsx` (3)
-- До закриття беклогу `bun run lint` повертає exit 1 — це очікувано.
+**Беклог lint закрито тієї ж сесії (2026-07-19) — `bun run lint` повністю чистий.** Ключові рішення:
+- **NameInput**: додано повноцінну клавіатурну навігацію за APG combobox-патерном — ArrowUp/Down, Enter (вибір), Escape, `aria-activedescendant` + підсвітка активної опції; фокус лишається на input, опції не табабельні. Розмітка `ul[role=listbox] > li[role=option]` — канонічна, false-positive правила заглушені `biome-ignore` з поясненнями.
+- **RoundHistory**: хедер-toggle отримав `tabIndex={0}` + `onKeyDown` (Enter/Space) — тепер доступний з клавіатури; `<label htmlFor>` у редакторі; тип `onUpdateRound` звужено до `=> boolean` (глядацька гілка повертає `true`); deps ефекту анімації → `[rounds]` (guard по length всередині лишився).
+- **Odometer**: `role="text"` (нестандартна) → `role="img"` з `aria-label` — обидві aria-діагностики закриті.
+- **Свідомі `biome-ignore` (усі з поясненням у коментарі)**: index-keys у Odometer (колонки keyed справа — механіка прокрутки), CardSuitsRain (статичний useMemo-масив), SetupScreen (позиційні слоти гравців); `useExhaustiveDependencies` у RoundTimeline (deps — тригери повторного скролу, ефект читає DOM); `!important` у CSS (reduced-motion kill-switch ×3 + close-finish override).
+- Дрібне: `Number.isNaN` замість `isNaN` ×2, `node:fs` протокол, `<title>Деберц</title>` у favicon.svg, dot-notation у тестах, explicit throw замість `call?.[1](...)` у useFirebaseSync.test.
+- `biome migrate --write`: конфіг оновлено під схему 2.5.4 (`recommended: true` → `preset: "recommended"`).
+- Верифікація: lint ✅, 155 тестів ✅, tsc ✅, build ✅.
 
 ### Оновлення залежностей (2026-07-19, коміт "redesign app")
 

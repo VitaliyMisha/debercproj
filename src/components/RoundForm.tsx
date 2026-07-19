@@ -185,7 +185,7 @@ const RoundForm: React.FC<RoundFormProps> = ({
                       style={{
                         background: isActive ? `radial-gradient(circle at 35% 35%, ${chip.accent}dd, ${chip.bg})` : `${chip.bg}88`,
                         color: chip.textColor,
-                        border: `1px solid ${isActive ? chip.accent : chip.accent + '55'}`,
+                        border: `1px solid ${isActive ? chip.accent : `${chip.accent}55`}`,
                         boxShadow: isActive
                           ? `inset 0 1px 2px rgba(255,255,255,0.15), inset 0 -1px 3px rgba(0,0,0,0.5), 0 3px 8px rgba(0,0,0,0.6)`
                           : 'none',

@@ -1,5 +1,5 @@
+import { writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { writeFileSync } from 'fs';
 
 const sizes = [48, 72, 96, 128, 144, 152, 192, 256, 384, 512];
 

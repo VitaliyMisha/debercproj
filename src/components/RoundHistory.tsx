@@ -10,7 +10,7 @@ interface RoundHistoryProps {
   rounds: Round[];
   players: Player[];
   /** Return false to keep the editor open (e.g. the edit violates a game rule). */
-  onUpdateRound: (roundNumber: number, newScores: Record<string, string>) => boolean | void;
+  onUpdateRound: (roundNumber: number, newScores: Record<string, string>) => boolean;
   gameRules?: GameRulesConfig;
   snapshotRound?: number | null;
   onUndoLastRound?: () => void;
@@ -43,7 +43,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({
     }
     prevLengthRef.current = rounds.length;
     return undefined;
-  }, [rounds.length]);
+  }, [rounds]);
 
   useEffect(() => {
     if (editingRound !== null && !rounds.some((r) => r.number === editingRound)) {
@@ -89,11 +89,19 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({
   return (
     <>
       <div className="bg-card-bg rounded-2xl border border-white/8 overflow-hidden">
+        {/* biome-ignore lint/a11y/useSemanticElements: can't be a <button> — the header nests interactive controls (undo) and a heading */}
         <div
           className="px-4 py-3 flex items-center justify-between cursor-pointer select-none"
           style={{ borderBottom: collapsed ? 'none' : '1px solid rgba(255,255,255,0.08)' }}
           onClick={() => setCollapsed((c) => !c)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setCollapsed((c) => !c);
+            }
+          }}
           role="button"
+          tabIndex={0}
           aria-expanded={!collapsed}
           aria-label={t('history.toggle')}
         >
@@ -188,7 +196,9 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({
                                   const valid = isValidScore(val, gameRules);
                                   return (
                                     <div key={player.id}>
-                                      <label className="text-muted text-xs mb-1 block">{player.name}</label>
+                                      <label htmlFor={`edit-r${round.number}-p${player.id}`} className="text-muted text-xs mb-1 block">
+                                        {player.name}
+                                      </label>
                                       <input
                                         id={`edit-r${round.number}-p${player.id}`}
                                         name={`edit-r${round.number}-p${player.id}`}

@@ -21,9 +21,10 @@ export const Odometer: React.FC<OdometerProps> = ({ value, instant = false }) =>
   const digits = String(Math.abs(value)).split('');
 
   return (
-    <span className="odometer" role="text" aria-label={String(value)}>
+    <span className="odometer" role="img" aria-label={String(value)}>
       {negative && <span aria-hidden="true">-</span>}
       {digits.map((d, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: intentional — keys count from the right so columns roll instead of remounting (99 → 102)
         <span key={digits.length - i} className="odometer-digit" aria-hidden="true">
           <span
             className="odometer-strip"

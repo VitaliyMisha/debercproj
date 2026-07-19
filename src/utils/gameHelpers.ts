@@ -53,7 +53,7 @@ export const parseScore = (value: string | number, pid: string, playerRounds: Ro
   }
 
   const parsed = parseInt(trimmed, 10);
-  return isNaN(parsed) ? 0 : parsed;
+  return Number.isNaN(parsed) ? 0 : parsed;
 };
 
 /**

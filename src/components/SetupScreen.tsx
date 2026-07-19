@@ -122,6 +122,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
         <div className="flex flex-col gap-3">
           {names.map((name, idx) => (
             <PlayerRow
+              // biome-ignore lint/suspicious/noArrayIndexKey: rows are positional slots (player 1..N) — the index IS the identity here
               key={idx}
               index={idx}
               name={name}

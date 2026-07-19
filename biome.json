@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/latest/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.4/schema.json",
   "assist": {
     "actions": {
       "source": {
@@ -38,7 +38,7 @@
       "correctness": {
         "noEmptyPattern": "off"
       },
-      "recommended": true,
+      "preset": "recommended",
       "suspicious": {
         "noAsyncPromiseExecutor": "error",
         "noDuplicateTestHooks": "warn",

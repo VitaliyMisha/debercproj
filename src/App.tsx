@@ -581,27 +581,23 @@ export default function App() {
                   />
                 </Suspense>
               ) : (
-                <>
-                  {snapshotRound === null && (
-                    <>
-                      {error && (
-                        <div className="bg-score-neg/10 border border-score-neg/40 text-score-neg px-4 py-3 rounded-xl text-sm">
-                          {error}
-                        </div>
-                      )}
-                      <RoundForm
-                        players={game.players}
-                        scores={scores}
-                        onScoreChange={(e, id) => setScores({ ...scores, [id]: e.target.value })}
-                        onAddRound={addRound}
-                        roundNumber={game.rounds.length + 1}
-                        isAddDisabled={isAddDisabled}
-                        gameRules={gameRules}
-                        onChipClick={soundEnabled ? handleChipClick : undefined}
-                      />
-                    </>
-                  )}
-                </>
+                snapshotRound === null && (
+                  <>
+                    {error && (
+                      <div className="bg-score-neg/10 border border-score-neg/40 text-score-neg px-4 py-3 rounded-xl text-sm">{error}</div>
+                    )}
+                    <RoundForm
+                      players={game.players}
+                      scores={scores}
+                      onScoreChange={(e, id) => setScores({ ...scores, [id]: e.target.value })}
+                      onAddRound={addRound}
+                      roundNumber={game.rounds.length + 1}
+                      isAddDisabled={isAddDisabled}
+                      gameRules={gameRules}
+                      onChipClick={soundEnabled ? handleChipClick : undefined}
+                    />
+                  </>
+                )
               )}
 
               <RoundHistory
@@ -667,7 +663,7 @@ export default function App() {
               <RoundHistory
                 rounds={spectator.game.rounds}
                 players={spectator.game.players}
-                onUpdateRound={() => {}}
+                onUpdateRound={() => true}
                 gameRules={spectator.gameRules ?? undefined}
                 readOnly
               />

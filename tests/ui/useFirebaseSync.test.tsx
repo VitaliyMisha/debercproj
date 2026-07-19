@@ -46,8 +46,8 @@ const params = { game, targetScore: 510, winnerPlayer: null, gameRules: rules, i
 /** Fires the '.info/connected' listener registered by the hook. */
 const emitConnected = (connected: boolean) => {
   const call = onValueMock.mock.calls.find((c) => (c[0] as { path?: string })?.path === '.info/connected');
-  expect(call).toBeDefined();
-  (call?.[1] as (snap: { val: () => boolean }) => void)({ val: () => connected });
+  if (!call) throw new Error('.info/connected listener was not registered');
+  (call[1] as (snap: { val: () => boolean }) => void)({ val: () => connected });
 };
 
 describe('useFirebaseSync — onDisconnect cleanup', () => {
