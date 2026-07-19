@@ -1,8 +1,31 @@
 # PROGRESS.md — Деберц Score App
 
-## Поточний стан (2026-07-05)
+## Поточний стан (2026-07-19)
 
-Проєкт у робочому стані. Тестів: **155** (усі зелені, 11 файлів: 5 unit + 6 RTL). Lint (Biome), type-check (tsc, включно з `tests/`) і production build — чисті.
+Проєкт у робочому стані. Тестів: **155** (усі зелені, 11 файлів: 5 unit + 6 RTL). Type-check (tsc, включно з `tests/`) і production build — чисті. Lint (справжній Biome) має відомий беклог — див. нижче.
+
+### Лінтер полагоджено: biome був фейковим (2026-07-19)
+
+**Критична знахідка**: у `package.json` роками стояв пакет `biome@0.3.3` — це **чужий dotenv-пакет 2016 року**, не лінтер. Його CLI мовчки ігнорував `check` і повертав exit 0 → `bun run lint` був повним no-op, усі попередні «Lint чистий» — фікція. Справжній `@biomejs/biome` не був встановлений взагалі.
+
+**Зроблено:**
+1. `package.json`: видалено фейковий `biome` і невикористаний `axios` (ніде в `src/` не імпортувався); додано `@biomejs/biome@2.5.4` у devDependencies. Скрипти `lint`/`lint:fix` без змін — тепер резолвляться у справжній бінарник.
+2. Перший реальний прогін: 86 errors / 45 warnings. `biome check --write` (safe fixes) переформатував 48 файлів — код ніколи не проходив крізь справжній форматер.
+3. `biome.json`: додано `css.parser.tailwindDirectives: true` — без цього Biome не парсить `@theme` у `index.css` (parse error). CSS відформатовано.
+4. Верифікація після фіксів: 155 тестів ✅, tsc ✅, production build ✅.
+5. CLAUDE.md: додано секцію Spectator Mode / Firebase (useFirebaseSync, useSpectator, env vars, гоча `?? []`), прибрано неіснуючий `mcp_config.json`.
+
+**Беклог lint (20 errors / 7 warnings / 9 infos — потребують ручних рішень, НЕ авто-фікс):**
+- `useExhaustiveDependencies` ×3 (зміна deps hook-ів може змінити поведінку — обережно)
+- `noUnsafeOptionalChaining` ×1 (потенційний реальний баг — глянути першим)
+- a11y: `useKeyWithClickEvents` ×2, `useFocusableInteractive` ×2, `noNoninteractiveElementToInteractiveRole` ×2, `noSvgWithoutTitle`, `noLabelWithoutControl`, `useSemanticElements`, `useValidAriaRole`, `useAriaPropsSupportedByRole`
+- `noArrayIndexKey` ×3, `noImportantStyles` ×4 (CSS), `noGlobalIsNan` ×2, дрібні infos (`useLiteralKeys` ×5 тощо)
+- Основні файли: `RoundHistory.tsx` (6), `NameInput.tsx` (4), `Odometer.tsx` (3)
+- До закриття беклогу `bun run lint` повертає exit 1 — це очікувано.
+
+### Оновлення залежностей (2026-07-19, коміт "redesign app")
+
+Коміт `7743197` попри назву змінив лише `package.json`/`bun.lock`: typescript 6→7, мінорні бампи firebase/i18next/vite/vitest/tailwind/lucide. Верифіковано: тести/tsc/build чисті.
 
 ### UI/UX покращення (2026-07-05, вечірня сесія)
 

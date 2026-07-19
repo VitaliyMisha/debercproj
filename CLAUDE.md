@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## ⚡ Session Continuity (CRITICAL)
 - **Session Start — ПЕРШЕ ЩО РОБИШ**: Читай `PROGRESS.md` — там поточний стан, завершені задачі та next steps. Без цього не відповідай на запитання про стан проєкту.
 - **Session End — ПЕРЕД ЗАВЕРШЕННЯМ**: Онови `PROGRESS.md` — додай що зробив, нові архітектурні рішення, блокери, плани. Дата у заголовку — сьогоднішня.
-- **Context Limits**: Ігноруй `node_modules`, `.next`, `public/assets`, `dist` та `mcp_config.json`.
+- **Context Limits**: Ігноруй `node_modules`, `.next`, `public/assets` та `dist`.
 - **Selective Reading**: Використовуй skill `superpowers:writing-plans` для визначення лише необхідних файлів перед їх читанням.
 
 ## Commands
@@ -47,6 +47,12 @@ Single-page React app for scoring the Ukrainian card game Деберц (Deberc).
 - `LangToggleButton.tsx` — shared УК/EN toggle; `LANG_STORAGE_KEY` exported from `src/i18n`
 - `ErrorBoundary.tsx` — wraps `<App/>` in `main.tsx`; render crash → fallback with reload button (uses `i18next.t` directly, class component)
 - `WinnerScreen.tsx` — victory screen with CardSuitsRain + fanfare
+
+**Spectator Mode (Firebase Realtime Database):**
+- `src/config/firebase.ts` — ініціалізація; env vars `VITE_FIREBASE_*` у `.env.local` (gitignored) та Vercel Dashboard
+- `useFirebaseSync` (хост) — пише стан гри у `games/${shareCode}` поки `isSharing`; серверне очищення через `onDisconnect(gameRef).remove()`, слухач `.info/connected` перереєструє onDisconnect і перезаписує стан після кожного reconnect
+- `useSpectator` (глядач) — `?watch=<code>` у URL; статуси `loading | live | ended | not_found`; перехід у `'ended'` з дебаунсом 1.5с (Firebase коротко повертає null під час `set()` хоста). **Gotcha**: Firebase не зберігає порожні масиви — `rounds`/`players` відновлюються через `?? []`
+- `ShareSheet.tsx` — QR-код (`qrcode.react`, `QRCodeSVG`) + копіювання посилання; `RoundTimeline.tsx` — таймлайн раундів глядача
 
 **Score entry values (stored in `Round.scores` as `Record<string, number | string>`):**
 - Number → plain points (negative allowed)
