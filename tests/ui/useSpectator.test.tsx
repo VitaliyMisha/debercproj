@@ -44,10 +44,24 @@ describe('useSpectator', () => {
     expect(onValueMock).not.toHaveBeenCalled();
   });
 
-  it('reports not_found when the very first snapshot is empty', () => {
+  it('reports not_found when the very first snapshot is empty, after the debounce', () => {
     const { result } = renderHook(() => useSpectator('abc'));
     emit(null);
+    expect(result.current.status).toBe('loading'); // still within debounce
+    act(() => vi.advanceTimersByTime(1600));
     expect(result.current.status).toBe('not_found');
+  });
+
+  it('recovers without a further refresh when a spectator reloads mid-blip (regression)', () => {
+    // Simulates: host briefly disconnects (onDisconnect wipes the record), a spectator
+    // refreshes during that window (a fresh hook instance — first call is empty), then
+    // the host reconnects and rewrites the game before the debounce commits.
+    const { result } = renderHook(() => useSpectator('abc'));
+    emit(null);
+    act(() => vi.advanceTimersByTime(1000));
+    emit(liveData); // host reconnected and rewrote state within the debounce window
+    act(() => vi.advanceTimersByTime(2000));
+    expect(result.current.status).toBe('live');
   });
 
   it('restores empty arrays stripped by Firebase (rounds/players)', () => {

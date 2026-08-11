@@ -22,33 +22,30 @@ export function useSpectator(watchId: string | null): SpectatorState {
     gameRules: null,
     status: watchId ? 'loading' : 'not_found',
   });
-  const firstCallRef = useRef(true);
-  // Debounce 'ended' to survive transient null snapshots during game continuation.
-  // When host continues a game, Firebase may briefly report the path as empty before
-  // the new game data arrives. Without the debounce the spectator flashes "game ended".
+  // Whether we've ever seen live game data for the current watchId — decides
+  // 'not_found' vs 'ended' once the debounce below commits an empty snapshot.
+  const sawDataRef = useRef(false);
+  // Debounce every empty snapshot (not just later ones) to survive transient nulls:
+  // Firebase can briefly report the path as empty during host reconnect/continuation.
+  // A spectator who refreshes mid-blip is a fresh 'first call' too, so this must not
+  // be skipped for the first snapshot — otherwise a refresh during a momentary host
+  // disconnect permanently shows "game not found" instead of recovering.
   const endedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!watchId) return;
-    firstCallRef.current = true;
+    sawDataRef.current = false;
 
     const gameRef = ref(db, `games/${watchId}`);
     const unsubscribe = onValue(gameRef, (snapshot) => {
-      const isFirst = firstCallRef.current;
-      firstCallRef.current = false;
-
       if (!snapshot.exists()) {
-        if (isFirst) {
-          setState((prev) => ({ ...prev, status: 'not_found' }));
-        } else {
-          // Wait before committing 'ended' — a 'live' update may arrive within ms
-          // if the host just continued the game (transient empty snapshot).
-          // Clear any earlier timer so repeated empty snapshots restart the debounce.
-          if (endedTimerRef.current !== null) clearTimeout(endedTimerRef.current);
-          endedTimerRef.current = setTimeout(() => {
-            setState((prev) => ({ ...prev, status: 'ended' }));
-          }, 1500);
-        }
+        // Wait before committing 'not_found'/'ended' — a 'live' update may arrive
+        // within ms if the host just reconnected or continued the game.
+        // Clear any earlier timer so repeated empty snapshots restart the debounce.
+        if (endedTimerRef.current !== null) clearTimeout(endedTimerRef.current);
+        endedTimerRef.current = setTimeout(() => {
+          setState((prev) => ({ ...prev, status: sawDataRef.current ? 'ended' : 'not_found' }));
+        }, 1500);
         return;
       }
 
@@ -68,6 +65,7 @@ export function useSpectator(watchId: string | null): SpectatorState {
       // Firebase omits empty arrays — restore them so game.rounds is always an array.
       const game: Game | null = data.game ? { ...data.game, rounds: data.game.rounds ?? [], players: data.game.players ?? [] } : null;
 
+      sawDataRef.current = true;
       setState({
         game,
         targetScore: data.targetScore ?? 1020,
