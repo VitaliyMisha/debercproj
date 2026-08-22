@@ -340,6 +340,19 @@ describe('calculateGameTotals', () => {
       expect(totals[2]).toBe(500);
       expect(totals[1]).toBe(400);
     });
+
+    it('two independent pending ВіС can coexist when the 2nd ВіС ties the 1st mid-resolution', () => {
+      const g = game([
+        round(1, { '1': 'ВІС', '2': 20 }), // pending #1, hangingScore = 20
+        round(2, { '1': 'ВІС', '2': 'Б' }), // p2's Б counts as 0, ties pending #1 (0=0) → carries forward; p1's ВіС here opens pending #2, hangingScore = 0
+        round(3, { '1': 5, '2': 3 }), // resolves BOTH pending vis using the same round data (5 > 3): both win
+      ]);
+      const totals = calculateGameTotals(g, rules);
+      // p1: 0 (vis #1) + 0 (vis #2) + 5 (own, r3) + 20 (pending#1 bonus) + 0 (pending#2 bonus) = 25
+      // p2: 20 (r1) + 0 (Б, r2, 1st Б no penalty) + 3 (own, r3) = 23
+      expect(totals[1]).toBe(25);
+      expect(totals[2]).toBe(23);
+    });
   });
 
   describe('mixed scenarios', () => {
