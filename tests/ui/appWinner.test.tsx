@@ -95,4 +95,23 @@ describe('App — winner winCount transitions (regression)', () => {
     expect(await screen.findByText('ПЕРЕМОЖЕЦЬ')).toBeTruthy();
     expect(winCounts().аліса).toBe(4);
   });
+
+  it('does not declare a winner when two players tie above target — game stays active', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: '510 — швидка' }));
+    await user.type(screen.getByPlaceholderText('Гравець 1'), 'Аліса');
+    await user.type(screen.getByPlaceholderText('Гравець 2'), 'Богдан');
+    await user.click(screen.getByRole('button', { name: '🎴 Почати гру' }));
+
+    // Both players cross the target with the exact same total — no unique winner
+    await playRound(user, '510', '510');
+
+    expect(screen.queryByText('ПЕРЕМОЖЕЦЬ')).toBeNull();
+    expect(winCounts().аліса).toBeUndefined();
+    expect(winCounts().богдан).toBeUndefined();
+    // The round form for the next round is still present — the game did not lock up
+    expect(screen.getAllByLabelText(/Рахунок для/).length).toBeGreaterThan(0);
+  });
 });
