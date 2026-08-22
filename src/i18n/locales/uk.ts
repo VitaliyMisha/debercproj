@@ -31,6 +31,7 @@ export const uk = {
     startGame: '🎴 Почати гру',
     penaltyBLabel: 'Штраф за 2-гу "Б"',
     penaltyHVLabel: 'Штраф за "ХВ"',
+    duplicateNames: 'Імена гравців мають бути унікальними',
   },
   round: {
     roundLabel: 'Раунд',

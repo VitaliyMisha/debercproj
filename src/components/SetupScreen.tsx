@@ -85,7 +85,10 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
       : []),
   ];
 
-  const canStart = names.every((n) => n.trim().length > 0);
+  const trimmedNames = names.map((n) => n.trim());
+  const nonEmptyLowerNames = trimmedNames.filter((n) => n.length > 0).map((n) => n.toLowerCase());
+  const hasDuplicateNames = new Set(nonEmptyLowerNames).size !== nonEmptyLowerNames.length;
+  const canStart = trimmedNames.every((n) => n.length > 0) && !hasDuplicateNames;
 
   return (
     <div className="w-full max-w-md mx-auto flex flex-col gap-6 py-6 px-4">
@@ -133,6 +136,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
             />
           ))}
         </div>
+        {hasDuplicateNames && <p className="text-score-neg text-xs mt-2">{t('setup.duplicateNames')}</p>}
       </section>
 
       <GoldDivider />

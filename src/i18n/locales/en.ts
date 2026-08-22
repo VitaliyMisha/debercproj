@@ -33,6 +33,7 @@ export const en: typeof uk = {
     startGame: '🎴 Start Game',
     penaltyBLabel: 'Penalty for 2nd "Б"',
     penaltyHVLabel: 'Penalty for "ХВ"',
+    duplicateNames: 'Player names must be unique',
   },
   round: {
     roundLabel: 'Round',
