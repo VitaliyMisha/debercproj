@@ -368,6 +368,20 @@ describe('calculateGameTotals', () => {
       expect(totals[1]).toBe(-160);
       expect(totals[2]).toBe(90);
     });
+
+    it('non-numeric token in a ВіС-resolution round wins when the opponent scores negative', () => {
+      const g = game([
+        round(1, { '1': 'Б', '2': 20 }), // p1's 1st Б
+        round(2, { '1': 'ВІС', '2': 30 }), // pending, hangingScore = 30
+        round(3, { '1': 'Б', '2': -10 }), // p1 enters Б (2nd Б-event); vis compares 0 > -10 → WIN
+      ]);
+      const totals = calculateGameTotals(g, rules);
+      // p1: 0 (Б, r1) + 0 (ВіС pending, r2) + 30 (hanging bonus, vis win) + 0 (own Б, r3)
+      //     - 100 (2nd Б penalty, own Б entered r3) = -70
+      // p2: 20 (r1) + 30 (r2) - 10 (r3) = 40
+      expect(totals[1]).toBe(-70);
+      expect(totals[2]).toBe(40);
+    });
   });
 
   describe('mixed scenarios', () => {

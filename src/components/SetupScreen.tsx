@@ -136,7 +136,11 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
             />
           ))}
         </div>
-        {hasDuplicateNames && <p className="text-score-neg text-xs mt-2">{t('setup.duplicateNames')}</p>}
+        {hasDuplicateNames && (
+          <p role="alert" className="text-score-neg text-xs mt-2">
+            {t('setup.duplicateNames')}
+          </p>
+        )}
       </section>
 
       <GoldDivider />

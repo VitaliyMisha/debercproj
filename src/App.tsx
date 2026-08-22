@@ -199,11 +199,14 @@ export default function App() {
     const winCounts = loadWinCounts();
     const players: Player[] =
       reusePlayers ||
-      names.map((name) => ({
-        id: generateUniqueId(),
-        name,
-        winCount: winCounts[winCountKey(name)] || 0,
-      }));
+      names.map((name) => {
+        const trimmedName = name.trim();
+        return {
+          id: generateUniqueId(),
+          name: trimmedName,
+          winCount: winCounts[winCountKey(trimmedName)] || 0,
+        };
+      });
     const createdGame: Game = {
       id: gameId,
       createdAt: new Date().toISOString(),
