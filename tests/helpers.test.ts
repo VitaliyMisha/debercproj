@@ -353,6 +353,21 @@ describe('calculateGameTotals', () => {
       expect(totals[1]).toBe(25);
       expect(totals[2]).toBe(23);
     });
+
+    it('Б entered in the round that resolves a pending ВіС counts as two separate Б-events (penalties stack)', () => {
+      const g = game([
+        round(1, { '1': 'Б', '2': 0 }), // p1's 1st Б
+        round(2, { '1': 40, '2': 0 }),
+        round(3, { '1': 'ВІС', '2': 20 }), // pending, hangingScore = 20
+        round(4, { '1': 'Б', '2': 50 }), // p1's own Б (2nd real Б-event) AND it resolves the vis as a loss (0 < 50, 3rd Б-event)
+      ]);
+      const totals = calculateGameTotals(g, rules);
+      // p1: 0 (Б, r1) + 40 (r2) + 0 (ВіС pending, r3) + 0 (own Б contributes 0, r4)
+      //     - 100 (vis-loss penalty, 2nd Б-event) - 100 (own Б penalty, 3rd Б-event) = -160
+      // p2: 0 (r1) + 0 (r2) + 20 (r3) + 50 (r4) + 20 (hanging bonus from vis loss) = 90
+      expect(totals[1]).toBe(-160);
+      expect(totals[2]).toBe(90);
+    });
   });
 
   describe('mixed scenarios', () => {
