@@ -2,6 +2,7 @@
   "name": "deberc-score-client",
   "private": true,
   "version": "0.1.0",
+  "type": "module",
   "scripts": {
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
@@ -14,6 +15,7 @@
   "dependencies": {
     "firebase": "^12.18.0",
     "i18next": "^26.4.2",
+    "lucide-react": "^1.43.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
@@ -29,7 +31,6 @@
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
     "jsdom": "^30.0.1",
-    "lucide-react": "^1.43.0",
     "npm-check-updates": "^23.1.0",
     "postcss": "^8.5.28",
     "tailwindcss": "^4.3.3",

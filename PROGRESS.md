@@ -18,9 +18,11 @@
 
 **Верифікація**: `bun run lint` ✅, `bun run type-check` ✅, 168 тестів ✅, production build ✅ (PWA precache 31 entries, 655.83 KiB — без змін проти baseline).
 
-**Знайдено побіжно, НЕ виправлено** (окремі задачі, поза скоупом цієї сесії):
-- `lucide-react` лежить у `devDependencies`, хоча імпортується з `src/` (GameHeader, GameHistory, PlayerStatistics, RoundHistory). З Vite-бандлом працює, але формально це рантайм-залежність — при `--production` install білд впаде. Слід перенести в `dependencies`.
-- Vite попереджає: `configLoader: 'native'` (майбутній дефолт) не підтримає ESM-синтаксис у `vite.config.ts`, що вантажиться як CommonJS. Фікс на один рядок — `"type": "module"` у `package.json` (або `.mts` розширення).
+**Дві супутні дрібниці виправлено тією ж сесією:**
+- `lucide-react` перенесено з `devDependencies` у `dependencies` — він імпортується з `src/` (GameHeader, GameHistory, PlayerStatistics, RoundHistory), тобто це рантайм-залежність; у devDeps білд впав би при `install --production`.
+- Додано `"type": "module"` у `package.json` — знімає попередження Vite про майбутній дефолтний `configLoader: 'native'`, який не вантажитиме ESM-синтаксис `vite.config.ts` як CommonJS. **Гоча**: це перетворює всі кореневі `.js` на ESM, тому `postcss.config.js` довелось перевести з `module.exports = {}` на `export default {}` — інакше падає Tailwind-пайплайн. Верифікація: збірка дає байт-у-байт той самий CSS (`index-CB7mm4O5.css`, 37.89 kB) і той самий PWA precache (31 entries, 655.83 KiB), що й до змін.
+
+Гілку змерджено в `main` fast-forward-пушем (`a481c7b..f41e37b`), Vercel задеплоїв автоматично.
 
 ### Едж-кейси правил гри задокументовано та протестовано (2026-08-22)
 
