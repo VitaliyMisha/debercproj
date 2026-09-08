@@ -22,7 +22,7 @@
 - `lucide-react` перенесено з `devDependencies` у `dependencies` — він імпортується з `src/` (GameHeader, GameHistory, PlayerStatistics, RoundHistory), тобто це рантайм-залежність; у devDeps білд впав би при `install --production`.
 - Додано `"type": "module"` у `package.json` — знімає попередження Vite про майбутній дефолтний `configLoader: 'native'`, який не вантажитиме ESM-синтаксис `vite.config.ts` як CommonJS. **Гоча**: це перетворює всі кореневі `.js` на ESM, тому `postcss.config.js` довелось перевести з `module.exports = {}` на `export default {}` — інакше падає Tailwind-пайплайн. Верифікація: збірка дає байт-у-байт той самий CSS (`index-CB7mm4O5.css`, 37.89 kB) і той самий PWA precache (31 entries, 655.83 KiB), що й до змін.
 
-Гілку змерджено в `main` fast-forward-пушем (`a481c7b..f41e37b`), Vercel задеплоїв автоматично.
+Усе змерджено в `main` двома fast-forward-пушами (`a481c7b..f41e37b`, далі `f41e37b..21ab81b`), Vercel задеплоїв автоматично. Локальний `main` синхронізовано, робочий worktree `deps-update-check` видалено; віддалена гілка `worktree-deps-update-check` лишилась на GitHub і її можна безпечно видалити — вона повністю в `main`.
 
 ### Едж-кейси правил гри задокументовано та протестовано (2026-08-22)
 
