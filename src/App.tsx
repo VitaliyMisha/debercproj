@@ -546,6 +546,7 @@ export default function App() {
                 onLangChange={handleLangChange}
                 isSharing={isSharing}
                 onShareOpen={handleShareOpen}
+                gameRules={gameRules}
               />
 
               {hasHistoryShown && <GameHistory players={game.players} />}

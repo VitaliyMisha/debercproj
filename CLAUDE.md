@@ -87,7 +87,7 @@ Linter/formatter: **Biome** (not ESLint/Prettier). Config in `biome.json`:
 - **UI/UX**: Викликай skill `ui-ux-pro-max` для складних дизайн-рішень.
 - **Logic**: Дотримуйся TDD для бізнес-логіки в `src/utils/` (Vitest). Повний набір тестів у `tests/helpers.test.ts`.
 - **UI tests**: React Testing Library в `tests/ui/*.test.tsx` — jsdom вмикається прагмою `// @vitest-environment jsdom` на початку файлу (глобальний env — node). Firebase мокається через `vi.mock('firebase/database')` + `vi.mock('../../src/config/firebase')`; `Element.prototype.scrollIntoView` треба стабити для RoundTimeline.
-- **Rules**: Джерело правди для правил гри — `docs/GAME_RULES.md`.
+- **Rules**: Джерело правди для правил гри — `docs/GAME_RULES.md`. Гравецька копія тих самих правил живе в `rules.*` (`src/i18n/locales/{uk,en}.ts`) і показується через `RulesSheet.tsx` — змінюєш правило, онови обидва. Числа туди НЕ вписуй: вони інтерполюються з `gameRules` (`{{secondB}}`, `{{hv}}`, `{{target}}`).
 - **Linting**: `bun run lint` (Biome) — обов'язково перед commit.
 - **Type-check**: `tsconfig.json` включає і `src`, і `tests` — тести теж перевіряються tsc.
 - **Penalties**: штрафи (`hvPenalty`, `secondBPenalty`) можуть бути `0` — використовуй `??`, ніколи `||`, для fallback.

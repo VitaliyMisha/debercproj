@@ -1,9 +1,11 @@
-import { RadioTower, Volume2, VolumeX } from 'lucide-react';
+import { BookOpen, RadioTower, Volume2, VolumeX } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { GameRulesConfig } from '../types';
 import { ConfirmSheet } from './ConfirmSheet';
 import { LangToggleButton } from './LangToggleButton';
+import { RulesSheet } from './RulesSheet';
 
 interface GameHeaderProps {
   gameId: number;
@@ -17,6 +19,8 @@ interface GameHeaderProps {
   onLangChange?: () => void;
   isSharing?: boolean;
   onShareOpen?: () => void;
+  /** Active rules — the in-app reference reads its numbers from here. */
+  gameRules?: GameRulesConfig;
 }
 
 export const GameHeader: React.FC<GameHeaderProps> = ({
@@ -31,9 +35,11 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
   onLangChange,
   isSharing = false,
   onShareOpen,
+  gameRules,
 }) => {
   const { t } = useTranslation();
   const [confirming, setConfirming] = useState(false);
+  const [showRules, setShowRules] = useState(false);
 
   const handleNewGame = () => {
     if (hasRounds) {
@@ -74,6 +80,20 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
                     ${isSharing ? 'bg-gold-from/20 border-gold-from/60 text-gold-to' : 'bg-white/5 border-white/10 text-white/70'}`}
                 >
                   <RadioTower className="w-4 h-4" aria-hidden="true" />
+                </button>
+              )}
+
+              {gameRules && (
+                <button
+                  type="button"
+                  onClick={() => setShowRules(true)}
+                  aria-label={t('rules.open')}
+                  className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 text-white/70
+                    hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]
+                    flex items-center justify-center
+                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-to/60"
+                >
+                  <BookOpen className="w-4 h-4" aria-hidden="true" />
                 </button>
               )}
 
@@ -121,6 +141,8 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
           )}
         </div>
       </div>
+
+      {showRules && gameRules && <RulesSheet gameRules={gameRules} targetScore={targetScore} onClose={() => setShowRules(false)} />}
 
       {confirming && (
         <ConfirmSheet

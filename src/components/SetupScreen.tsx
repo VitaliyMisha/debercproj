@@ -1,3 +1,4 @@
+import { BookOpen } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +9,7 @@ import { ChipGroup } from './ChipGroup';
 import { GoldDivider } from './GoldDivider';
 import { PenaltySheet } from './PenaltySheet';
 import { PlayerRow } from './PlayerRow';
+import { RulesSheet } from './RulesSheet';
 
 const TABLE_SWATCHES: Array<{
   theme: TableTheme;
@@ -56,6 +58,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
 }) => {
   const { t } = useTranslation();
   const [penaltySheet, setPenaltySheet] = useState<PenaltyKey | null>(null);
+  const [showRules, setShowRules] = useState(false);
 
   const PLAYER_COUNT_OPTIONS = [
     { label: t('setup.players2'), value: 2 as const },
@@ -182,6 +185,19 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
           >
             {t('setup.penaltyHVLabel')}: {gameRules.hvPenalty}
           </button>
+
+          {/* In-app rules reference — the settings above change the numbers it shows */}
+          <button
+            type="button"
+            onClick={() => setShowRules(true)}
+            className="px-4 py-2 rounded-full text-sm font-semibold border bg-card-bg border-white/10 text-score-chalk
+              hover:border-score-chalk/50 transition-all duration-150 active:scale-[0.97]
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-to/60
+              flex items-center gap-2"
+          >
+            <BookOpen className="w-4 h-4" aria-hidden="true" />
+            {t('rules.open')}
+          </button>
         </div>
       </section>
 
@@ -213,6 +229,8 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
       </Button>
 
       {/* Penalty sheet */}
+      {showRules && <RulesSheet gameRules={gameRules} targetScore={targetScore} onClose={() => setShowRules(false)} />}
+
       {penaltySheet && (
         <PenaltySheet
           label={penaltySheet === 'secondBPenalty' ? t('setup.penaltyBLabel') : t('setup.penaltyHVLabel')}

@@ -123,6 +123,85 @@ export const en: typeof uk = {
     invalidScores: 'Fill in all fields with valid values (number, Б, ХВ, or ВІС).',
     invalidScoresNoVis: 'Fill in all fields with valid values (number, Б, or ХВ).',
   },
+  rules: {
+    open: 'How to play',
+    title: 'Game rules',
+    contents: 'Sections',
+    valuesNote: 'The numbers below come from your current settings.',
+    sections: {
+      players: {
+        title: 'Players and the table',
+        body: [
+          'Two to four people play. Before the game you pick the score to play to — right now it is {{target}}.',
+          'A dealer is set before the first round, then passes to the next player around the circle.',
+          'Player names must differ: the app tracks wins by name across games.',
+        ],
+      },
+      input: {
+        title: 'Entering scores',
+        body: ['Every round each player gets one value — either a number or a token.', 'Numbers may be negative, for example −20.'],
+        tokens: 'There are three tokens: Б, ХВ and ВіС. Upper or lower case makes no difference.',
+        tokensNoVis: 'There are two tokens: Б and ХВ. Upper or lower case makes no difference.',
+      },
+      b: {
+        title: 'Б — the bomb',
+        body: [
+          'Your first Б of the game costs nothing — it counts as zero.',
+          'Every Б after that takes {{secondB}} points off.',
+          'The counter is per player and never resets between rounds — only a new game clears it.',
+          'Only one player may take Б in a round: once someone picks it, the chip is disabled for everyone else.',
+        ],
+      },
+      hv: {
+        title: 'ХВ — the tail',
+        body: [
+          'Immediately subtracts {{hv}} points. It carries nothing into later rounds.',
+          'Several ХВ in different rounds each count separately.',
+        ],
+      },
+      vis: {
+        title: 'ВіС — the eight',
+        body: [
+          'This is a bet. Your score for the round is not counted — it is held over to the next round instead.',
+          'The held amount equals the highest number anyone scored in that same round. Tokens count as zero here.',
+          'In the next round your score is compared with the best score among your opponents:',
+          '• higher than theirs — you take the held amount as a bonus;',
+          '• exactly equal — the ВіС carries over one more round, the amount unchanged;',
+          '• lower — you take a Б, and the held amount goes to whoever scored best that round.',
+          'Points from rounds where the ВіС carried over are credited normally.',
+          'Only one player may play ВіС in a round.',
+          'If the game ends while a ВіС is still unresolved, it simply disappears.',
+        ],
+      },
+      finish: {
+        title: 'Ending the game',
+        body: [
+          'After every round the app checks whether anyone has reached {{target}} points or more.',
+          'If several players cross the line, the one with more points wins.',
+          'If they are tied, there is no winner and the game continues.',
+        ],
+      },
+      dealer: {
+        title: 'The dealer',
+        body: [
+          'The dealer is chosen before the first round, then moves around the circle; after the last player it returns to the first.',
+          'Undoing a round restores the dealer who actually dealt that round.',
+          'The dealer does not affect scoring.',
+        ],
+      },
+      edge: {
+        title: 'Edge cases',
+        body: ['Landing exactly on {{target}} already counts as a win.', 'A negative total does not end the game.'],
+        visBody: [
+          'If every opponent played a token instead of a number in a ВіС round, the held amount is zero.',
+          'Losing a ВіС gives you a Б — and if it is your second or later, the {{secondB}} penalty applies as usual.',
+          'A token played instead of a number in the round meant to settle a ВіС counts as zero. If an opponent scored above zero the ВіС is lost; exactly zero is a tie and carries over; below zero the ВіС is won, because zero beats a negative number.',
+          'If that token was Б, it also counts as your own bomb for the round — the penalties add up.',
+          'Because of this a player can hold several ВіС at once: each is settled in its own next round.',
+        ],
+      },
+    },
+  },
   share: {
     title: 'Share Game',
     copyLink: 'Copy Link',
