@@ -1,8 +1,26 @@
 # PROGRESS.md — Деберц Score App
 
-## Поточний стан (2026-08-22)
+## Поточний стан (2026-09-08)
 
 Проєкт у робочому стані. Тестів: **168** (усі зелені). Lint (Biome 2.5) та type-check (tsc) — чисті. Гілка `worktree-game-rules-edge-cases` готова до мерджу в `main` (7 комітів), ще не запушена.
+
+### Оновлення залежностей + закриття всіх audit-вразливостей (2026-09-08)
+
+Гілка `worktree-deps-update-check` (запушена, 1 коміт `9d19cc2`), у `main` ще не змерджена.
+
+**Що оновлено (усе без жодної зміни коду в `src/` чи `tests/`):**
+- **Patch/minor**: `@biomejs/biome` 2.5.10→2.5.12, `@testing-library/react` 16.3.2→16.3.3, `@testing-library/user-event` 14.6.6→14.6.7, `@types/react-dom` 19.2.4→19.2.7, `@vitejs/plugin-react` 6.1.0→6.1.1, `i18next` 26.4.0→26.4.2, `react-i18next` 17.0.12→17.0.13, `postcss` 8.5.26→8.5.28, `lucide-react` 1.33.0→1.43.0, `npm-check-updates` 23.0.2→23.1.0.
+- **Major**: `vitest` 4.1.11→5.0.0 — пройшов «як є», 168 тестів зелені без правок конфігу чи тестів.
+- `biome.json`: `biome migrate --write` підняв `$schema` до 2.5.12.
+- Без змін (вже latest): `firebase` 12.18.0, `react`/`react-dom` 19.2.8, `typescript` 7.0.2, `vite` 8.2.2, `tailwindcss` 4.3.3, `vite-plugin-pwa` 1.3.0, `jsdom` 30.0.1, `qrcode.react` 4.2.0.
+
+**Безпека — головна причина зробити цей апдейт**: `bun audit` показував **31 вразливість (1 critical, 23 high, 6 moderate, 1 low)**, усі транзитивні. Критична — `websocket-driver` <0.7.5 (message corruption) через `firebase › @firebase/database-compat › faye-websocket`, тобто **рантайм**-ланцюг, який реально потрапляє в бандл спектатор-режиму; плюс `protobufjs` через firebase/firestore. Решта — build-time через `vite-plugin-pwa › workbox-build` (babel, rollup, brace-expansion, browserslist, ajv, minimatch, picomatch). `bun audit fix` підняв 12 пакетів **у межах наявних semver-діапазонів** (тільки lockfile, без правок `package.json`): 31 → **0 вразливостей**.
+
+**Верифікація**: `bun run lint` ✅, `bun run type-check` ✅, 168 тестів ✅, production build ✅ (PWA precache 31 entries, 655.83 KiB — без змін проти baseline).
+
+**Знайдено побіжно, НЕ виправлено** (окремі задачі, поза скоупом цієї сесії):
+- `lucide-react` лежить у `devDependencies`, хоча імпортується з `src/` (GameHeader, GameHistory, PlayerStatistics, RoundHistory). З Vite-бандлом працює, але формально це рантайм-залежність — при `--production` install білд впаде. Слід перенести в `dependencies`.
+- Vite попереджає: `configLoader: 'native'` (майбутній дефолт) не підтримає ESM-синтаксис у `vite.config.ts`, що вантажиться як CommonJS. Фікс на один рядок — `"type": "module"` у `package.json` (або `.mts` розширення).
 
 ### Едж-кейси правил гри задокументовано та протестовано (2026-08-22)
 
