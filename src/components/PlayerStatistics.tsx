@@ -118,7 +118,7 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
   const allStats = players.map((player) => ({ player, stats: calculatePlayerStats(player.id) }));
 
   return (
-    <div className="bg-card-bg rounded-2xl border border-white/8 overflow-hidden">
+    <div className="liquid-glass rounded-2xl overflow-hidden">
       <div className="px-4 py-3 border-b border-white/8 flex items-center gap-2">
         <BarChart3 className="w-4 h-4 text-gold-from shrink-0" />
         <h2 className="text-muted text-xs font-semibold uppercase tracking-widest flex-1">{t('stats.title')}</h2>

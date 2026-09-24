@@ -30,7 +30,7 @@ export const RecoverScreen: React.FC<RecoverScreenProps> = ({ savedState, gameRu
       </div>
 
       {/* Card */}
-      <div className="rounded-2xl bg-card-bg border border-white/10 p-5 flex flex-col gap-4">
+      <div className="rounded-2xl liquid-glass p-5 flex flex-col gap-4">
         {/* Title row */}
         <div>
           <h2 className="font-display text-xl gold-gradient-text">

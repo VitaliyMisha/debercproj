@@ -51,7 +51,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
 
   return (
     <>
-      <div className="relative rounded-2xl overflow-hidden bg-card-bg border border-white/8 p-4">
+      <div className="relative rounded-2xl overflow-hidden liquid-glass p-4">
         {/* Watermark suits */}
         <div
           className="absolute inset-0 flex items-center justify-center text-7xl text-white/4 font-display pointer-events-none select-none tracking-widest"

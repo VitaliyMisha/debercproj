@@ -635,7 +635,7 @@ export default function App() {
           )}
           {spectator.status === 'live' && spectator.game && (
             <main className="w-full max-w-2xl mx-auto flex flex-col gap-4 p-4">
-              <div className="rounded-2xl bg-card-bg border border-white/8 px-4 py-3 flex items-center">
+              <div className="rounded-2xl liquid-glass px-4 py-3 flex items-center">
                 <div className="w-9 shrink-0" />
                 <p className="flex-1 text-center text-sm font-semibold text-white/70">
                   {t('share.spectatorBanner', { id: spectator.game.id })}

@@ -55,7 +55,8 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   const leaderStyle = isLeader
     ? {
         background:
-          'linear-gradient(#192134, #192134) padding-box, linear-gradient(135deg, #78350F, #FCD34D 45%, #D97706 55%, #78350F) border-box',
+          // translucent padding-box lets .liquid-glass backdrop show through; the gold border-box bleeds in as a warm tint
+          'linear-gradient(rgba(14, 18, 26, 0.84), rgba(14, 18, 26, 0.84)) padding-box, linear-gradient(135deg, #78350F, #FCD34D 45%, #D97706 55%, #78350F) border-box',
         border: '1.5px solid transparent',
         boxShadow: '0 4px 24px rgba(120, 53, 15, 0.28), inset 0 0 0 0 transparent',
         animation: 'goldPulse 5s ease-in-out infinite',
@@ -70,7 +71,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     <div
       className={`relative flex flex-col gap-2 p-4 rounded-2xl transition-all duration-300
         ${spanFull ? 'col-span-2' : ''}
-        ${isLeader ? 'bg-card-bg' : 'bg-card-bg/60 border border-white/8'}`}
+        liquid-glass`}
       style={leaderStyle}
     >
       {/* Warm overlay pulse when close to finish */}

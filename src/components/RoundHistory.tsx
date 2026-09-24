@@ -79,7 +79,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({
 
   if (rounds.length === 0) {
     return (
-      <div className="bg-card-bg rounded-2xl border border-white/8 p-6 text-center">
+      <div className="liquid-glass rounded-2xl p-6 text-center">
         <h2 className="text-muted text-xs font-semibold uppercase tracking-widest mb-3">{t('history.title')}</h2>
         <p className="text-muted text-sm py-4">{t('history.empty')}</p>
       </div>
@@ -88,7 +88,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({
 
   return (
     <>
-      <div className="bg-card-bg rounded-2xl border border-white/8 overflow-hidden">
+      <div className="liquid-glass rounded-2xl overflow-hidden">
         {/* biome-ignore lint/a11y/useSemanticElements: can't be a <button> — the header nests interactive controls (undo) and a heading */}
         <div
           className="px-4 py-3 flex items-center justify-between cursor-pointer select-none"

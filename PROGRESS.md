@@ -4,6 +4,17 @@
 
 Проєкт у робочому стані. Тестів: **176** (усі зелені). Lint (Biome 2.5) та type-check (tsc) — чисті. Усе влито в `main`: екран правил, оновлення залежностей, правки правил гри. Відкритих гілок і worktree немає — лише `main`.
 
+### Скляні панелі «Рідкий обідок» (2026-09-25)
+
+Користувач обрав варіант C з 6 макетів (артефакт https://claude.ai/artifact/3YABcBQ1jCzyPLa7yfBgHT). Бібліотеку `quick-liquid` свідомо НЕ взято: справжнє SVG-заломлення працює лише в Chromium, а гравці на iPhone (Safari) отримали б тільки фрост.
+
+- **`.liquid-glass`** — утиліта в `src/styles/index.css`, лише CSS: блік угорі-зліва (radial-gradient шаром фону, не `::after` — щоб не міняти позиціювання панелей), напівпрозора тонована основа, `backdrop-filter: blur(12px) saturate(180%) brightness(1.1)`, обідок через inset-тіні. Обідок = рамка, тому з `border-white/*` не комбінувати. `prefers-reduced-transparency: reduce` → суцільний `--color-card-bg`.
+- Замінено `bg-card-bg … border-white/8` на `liquid-glass` у великих панелях: GameHeader, картки ScoreBoard, RoundForm, RoundHistory (×2), GameHistory, PlayerStatistics, WinnerScreen (×2), RecoverScreen, рядок налаштувань у App, BottomSheet. Кнопки й чіпи (`Button`, `ChipGroup`, чіпи SetupScreen) лишились суцільними.
+- **Картка лідера**: інлайн-фон padding-box був непрозорим `#192134` під латунною градієнтною рамкою — зроблено `rgba(14,18,26,0.84)`, тож скло просвічує, а золото рамки дає теплий відтінок. `BottomSheet`: прибрано інлайн `boxShadow`, що перекривав обідок.
+- **Ліміт**: під панелями в грі лише сукно (статичне), тож ефект — це обідок + легке просвічування; помітне «скло» — на шторках (під ними розмита гра).
+
+Верифікація: lint ✅, type-check ✅, 176 тестів ✅, build ✅; візуально перевірено Playwright 390×844 (RecoverScreen, гра, лідер, ConfirmSheet).
+
 ### Планове оновлення залежностей (2026-09-25)
 
 Лише minor/patch, без змін у `src/` чи `tests/`: `react`/`react-dom` 19.2.8→19.3.0, `@types/react`/`@types/react-dom` →19.3.0, `firebase` 12.18.0→12.19.0, `lucide-react` 1.43.0→1.48.0, `react-i18next` 17.0.13→17.0.15, `vite` 8.2.2→8.3.1, `vitest` 5.0.0→5.0.1, `jsdom` 30.0.1→30.1.1, `@biomejs/biome` 2.5.12→2.5.14 (`biome migrate` підняв `$schema`). Мажорних оновлень не було. `bun audit` — 0 вразливостей.

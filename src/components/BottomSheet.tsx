@@ -47,10 +47,9 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ onClose, ariaLabelledB
 
       {/* Sheet */}
       <div
-        className="relative bg-card-bg border-t border-white/10 rounded-t-3xl px-5 pt-4 pb-10"
+        className="relative liquid-glass rounded-t-3xl px-5 pt-4 pb-10"
         style={{
           animation: 'slideUpSheet 280ms cubic-bezier(0.34, 1.06, 0.64, 1)',
-          boxShadow: '0 -8px 40px rgba(0,0,0,0.6)',
         }}
         role="dialog"
         aria-modal="true"

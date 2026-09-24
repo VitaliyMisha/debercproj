@@ -49,7 +49,7 @@ export const WinnerScreen: React.FC<WinnerScreenProps> = ({
 
       {/* Winner card */}
       <div
-        className="w-full max-w-xs bg-card-bg rounded-2xl border-2 border-gold-from p-6 text-center"
+        className="w-full max-w-xs liquid-glass rounded-2xl border-2 border-gold-from p-6 text-center"
         style={{ animation: 'goldPulse 3s ease-in-out infinite' }}
       >
         <Avatar name={winner.name} className="w-16 h-16 text-2xl text-white mx-auto mb-3" />
@@ -60,7 +60,7 @@ export const WinnerScreen: React.FC<WinnerScreenProps> = ({
       <GoldDivider className="w-full max-w-xs" />
 
       {/* Summary table */}
-      <div className="w-full max-w-xs bg-card-bg rounded-2xl border border-white/8 overflow-hidden">
+      <div className="w-full max-w-xs liquid-glass rounded-2xl overflow-hidden">
         <div className="px-4 py-2 border-b border-white/8">
           <span className="text-muted text-xs uppercase tracking-widest font-semibold">{t('winner.summary')}</span>
         </div>

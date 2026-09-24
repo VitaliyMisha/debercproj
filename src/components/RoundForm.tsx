@@ -102,7 +102,7 @@ const RoundForm: React.FC<RoundFormProps> = ({
   };
 
   return (
-    <div className="bg-card-bg rounded-2xl border border-white/8 overflow-hidden">
+    <div className="liquid-glass rounded-2xl overflow-hidden">
       {/* Header */}
       <div className="px-4 py-3 border-b border-white/8 flex items-center gap-3">
         <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-display text-sm">
