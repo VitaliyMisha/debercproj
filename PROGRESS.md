@@ -2,6 +2,15 @@
 
 ## Поточний стан (2026-11-03)
 
+### Мажорні оновлення: firebase 13, vite-plugin-pwa 2 (2026-11-03)
+
+`firebase` 12.19.0→**13.2.0**, `vite-plugin-pwa` 1.3.0→**2.0.0**. Змін у `src/`, `tests/` чи `vite.config.ts` не знадобилось: ми використовуємо лише базове Realtime Database API (`ref`/`set`/`onValue`/`onDisconnect`/`remove`), а конфіг PWA — стандартний `generateSW` + `autoUpdate`.
+
+- Smoke-тест продакшн-білду (Playwright): SW `activated`, 0 помилок у консолі; `?watch=<неіснуючий код>` → «Гру не знайдено» — тобто реальний round-trip до Firebase 13 працює.
+- **`bun audit` — ті самі 5 вразливостей; мажорні їх НЕ закрили** (попередній запис помилявся): `@firebase/firestore` у firebase 13 досі пінить `@grpc/grpc-js ~1.9.0` (ми Firestore не імпортуємо — у бандл не потрапляє), `glob`/`minimatch`/`deepmerge` — build-time у `workbox-build`. Чекаємо фіксу upstream; `overrides` свідомо не додано.
+
+Верифікація: lint ✅, type-check ✅, 176 тестів ✅, build ✅ (precache 31 entries, 706 KiB).
+
 ### Планове оновлення залежностей (2026-11-03)
 
 Лише minor/patch, без змін у `src/`/`tests/`: `react`/`react-dom` 19.3.0→19.3.1, `i18next` 26.4.2→26.7.1, `react-i18next` 17.0.15→17.1.11, `lucide-react` 1.48.0→1.67.0, `vite` 8.3.1→8.3.5, `vitest` 5.0.1→5.1.0, `@vitejs/plugin-react` 6.1.1→6.2.1, `@biomejs/biome` 2.5.14→2.6.4, tailwind 4.3.3→4.3.4, `jsdom`, `postcss`, `user-event`, `npm-check-updates` (patch).
