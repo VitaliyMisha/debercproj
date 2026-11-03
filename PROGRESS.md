@@ -2,6 +2,8 @@
 
 ## Поточний стан (2026-11-03)
 
+- **`index.html`**: додано `<meta name="mobile-web-app-capable">` поруч з `apple-mobile-web-app-capable` — прибирає попередження Chrome про застарілий тег. Apple-тег свідомо лишено: на старших iOS він дає standalone-режим, а `apple-mobile-web-app-status-bar-style` без нього може не працювати.
+
 ### Мажорні оновлення: firebase 13, vite-plugin-pwa 2 (2026-11-03)
 
 `firebase` 12.19.0→**13.2.0**, `vite-plugin-pwa` 1.3.0→**2.0.0**. Змін у `src/`, `tests/` чи `vite.config.ts` не знадобилось: ми використовуємо лише базове Realtime Database API (`ref`/`set`/`onValue`/`onDisconnect`/`remove`), а конфіг PWA — стандартний `generateSW` + `autoUpdate`.
