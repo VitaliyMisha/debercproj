@@ -3,6 +3,7 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## ⚡ Session Continuity (CRITICAL)
+
 - **Session Start — ПЕРШЕ ЩО РОБИШ**: Читай `PROGRESS.md` — там поточний стан, завершені задачі та next steps. Без цього не відповідай на запитання про стан проєкту.
 - **Session End — ПЕРЕД ЗАВЕРШЕННЯМ**: Онови `PROGRESS.md` — додай що зробив, нові архітектурні рішення, блокери, плани. Дата у заголовку — сьогоднішня.
 - **Context Limits**: Ігноруй `node_modules`, `.next`, `public/assets` та `dist`.
@@ -80,10 +81,12 @@ Linter/formatter: **Biome** (not ESLint/Prettier). Config in `biome.json`:
 - Import organisation is enforced automatically
 
 ## 🚀 Deployment (CRITICAL)
+
 - **ЄДИНИЙ спосіб деплою**: `git push origin main` — Vercel підхоплює автоматично.
 - **ЗАБОРОНЕНО**: запускати `vercel`, `npx vercel`, або будь-які команди Vercel CLI — це створює дублікат деплою.
 
 ## Guidelines & Skills
+
 - **UI/UX**: Викликай skill `ui-ux-pro-max` для складних дизайн-рішень.
 - **Logic**: Дотримуйся TDD для бізнес-логіки в `src/utils/` (Vitest). Повний набір тестів у `tests/helpers.test.ts`.
 - **UI tests**: React Testing Library в `tests/ui/*.test.tsx` — jsdom вмикається прагмою `// @vitest-environment jsdom` на початку файлу (глобальний env — node). Firebase мокається через `vi.mock('firebase/database')` + `vi.mock('../../src/config/firebase')`; `Element.prototype.scrollIntoView` треба стабити для RoundTimeline.
@@ -95,5 +98,6 @@ Linter/formatter: **Biome** (not ESLint/Prettier). Config in `biome.json`:
 - **Motion**: JS-анімації (WAAPI, View Transitions) мусять перевіряти `prefers-reduced-motion` і `typeof`-guard для jsdom; CSS-анімації глушаться media-query в `index.css`.
 
 ## Continuity
+
 - **Session Start**: Читай `PROGRESS.md` ПЕРШИМ — там поточний стан та next steps.
 - **Session End**: Перед завершенням — онови `PROGRESS.md`: завершені задачі, нові архітектурні рішення, блокери, плани. Оновлюй дату в заголовку.

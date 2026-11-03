@@ -1,6 +1,16 @@
 # PROGRESS.md — Деберц Score App
 
-## Поточний стан (2026-09-25)
+## Поточний стан (2026-11-03)
+
+### Планове оновлення залежностей (2026-11-03)
+
+Лише minor/patch, без змін у `src/`/`tests/`: `react`/`react-dom` 19.3.0→19.3.1, `i18next` 26.4.2→26.7.1, `react-i18next` 17.0.15→17.1.11, `lucide-react` 1.48.0→1.67.0, `vite` 8.3.1→8.3.5, `vitest` 5.0.1→5.1.0, `@vitejs/plugin-react` 6.1.1→6.2.1, `@biomejs/biome` 2.5.14→2.6.4, tailwind 4.3.3→4.3.4, `jsdom`, `postcss`, `user-event`, `npm-check-updates` (patch).
+
+- **Biome 2.6 тепер форматує Markdown** — `lint:fix` додав порожні рядки після заголовків і вирівняв таблиці в `CLAUDE.md`, `PROGRESS.md`, `README.md`, `docs/GAME_RULES.md` (зміст не змінено).
+- `.playwright-mcp/` (скриншоти/знімки Playwright MCP з візуальних перевірок) додано в `.gitignore`.
+- **Відкладено мажорні**: `firebase` 13, `vite-plugin-pwa` 2. `bun audit`: 5 транзитивних вразливостей (high — `@grpc/grpc-js` через `@firebase/firestore`, який ми не використовуємо й не бандлимо; решта — build-time у `workbox-build`). `audit fix` у межах діапазонів їх не закриває — лише ці мажорні оновлення.
+
+Верифікація: lint ✅, type-check ✅, 176 тестів ✅, build ✅ (precache 31 entries, 705.87 KiB).
 
 Проєкт у робочому стані. Тестів: **176** (усі зелені). Lint (Biome 2.5) та type-check (tsc) — чисті. Усе влито в `main`: екран правил, оновлення залежностей, правки правил гри. Відкритих гілок і worktree немає — лише `main`.
 
@@ -151,6 +161,7 @@
    - Нюанси jsdom: `Element.prototype.scrollIntoView` застаблений (RoundTimeline), звук безпечний (getCtx має try/catch), firebase мокається через `vi.mock`.
 
 ### ScoreBoard: layout для 3 гравців (2026-07-04)
+
 - Проблема: `grid-cols-3` на мобільному давав ~110px на картку — імена обрізались, бейджі (Д/👑) стискались.
 - Рішення (обрано користувачем з 3 варіантів): **«Лідер зверху»** — сітка завжди `grid-cols-2`; при 3 гравцях перша картка (найвищий рахунок, `sorted[0]`) отримує `col-span-2` (проп `spanFull` у `PlayerCard`). 2 гравці — як було; 4 — сітка 2×2. Працює і для глядача (спільний ScoreBoard).
 
@@ -208,12 +219,14 @@ UI перероблено на "Card Table Dark - Vintage" тему. Логік�
 ## Завершено
 
 ### Spectator bugfixes (2026-05-26)
+
 - **`src/hooks/useSpectator.ts`** — два фікси білого екрану у глядача:
   1. **Дебаунс `'ended'`** (1.5с): Firebase може коротко повертати null під час `set()` при продовженні гри хостом — без дебаунсу глядач бачив blank screen. `endedTimerRef` скасовується якщо до нього прийдуть нові live-дані.
   2. **Відновлення порожніх масивів**: Firebase Realtime Database не зберігає `[]` — при читанні `game.rounds` і `game.players` могли бути `undefined`. `calculateGameTotals` викликав `undefined.forEach()` → React crash → білий екран. Фікс: `rounds: data.game.rounds ?? []`, `players: data.game.players ?? []`.
 - **`src/App.tsx`** — fallback loading state для `status === 'live' && !game` (короткий проміжок між станами).
 
 ### Spectator Mode (2026-05-21)
+
 - **`src/config/firebase.ts`** — ініціалізація Firebase app + Realtime Database (env vars з `.env.local`)
 - **`src/hooks/useFirebaseSync.ts`** — хук хоста: записує стан гри до `games/${shareCode}` при кожній зміні поки `isSharing`; видаляє запис при зупинці шерингу або unmount
 - **`src/hooks/useSpectator.ts`** — хук глядача: підписується на `onValue(games/${watchId})`; розрізняє `not_found` (перший callback без даних) vs `ended` (дані зникли після отримання) через `firstCallRef`; типи: `SpectatorStatus = 'loading' | 'live' | 'ended' | 'not_found'`; **дебаунс 1.5с** для переходу в `'ended'` — запобігає flash коли Firebase тимчасово повертає null під час продовження гри хостом
@@ -229,11 +242,13 @@ UI перероблено на "Card Table Dark - Vintage" тему. Логік�
 - **PWA**: `scope: '/'` явно в `vite.config.ts` manifest для Android deep links
 
 ### i18n доповнення (2026-05-21)
+
 - `setup.playerName` — переклад placeholder імені гравця (виправлено хардкод у `PlayerRow.tsx`)
 - `share.*` — всі рядки для ShareSheet та spectator банера
 - `stats.show` / `stats.hide` — кнопки показу/приховання статистики (хост і глядач)
 
 ### UI (Casino Redesign)
+
 - Design tokens: felt-green фон, gold gradient, card-bg, Share Tech Mono для цифр
 - Шрифти: Righteous + Poppins + Share Tech Mono (Google Fonts)
 - `SetupScreen.tsx` — замінив GameSettings + GameRules + блок імен
@@ -249,6 +264,7 @@ UI перероблено на "Card Table Dark - Vintage" тему. Логік�
 - SEO: `<meta name="description">` в `index.html`
 
 ### Логіка і тести
+
 - `GameRulesConfig` перенесено з `GameRules.tsx` → `src/types.ts`
 - `GameRules.tsx`, `GameSettings.tsx`, `WinnerMessage.tsx` — видалено
 - Підтримка від'ємних чисел (-20, -100) у полях вводу (`isValidScore`)
@@ -256,6 +272,7 @@ UI перероблено на "Card Table Dark - Vintage" тему. Логік�
 - Виправлено баг: `'ВіС'` (U+0456) vs `'ВІС'` (U+0406) — тепер нормалізація через `.toUpperCase()`
 
 ### Правила гри (виправлено за підтвердженням користувача)
+
 - Кожен Б після 1-го отримує штраф `secondBPenalty` (не тільки 2-й)
 - ВіС нічия (рівні очки) = перенос, не поразка
 - Незакритий ВіС в кінці гри — ігнорується
@@ -263,6 +280,7 @@ UI перероблено на "Card Table Dark - Vintage" тему. Логік�
 - Тільки 1 Б на раунд (валідація у UI: chip disabled + тести)
 
 ### Нові фічі
+
 - **Undo last round** (`handleUndoLastRound` в `App.tsx`): видаляє останній раунд, відновлює dealerId, скидає winnerPlayer. Кнопка "↩ Undo" у хедері `RoundHistory` — видима тільки поки немає переможця.
 - **Fanfare при перемозі** (`src/hooks/useSound.ts` + `WinnerScreen.tsx`): Web Audio API арпеджіо C5→E5→G5→C6 + sustained chord + haptic вібрація. Без зовнішніх файлів, офлайн-сумісний.
 - **Sound toggle** (`GameHeader.tsx`): кнопка вмикання/вимикання звуку в хедері.
@@ -278,6 +296,7 @@ UI перероблено на "Card Table Dark - Vintage" тему. Логік�
 - **`tests/playerNames.test.ts`** — тести для `loadPlayerNames` / `savePlayerNames`.
 
 ### PWA / Mobile fixes
+
 - **Horizontal overflow** — `overflow-x: hidden` на `html, body, #root` + `w-full overflow-x-hidden` на root App div
 - **Кутові символи** — замінив `overflow-hidden` на `clipPath: 'inset(0)'` + `contain: 'strict'` (надійніше в Android WebView)
 - **Dealer button** — перенесено з окремої кнопки справа в кружечок гравця (уникає overflow); 👑 показується замість цифри коли гравець — дилер
@@ -288,11 +307,13 @@ UI перероблено на "Card Table Dark - Vintage" тему. Логік�
 - **`NameInput` iOS** — `onMouseDown` guard щоб не розфокусовувало input під час вибору з dropdown на iOS Safari
 
 ### Lighthouse / Performance
+
 - `index.html`: preconnect до Google Fonts, `<meta description>` для SEO
 - `App.tsx` / `GameHeader.tsx` / `SetupScreen.tsx`: a11y атрибути, aria-label, role
 - `index.css`: дрібні CSS fixes
 
 ### Code Review — виправлені баги (2026-05-17)
+
 - **`updateRound` + Б баг** (`App.tsx`): при редагуванні раунду з першим Б, `parseScore` знаходив власний Б у `game.rounds` і повертав штраф замість `'Б'`. Фікс: передаємо `roundsExcludingCurrent` (без поточного раунду).
 - **ScoreBoard hasLeader** (`ScoreBoard.tsx`): `players.some(...)` була тавтологічно true → всі гравці мали золоту рамку при 0-0. Фікс: `players.some(p => score !== 0)` — лідер підсвічується щойно хтось отримав ненульовий рахунок.
 - **ВіС валідація** (`RoundForm.tsx` + `App.tsx`): не було перевірки що ВіС грає лише один гравець за раунд. Фікс: chip кнопка `disabled` для решти + помилка при submit.
@@ -311,16 +332,19 @@ UI перероблено на "Card Table Dark - Vintage" тему. Логік�
 ## Архітектурні нотатки
 
 ### ВіС токен — два представлення
+
 - **Зберігається** у `Round.scores` як `'ВІС'` (uppercase І, U+0406) — повертає `parseScore`
 - **Відображається** у history через `getVisDisplayValue` як `'ВіС'` (lowercase і, U+0456)
 - Всі порівняння у `getVisDisplayValue` та `PlayerStatistics` використовують `.toUpperCase()` для сумісності з обома форматами
 
 ### Б-токен — двошарова логіка
+
 - `parseScore` перетворює вхідний рядок: 1-й Б → `'Б'` (рядок), 2-й+ Б → `secondBPenalty` (число)
 - `calculateGameTotals` незалежно рахує `bCounts` для ВіС-поразок (лічить тільки `'Б'`-рядки, без числових пенальті)
 - При `updateRound` передаємо `roundsExcludingCurrent` до `parseScore`, щоб поточний раунд не рахувався як "попередній Б"
 
 ### Session persistence
+
 - `SavedGameState` тип в `src/types.ts`: серіалізований знімок `Game` + `gameRules`
 - `saveGameState` / `loadGameState` / `clearSavedGame` у `src/utils/gameHelpers.ts`
 - localStorage ключ: `savedGame` (JSON)
@@ -329,6 +353,7 @@ UI перероблено на "Card Table Dark - Vintage" тему. Логік�
 - Захист від stale-save: при undo до нуля раундів — `clearSavedGame()`; shape validation при `loadGameState`
 
 ### Player name history
+
 - `loadPlayerNames` / `savePlayerNames` у `src/utils/gameHelpers.ts`
 - localStorage ключ: `playerNames` (JSON array of strings)
 - Дедуплікація при збереженні (case-insensitive); guard проти no-op writes
@@ -336,6 +361,7 @@ UI перероблено на "Card Table Dark - Vintage" тему. Логік�
 - iOS-специфічний фікс: `onMouseDown` на dropdown-item викликає `e.preventDefault()` щоб не розфокусовувати input до збереження вибору
 
 ### Тести (125 tests, 5 files)
+
 - `tests/helpers.test.ts` — основний набір: `isValidScore`, `parseScore` (вкл. нульові штрафи), `calculateGameTotals`, `getVisDisplayValue`, `findWinner`, `validateRoundTokens`, `bestOpponent`
 - `tests/game.test.ts` — інтеграційні сценарії + 8 undo-сценаріїв + 3 regression-тести для updateRound+Б бугу
 - `tests/saveWinCounts.test.ts` — localStorage winCounts + `winCountKey`
@@ -346,6 +372,7 @@ UI перероблено на "Card Table Dark - Vintage" тему. Логік�
 **Покриття (оновлено 2026-07-05):** `useFirebaseSync`, `useSpectator`, `RoundHistory` (edit), App winner-флоу та `ErrorBoundary` тепер покриті RTL-тестами у `tests/ui/`. Не покрито: решта UI-компонентів (ShareSheet, ScoreBoard-рендер тощо) — низький ризик.
 
 ### useSound hook (повністю підключено, 2026-05-19)
+
 - `src/hooks/useSound.ts` — Web Audio API без зовнішніх файлів
 - `fanfare()` — використовується у `WinnerScreen.tsx` на маунті
 - Sound toggle — глобальний стан `soundEnabled` в `App.tsx`, передається у `GameHeader`
@@ -362,16 +389,19 @@ UI перероблено на "Card Table Dark - Vintage" тему. Логік�
   - `closeFinish` → перший раз коли гравець наближається до фінішу (≤100 від targetScore); one-shot per player via `closeFinishFiredRef`
 
 ### Gold Glow анімація
+
 - `ScoreBoard.tsx`: `isCloseToFinish` (`score > 0 && targetScore - score <= 100`) → `goldGlow 1.4s ease-in-out infinite`
 - `index.css`: `@keyframes goldGlow` — золотий box-shadow pulse; замінив старий `firePulse`
 
 ### Haptic feedback
+
 - Submit раунду: `navigator.vibrate(30)` — одиночний пульс (тільки якщо звук вимкнено, бо `roundSubmit()` сам вібрує коли звук увімкнено)
 - Undo: `navigator.vibrate([20, 30, 20])` — подвійний дотик
 
 ---
 
 ### Score Delta Animation (2026-05-19)
+
 - `App.tsx`: `roundDeltas` + `deltaKey` state, `deltaTimerRef` для cleanup; обчислення `newTotals - oldTotals` в `addRound`
 - `ScoreBoard.tsx`: `PlayerCard` key змінено на `${player.id}-${deltaKey}` для re-mount при кожному раунді; delta елемент зеленим/червоним кольором
 - `index.css`: `@keyframes scoreDeltaFloat` + `.score-delta` (1.8s ease-out, float up + fade)
@@ -379,6 +409,7 @@ UI перероблено на "Card Table Dark - Vintage" тему. Логік�
 ---
 
 ### i18n (UK / EN) — 2026-05-20
+
 - `src/i18n/locales/uk.ts` + `en.ts` — bundled TypeScript локалі, TypeScript перевіряє повноту обох мов через `typeof uk`
 - `src/i18n/index.ts` — синхронна ініціалізація i18next, `CustomTypeOptions` augmentation для type-safe `t()`
 - `App.tsx`: `lang` стан + `handleLangChange` (useCallback) + `i18n.changeLanguage()`

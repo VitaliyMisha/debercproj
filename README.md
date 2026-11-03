@@ -26,15 +26,15 @@ PWA-додаток для ведення рахунку в українські�
 
 ## Стек
 
-| | |
-|---|---|
-| UI | React 19, TypeScript |
-| Стилі | Tailwind CSS v4, Google Fonts (Righteous, Poppins, Share Tech Mono) |
-| Білд | Vite 7, Bun |
-| Якість | Biome (lint + format), `tsc --noEmit` |
-| Тести | Vitest (92 тести) |
-| PWA | vite-plugin-pwa (Workbox) |
-| Деплой | Vercel (auto deploy з `main`) |
+|        |                                                                     |
+| ------ | ------------------------------------------------------------------- |
+| UI     | React 19, TypeScript                                                |
+| Стилі  | Tailwind CSS v4, Google Fonts (Righteous, Poppins, Share Tech Mono) |
+| Білд   | Vite 7, Bun                                                         |
+| Якість | Biome (lint + format), `tsc --noEmit`                               |
+| Тести  | Vitest (92 тести)                                                   |
+| PWA    | vite-plugin-pwa (Workbox)                                           |
+| Деплой | Vercel (auto deploy з `main`)                                       |
 
 ---
 

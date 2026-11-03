@@ -35,3 +35,6 @@ docs/superpowers/
 
 # Claude Code local session settings
 .claude/settings.local.json
+
+# Playwright MCP screenshots/snapshots (local visual checks)
+.playwright-mcp/
