@@ -1,6 +1,8 @@
 # PROGRESS.md — Деберц Score App
 
-## Поточний стан (2026-11-03)
+## Поточний стан (2026-11-04)
+
+- **Оновлення залежностей (2026-11-04)**: `lucide-react` 1.67.0→1.68.0, `react-i18next` 17.1.11→17.1.12. Більше застарілих немає. Верифікація: lint ✅, type-check ✅, 176 тестів ✅, build ✅.
 
 - **`index.html`**: додано `<meta name="mobile-web-app-capable">` поруч з `apple-mobile-web-app-capable` — прибирає попередження Chrome про застарілий тег. Apple-тег свідомо лишено: на старших iOS він дає standalone-режим, а `apple-mobile-web-app-status-bar-style` без нього може не працювати.
 
