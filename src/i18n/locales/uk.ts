@@ -65,6 +65,9 @@ export const uk = {
     title: 'Рахунок',
     toWin: '{{n}} очок до перемоги',
     streak: 'Серія: {{n}} раундів поспіль',
+    visWin: 'ВіС зіграв!',
+    visLose: 'ВіС → Б',
+    visTie: 'ВіС: ще раунд',
   },
   winner: {
     title: 'ПЕРЕМОЖЕЦЬ',

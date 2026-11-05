@@ -9,6 +9,7 @@ import {
   isValidScore,
   parseScore,
   penaltyToken,
+  roundEvents,
   roundTokens,
   validateRoundTokens,
   winStreak,
@@ -670,6 +671,31 @@ describe('roundTokens', () => {
 
   it('returns an empty object when nobody took a token', () => {
     expect(roundTokens({ '1': '-100', '2': '50' })).toEqual({});
+  });
+});
+
+describe('roundEvents', () => {
+  it('tags first Б, 2nd+ Б and ХВ from raw input', () => {
+    const prev = [round(1, { '1': 'Б', '2': 40, '3': 10 })];
+    expect(roundEvents(prev, { '1': 'б', '2': 'ХВ', '3': '20' }, { '1': -100, '2': -100, '3': 20 })).toEqual({ '1': 'b2', '2': 'hv' });
+    expect(roundEvents([], { '1': 'Б', '2': '30' }, { '1': 'Б', '2': 30 })).toEqual({ '1': 'b' });
+  });
+
+  it('resolves a ВіС from the previous round: win / lose / tie', () => {
+    const prev = [round(1, { '1': 'ВІС', '2': 90 })];
+    expect(roundEvents(prev, { '1': '120', '2': '40' }, { '1': 120, '2': 40 })).toEqual({ '1': 'visWin' });
+    expect(roundEvents(prev, { '1': '10', '2': '40' }, { '1': 10, '2': 40 })).toEqual({ '1': 'visLose' });
+    expect(roundEvents(prev, { '1': '40', '2': '40' }, { '1': 40, '2': 40 })).toEqual({ '1': 'visTie' });
+  });
+
+  it('resolves a ВіС carried forward by an earlier tie', () => {
+    const prev = [round(1, { '1': 'ВІС', '2': 90 }), round(2, { '1': 50, '2': 50 })];
+    expect(roundEvents(prev, { '1': '80', '2': '20' }, { '1': 80, '2': 20 })).toEqual({ '1': 'visWin' });
+  });
+
+  it('ignores a ВіС that was already resolved', () => {
+    const prev = [round(1, { '1': 'ВІС', '2': 90 }), round(2, { '1': 100, '2': 20 })];
+    expect(roundEvents(prev, { '1': '10', '2': '40' }, { '1': 10, '2': 40 })).toEqual({});
   });
 });
 

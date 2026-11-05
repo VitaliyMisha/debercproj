@@ -145,6 +145,38 @@ export const bestOpponent = (scores: Round['scores'], playerId: number): { playe
     .map(([id, val]) => ({ playerId: Number(id), score: typeof val === 'number' ? val : 0 }))
     .reduce((best, curr) => (curr.score > best.score ? curr : best), { playerId: -1, score: -Infinity });
 
+/** Score cell as a number (tokens count as 0) — same rule as bestOpponent. */
+const numeric = (val: number | string | undefined): number => (typeof val === 'number' ? val : 0);
+
+export type RoundEvent = 'b' | 'b2' | 'hv' | 'visWin' | 'visLose' | 'visTie';
+
+/**
+ * What happened to each player in the round being added — drives sounds and card animations.
+ * `raw` is the form input, `parsed` the stored scores; a ВіС event wins over a token event.
+ */
+export const roundEvents = (
+  prevRounds: Round[],
+  raw: Record<string, string | number>,
+  parsed: Round['scores']
+): Record<string, RoundEvent> => {
+  const events: Record<string, RoundEvent> = {};
+  for (const [pid, token] of Object.entries(roundTokens(raw))) {
+    events[pid] = token === 'ХВ' ? 'hv' : parsed[pid] === 'Б' ? 'b' : 'b2';
+  }
+  for (const pid of Object.keys(parsed)) {
+    const playerId = Number(pid);
+    const visIdx = prevRounds.findLastIndex((r) => String(r.scores[pid]).toUpperCase() === 'ВІС');
+    if (visIdx === -1) continue;
+    // Still pending only if every round since the ВіС was a tie for this player.
+    const pending = prevRounds.slice(visIdx + 1).every((r) => numeric(r.scores[pid]) === bestOpponent(r.scores, playerId).score);
+    if (!pending) continue;
+    const own = numeric(parsed[pid]);
+    const best = bestOpponent(parsed, playerId).score;
+    events[pid] = own > best ? 'visWin' : own < best ? 'visLose' : 'visTie';
+  }
+  return events;
+};
+
 /**
  * Determines the winner of a game: the single player with the highest total
  * at or above the target score. Returns null when nobody reached the target

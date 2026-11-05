@@ -1,10 +1,16 @@
 import type React from 'react';
-import { useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Player, Round } from '../types';
-import { winStreak } from '../utils/gameHelpers';
+import { type RoundEvent, winStreak } from '../utils/gameHelpers';
 import { Avatar } from './Avatar';
 import { Odometer } from './Odometer';
+
+/** WAAPI motion is skipped under reduced motion and in jsdom (no Element.animate). */
+const canAnimate = (el: Element | null): el is HTMLElement =>
+  !!el &&
+  typeof (el as HTMLElement).animate === 'function' &&
+  !(typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
 interface ScoreBoardProps {
   players: Player[];
@@ -14,6 +20,8 @@ interface ScoreBoardProps {
   snapshotActive?: boolean;
   deltas?: Record<string, number> | null;
   deltaKey?: number;
+  /** What happened to each player in the round just added (ВіС reveal, Б/ХВ hit). */
+  events?: Record<string, RoundEvent> | null;
   /** Rounds power the 🔥 hot-streak badge; omit to hide it. */
   rounds?: Round[];
 }
@@ -32,6 +40,10 @@ interface PlayerCardProps {
   /** Consecutive round wins; badge shows from 3. */
   streak?: number;
   dealerBadgeRef?: React.Ref<HTMLSpanElement>;
+  event?: RoundEvent;
+  /** Deal the card onto the table on first mount; value is the stagger slot. */
+  dealSlot?: number;
+  cardRef?: (el: HTMLDivElement | null) => void;
 }
 
 const PlayerCard: React.FC<PlayerCardProps> = ({
@@ -46,8 +58,26 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   spanFull = false,
   streak = 0,
   dealerBadgeRef,
+  event,
+  dealSlot,
+  cardRef,
 }) => {
   const { t } = useTranslation();
+  // Captured once: the deal-in plays on the first mount only, never on later re-renders.
+  const [dealDelay] = useState(dealSlot === undefined ? null : dealSlot * 90);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const isHit = event === 'b2' || event === 'hv';
+  const visEvent = event === 'visWin' || event === 'visLose' || event === 'visTie' ? event : null;
+
+  // 2nd Б / ХВ: short shake. WAAPI (not a CSS class) so it composes with the leader's goldPulse animation.
+  useEffect(() => {
+    if (!isHit || !canAnimate(rootRef.current) || deltaKey === undefined) return;
+    rootRef.current.animate(
+      [0, -7, 6, -4, 3, 0].map((x) => ({ transform: `translateX(${x}px)` })),
+      { duration: 420, easing: 'ease-out' }
+    );
+  }, [isHit, deltaKey]);
+
   const progress = Math.min(Math.max(score / targetScore, 0), 1) * 100;
   const isCloseToFinish = !snapshotActive && score > 0 && targetScore - score <= 100;
   const remaining = targetScore - score;
@@ -69,11 +99,36 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
 
   return (
     <div
+      ref={(el) => {
+        rootRef.current = el;
+        cardRef?.(el);
+      }}
       className={`relative flex flex-col gap-2 p-4 rounded-2xl transition-all duration-300
         ${spanFull ? 'col-span-2' : ''}
         liquid-glass`}
-      style={leaderStyle}
+      style={
+        dealDelay === null
+          ? leaderStyle
+          : {
+              ...leaderStyle,
+              // Keep cardDeal in the list (finished, matched by name) so the leader's goldPulse can join without replaying the deal.
+              animation: [`cardDeal 520ms cubic-bezier(0.22, 1, 0.36, 1) ${dealDelay}ms both`, leaderStyle?.animation]
+                .filter(Boolean)
+                .join(', '),
+            }
+      }
     >
+      {isHit && <div key={deltaKey} className="absolute inset-0 rounded-2xl pointer-events-none card-hit-flash" />}
+
+      {visEvent && (
+        <div key={deltaKey} className="vis-reveal" role="status">
+          <div className={`vis-reveal-card ${visEvent}`}>
+            <span className="vis-face front">ВіС</span>
+            <span className="vis-face back">{t(`score.${visEvent}`)}</span>
+          </div>
+        </div>
+      )}
+
       {/* Warm overlay pulse when close to finish */}
       {isCloseToFinish && !isLeader && <div className="absolute inset-0 rounded-2xl pointer-events-none close-finish-overlay" />}
 
@@ -99,7 +154,8 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
               Д
             </span>
           )}
-          {isLeader && <span className="text-gold-to text-xs">👑</span>}
+          {/* Mounts only when this player takes the lead, so the pop plays once per overtake. */}
+          {isLeader && <span className="text-gold-to text-xs crown-pop">👑</span>}
         </div>
       </div>
 
@@ -164,9 +220,12 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
   snapshotActive = false,
   deltas,
   deltaKey,
+  events,
   rounds,
 }) => {
   const { t } = useTranslation();
+  // Deal cards in only for a fresh game (no rounds yet) — not on resume or mid-game remounts.
+  const [dealIn] = useState(!rounds || rounds.length === 0);
   const sorted = [...players].sort((a, b) => (totals[String(b.id)] ?? 0) - (totals[String(a.id)] ?? 0));
   const maxScore = players.length > 0 ? Math.max(...players.map((p) => totals[String(p.id)] ?? 0)) : 0;
   // Only highlight a leader once at least one score is non-zero (game has started).
@@ -215,12 +274,39 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
     }
   }, [dealerId]);
 
+  // FLIP reorder: when an overtake re-sorts the cards, slide each card from its old slot
+  // to the new one. Positions are relative to the grid so page scroll between rounds doesn't skew them.
+  const gridRef = useRef<HTMLDivElement | null>(null);
+  const cardEls = useRef(new Map<number, HTMLDivElement>());
+  const prevPos = useRef(new Map<number, { x: number; y: number }>());
+  const order = sorted.map((p) => p.id).join(',');
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-measure exactly when the card order changes
+  useLayoutEffect(() => {
+    const grid = gridRef.current?.getBoundingClientRect();
+    if (!grid) return;
+    const next = new Map<number, { x: number; y: number }>();
+    for (const [id, el] of cardEls.current) {
+      const r = el.getBoundingClientRect();
+      const pos = { x: r.left - grid.left, y: r.top - grid.top };
+      next.set(id, pos);
+      const prev = prevPos.current.get(id);
+      if (prev && canAnimate(el) && (Math.abs(prev.x - pos.x) > 1 || Math.abs(prev.y - pos.y) > 1)) {
+        el.animate([{ transform: `translate(${prev.x - pos.x}px, ${prev.y - pos.y}px)` }, { transform: 'translate(0, 0)' }], {
+          duration: 520,
+          easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+        });
+      }
+    }
+    prevPos.current = next;
+  }, [order]);
+
   // Always two columns: 3-player games get a full-width "hero" card for the top
   // player (grid-cols-3 made cards too narrow on mobile — truncated names/badges).
   return (
     <div>
       <h2 className="text-muted text-xs font-semibold uppercase tracking-widest mb-3">{t('score.title')}</h2>
-      <div className="grid grid-cols-2 gap-3">
+      <div ref={gridRef} className="grid grid-cols-2 gap-3">
         {sorted.map((player, idx) => (
           <PlayerCard
             key={player.id}
@@ -235,6 +321,12 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
             spanFull={players.length === 3 && idx === 0}
             streak={rounds ? winStreak(rounds, player.id) : 0}
             dealerBadgeRef={player.id === dealerId ? dealerBadgeRef : undefined}
+            event={events?.[String(player.id)]}
+            dealSlot={dealIn ? idx : undefined}
+            cardRef={(el) => {
+              if (el) cardEls.current.set(player.id, el);
+              else cardEls.current.delete(player.id);
+            }}
           />
         ))}
       </div>

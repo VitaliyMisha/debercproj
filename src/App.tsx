@@ -22,7 +22,6 @@ import { useFirebaseSync } from './hooks/useFirebaseSync';
 import { useSound } from './hooks/useSound';
 import { LANG_STORAGE_KEY } from './i18n';
 import {
-  bestOpponent,
   calculateGameTotals,
   clearGameState,
   DEFAULT_GAME_RULES,
@@ -33,6 +32,8 @@ import {
   loadPlayerNames,
   loadWinCounts,
   parseScore,
+  type RoundEvent,
+  roundEvents,
   roundTokens,
   saveGameState,
   savePlayerNames,
@@ -142,6 +143,7 @@ export default function App() {
   const closeFinishFiredRef = useRef<Set<string>>(new Set());
 
   const [roundDeltas, setRoundDeltas] = useState<Record<string, number> | null>(null);
+  const [cardEvents, setCardEvents] = useState<Record<string, RoundEvent> | null>(null);
   const [deltaKey, setDeltaKey] = useState(0);
   const deltaTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -301,10 +303,15 @@ export default function App() {
       const key = String(p.id);
       deltas[key] = (newTotals[p.id] ?? 0) - (totals[p.id] ?? 0);
     }
+    const events = roundEvents(game.rounds, scores, updatedScores);
     if (deltaTimerRef.current) clearTimeout(deltaTimerRef.current);
     setRoundDeltas(deltas);
+    setCardEvents(events);
     setDeltaKey((k) => k + 1);
-    deltaTimerRef.current = setTimeout(() => setRoundDeltas(null), 2000);
+    deltaTimerRef.current = setTimeout(() => {
+      setRoundDeltas(null);
+      setCardEvents(null);
+    }, 2200);
 
     setGame(syncWinner(updatedGame));
     setSnapshotRound(null);
@@ -314,31 +321,12 @@ export default function App() {
     if (soundEnabled) {
       roundSubmit();
 
-      // Б sound — check raw input vs parsed result to distinguish 1st vs 2nd+ Б
-      for (const p of game.players) {
-        if (
-          String(scores[String(p.id)] ?? '')
-            .trim()
-            .toUpperCase() === 'Б'
-        ) {
-          if (updatedScores[String(p.id)] === 'Б') bSound();
-          else secondBSound();
-        }
-      }
-
-      // ВіС resolution sound — fires when the round immediately after a ВіС resolves it
-      if (game.rounds.length > 0) {
-        const lastRound = game.rounds[game.rounds.length - 1];
-        for (const [playerIdStr, val] of Object.entries(lastRound.scores)) {
-          if (String(val).toUpperCase() === 'ВІС') {
-            const playerId = Number(playerIdStr);
-            const ownScore = typeof updatedScores[playerIdStr] === 'number' ? (updatedScores[playerIdStr] as number) : 0;
-            const bestOppScore = bestOpponent(updatedScores, playerId).score;
-            if (ownScore > bestOppScore) visWin();
-            else if (ownScore < bestOppScore) visLose();
-            // ownScore === bestOppScore → tie → no sound (ВіС carries forward)
-          }
-        }
+      // ХВ already sounded on chip click; a ВіС tie carries forward silently.
+      for (const ev of Object.values(events)) {
+        if (ev === 'b') bSound();
+        else if (ev === 'b2') secondBSound();
+        else if (ev === 'visWin') visWin();
+        else if (ev === 'visLose') visLose();
       }
     }
 
@@ -577,6 +565,7 @@ export default function App() {
                 dealerId={snapshotRound !== null ? game.rounds[snapshotRound - 1]?.dealerId : game.dealerId}
                 snapshotActive={snapshotRound !== null}
                 deltas={roundDeltas}
+                events={snapshotRound !== null ? null : cardEvents}
                 deltaKey={deltaKey}
                 rounds={snapshotRound !== null ? game.rounds.slice(0, snapshotRound) : game.rounds}
               />

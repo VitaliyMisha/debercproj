@@ -154,7 +154,7 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({
                     key={round.number}
                     className={`transition-all duration-200
                 ${isSnapshot ? 'border-l-2 border-gold-from bg-gold-from/5' : ''}
-                ${isNew ? 'animate-[slideInStagger_300ms_ease_both]' : ''}
+                ${isNew ? 'round-land' : ''}
               `}
                   >
                     {/* Header row */}

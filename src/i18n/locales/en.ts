@@ -67,6 +67,9 @@ export const en: typeof uk = {
     title: 'Score',
     toWin: '{{n}} pts to win',
     streak: 'Streak: {{n}} rounds in a row',
+    visWin: 'ВіС won!',
+    visLose: 'ВіС → Б',
+    visTie: 'ВіС: one more round',
   },
   winner: {
     title: 'WINNER',

@@ -39,7 +39,7 @@ Single-page React app for scoring the Ukrainian card game Деберц (Deberc).
 - `SetupScreen.tsx` — game setup with `NameInput` for player names
 - `NameInput.tsx` — input with dropdown autocomplete from player name history (iOS-safe)
 - `RecoverScreen.tsx` — shown at startup if saved game exists; offers Resume or New Game
-- `ScoreBoard.tsx` — live scores: leader highlight, Odometer digits, progress bars with quarter ticks, close-to-finish indicator, 🔥 win-streak badge (`winStreak`), FLIP flight of the Д dealer chip
+- `ScoreBoard.tsx` — live scores: leader highlight, Odometer digits, progress bars with quarter ticks, close-to-finish indicator, 🔥 win-streak badge (`winStreak`), FLIP flight of the Д dealer chip, FLIP card reorder on overtake + 👑 pop, per-round `events` (`roundEvents`): ВіС flip-token on the card's top edge, shake + red rim on 2nd Б / ХВ, deal-in of cards for a fresh game
 - `Odometer.tsx` — casino rolling-digit counter (columns keyed from the right so digits roll instead of remounting)
 - `SpectatorSkeleton.tsx` — shimmer placeholder for spectator loading
 - `RoundForm.tsx` — per-player score entry: casino chip buttons (Б/ХВ/ВіС), ± sign chip (iOS numpad lacks minus), `inputMode="numeric"`, Enter/chip advances focus to the next empty field
@@ -64,6 +64,8 @@ Single-page React app for scoring the Ukrainian card game Деберц (Deberc).
 - `'Б'` — first occurrence stored as string `'Б'` (worth 0); every subsequent Б adds `secondBPenalty` (-100)
 - `ХВ` — converted by `parseScore` to `hvPenalty` (number, default -100) before storage
 - `'ВІС'` — stored as uppercase string `'ВІС'` (U+0406); deferred until the next round. Win (own score > best opponent) → earn `hangingScore` bonus. Tie (equal) → carry forward another round. Loss (own score < best opponent) → take a Б (counted in bCounts).
+
+**`Round.tokens`** (`Record<pid, 'Б' | 'ХВ'>`) records which token each player actually took — a 2nd+ Б and a ХВ are the same number in `scores`, so statistics must read `penaltyToken(round, pid, rules)`, never guess from the value. Legacy rounds without `tokens` fall back to the old heuristic. Edit in history pre-fills the token, not `-100`.
 
 `calculateGameTotals` iterates rounds in order, tracks `bCounts` and `pendingVis`, and returns `Record<playerId, totalScore>`.
 
