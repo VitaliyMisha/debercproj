@@ -28,12 +28,14 @@ Run a single test file: `bun x vitest run tests/game.test.ts`
 Single-page React app for scoring the Ukrainian card game Деберц (Deberc). No routing, no server — all state lives in `App.tsx` and persists to `localStorage`.
 
 **Core data flow:**
+
 - `src/types.ts` — `Player`, `Round`, `Game`, `GameRulesConfig`, `SavedGameState` interfaces (source of truth for shape)
 - `src/utils/gameHelpers.ts` — all pure game logic: `calculateGameTotals`, `parseScore`, `isValidScore`, `getVisDisplayValue`, `findWinner`, `validateRoundTokens`, `bestOpponent`, `winStreak`, `winCountKey`, `DEFAULT_GAME_RULES`, `loadWinCounts`, `saveWinCounts`, `generateUniqueId`, `saveGameState`, `loadGameState`, `clearGameState`, `loadPlayerNames`, `savePlayerNames`
 - `src/hooks/useSound.ts` — Web Audio API hook: 12 sounds, all wired (fanfare, chipClick, roundSubmit, undoPop, bSound, secondBSound, hvSound, visPlay, visWin/visLose, closeFinish, newGame)
 - `src/App.tsx` — owns all game state, orchestrates components, calls helpers. `syncWinner` applies winCount transitions exactly once per winner change (null→id increments, id→null reverts, idA→idB does both) — round edits after a win must NOT double-increment
 
 **Key components:**
+
 - `SetupScreen.tsx` — game setup with `NameInput` for player names
 - `NameInput.tsx` — input with dropdown autocomplete from player name history (iOS-safe)
 - `RecoverScreen.tsx` — shown at startup if saved game exists; offers Resume or New Game
@@ -50,12 +52,14 @@ Single-page React app for scoring the Ukrainian card game Деберц (Deberc).
 - `WinnerScreen.tsx` — victory screen with CardSuitsRain + fanfare
 
 **Spectator Mode (Firebase Realtime Database):**
+
 - `src/config/firebase.ts` — ініціалізація; env vars `VITE_FIREBASE_*` у `.env.local` (gitignored) та Vercel Dashboard
 - `useFirebaseSync` (хост) — пише стан гри у `games/${shareCode}` поки `isSharing`; серверне очищення через `onDisconnect(gameRef).remove()`, слухач `.info/connected` перереєструє onDisconnect і перезаписує стан після кожного reconnect
 - `useSpectator` (глядач) — `?watch=<code>` у URL; статуси `loading | live | ended | not_found`; перехід у `'ended'` з дебаунсом 1.5с (Firebase коротко повертає null під час `set()` хоста). **Gotcha**: Firebase не зберігає порожні масиви — `rounds`/`players` відновлюються через `?? []`
 - `ShareSheet.tsx` — QR-код (`qrcode.react`, `QRCodeSVG`) + копіювання посилання; `RoundTimeline.tsx` — таймлайн раундів глядача
 
 **Score entry values (stored in `Round.scores` as `Record<string, number | string>`):**
+
 - Number → plain points (negative allowed)
 - `'Б'` — first occurrence stored as string `'Б'` (worth 0); every subsequent Б adds `secondBPenalty` (-100)
 - `ХВ` — converted by `parseScore` to `hvPenalty` (number, default -100) before storage
@@ -66,6 +70,7 @@ Single-page React app for scoring the Ukrainian card game Деберц (Deberc).
 `getVisDisplayValue` resolves what to show in the history for a ВіС cell — returns `'ВіС'` (lowercase U+0456, display token) when won/pending/tied, `'Б'` on first loss, or penalty number on subsequent losses. Accepts both `'ВіС'` and `'ВІС'` via `.toUpperCase()` normalization.
 
 **localStorage keys:**
+
 - `gameId` — game counter within a "continue" series (reset to 1 on New Game)
 - `gameRules` — `GameRulesConfig` JSON
 - `playerWinCounts` — `Record<winCountKey(name), winCount>`: keyed by normalised player NAME (ids are regenerated every game, so id keys would never match)
@@ -77,6 +82,7 @@ Single-page React app for scoring the Ukrainian card game Деберц (Deberc).
 ## Code style
 
 Linter/formatter: **Biome** (not ESLint/Prettier). Config in `biome.json`:
+
 - 2-space indent, single quotes, semicolons required, ES5 trailing commas, line width 140
 - Import organisation is enforced automatically
 

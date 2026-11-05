@@ -1,6 +1,8 @@
 # PROGRESS.md — Деберц Score App
 
-## Поточний стан (2026-11-04)
+## Поточний стан (2026-11-05)
+
+- **Оновлення залежностей (2026-11-05)**: `lucide-react` 1.68.0→1.69.0, `vite` 8.3.5→8.3.6, `@biomejs/biome` 2.6.4→2.6.5, `jsdom` 30.1.3→**31.0.0** (мажорний, лише тестове середовище — змін у тестах не знадобилось). Biome 2.6.5: `$schema` у `biome.json` оновлено через `biome migrate`; новий форматер Markdown додає порожній рядок після жирних підзаголовків (`CLAUDE.md`, `PROGRESS.md`, `docs/GAME_RULES.md` — лише пробіли). Верифікація: lint ✅, type-check ✅, 176 тестів ✅, build ✅ (precache 31 entries, 706 KiB).
 
 - **Оновлення залежностей (2026-11-04)**: `lucide-react` 1.67.0→1.68.0, `react-i18next` 17.1.11→17.1.12. Більше застарілих немає. Верифікація: lint ✅, type-check ✅, 176 тестів ✅, build ✅.
 
@@ -63,6 +65,7 @@
 **Тести** (`tests/ui/rulesSheet.test.tsx`, 8): порядок розділів, підстановка змінених штрафів (−50/−25 замість дефолтних), інтерполяція `targetScore`, приховування ВіС разом з едж-кейсами й токеном, зміст без ВіС-запису, скрол за якорем, закриття. **Чесність перевірено**: прибирання фільтра `allowVis` валить 2 тести, хардкод `-100` замість інтерполяції — 1.
 
 **Дрібниці по дорозі:**
+
 - Проєкт **не використовує** `@testing-library/jest-dom`, попри його наявність у devDeps — усі тести на `toBeTruthy()`/`toBeNull()`. Новий тест дотримується цього ж патерну.
 - i18next-типи відкидають динамічний ключ разом із `returnObjects` (вимагають `defaultValue: string`) — виклик звужено локально, рантайм захищає `Array.isArray`.
 - `useCallback` навколо `paragraphs` прибрано: функція викликається просто в рендері, мемоізація нічого не давала (Biome це і виявив).
@@ -75,6 +78,7 @@
 Гілка `worktree-deps-update-check` (запушена, 1 коміт `9d19cc2`), у `main` ще не змерджена.
 
 **Що оновлено (усе без жодної зміни коду в `src/` чи `tests/`):**
+
 - **Patch/minor**: `@biomejs/biome` 2.5.10→2.5.12, `@testing-library/react` 16.3.2→16.3.3, `@testing-library/user-event` 14.6.6→14.6.7, `@types/react-dom` 19.2.4→19.2.7, `@vitejs/plugin-react` 6.1.0→6.1.1, `i18next` 26.4.0→26.4.2, `react-i18next` 17.0.12→17.0.13, `postcss` 8.5.26→8.5.28, `lucide-react` 1.33.0→1.43.0, `npm-check-updates` 23.0.2→23.1.0.
 - **Major**: `vitest` 4.1.11→5.0.0 — пройшов «як є», 168 тестів зелені без правок конфігу чи тестів.
 - `biome.json`: `biome migrate --write` підняв `$schema` до 2.5.12.
@@ -85,6 +89,7 @@
 **Верифікація**: `bun run lint` ✅, `bun run type-check` ✅, 168 тестів ✅, production build ✅ (PWA precache 31 entries, 655.83 KiB — без змін проти baseline).
 
 **Дві супутні дрібниці виправлено тією ж сесією:**
+
 - `lucide-react` перенесено з `devDependencies` у `dependencies` — він імпортується з `src/` (GameHeader, GameHistory, PlayerStatistics, RoundHistory), тобто це рантайм-залежність; у devDeps білд впав би при `install --production`.
 - Додано `"type": "module"` у `package.json` — знімає попередження Vite про майбутній дефолтний `configLoader: 'native'`, який не вантажитиме ESM-синтаксис `vite.config.ts` як CommonJS. **Гоча**: це перетворює всі кореневі `.js` на ESM, тому `postcss.config.js` довелось перевести з `module.exports = {}` на `export default {}` — інакше падає Tailwind-пайплайн. Верифікація: збірка дає байт-у-байт той самий CSS (`index-CB7mm4O5.css`, 37.89 kB) і той самий PWA precache (31 entries, 655.83 KiB), що й до змін.
 
@@ -95,6 +100,7 @@
 Через brainstorming → plan → subagent-driven-development пройдено повний цикл по 5 едж-кейсах, знайдених аудитом `docs/GAME_RULES.md` і `tests/helpers.test.ts` (детальний spec і plan — `docs/superpowers/specs/2026-08-22-game-rules-edge-cases-design.md` / `docs/superpowers/plans/2026-08-22-game-rules-edge-cases-plan.md`, обидва гітігноровані, локальні).
 
 **Що з'ясувалось і задокументовано (без зміни коду — поведінка вже була коректною, лише не описаною й не протестованою):**
+
 - **Кілька незалежних підвішених ВіС одночасно** — дозволено; другий ВіС, зіграний поки перший ще не вирішено, "мирно співіснує" з першим ЛИШЕ якщо тим самим раундом опонент теж набрав `0` (нічия для першого ВіС); інакше другий ВіС автоматично програє перший (див. нижче).
 - **Нечисловий токен (`Б` або `ВіС`) у раунді, що мав розв'язати підвішений ВіС** — рахується як `0` для порівняння з опонентом: опонент `> 0` → підвішений ВіС програє (а сам токен, якщо це `Б`, рахується ще й як окрема власна Б-подія — штрафи `secondBPenalty` складаються в одному раунді); опонент **рівно `0`** → нічия, переноситься далі; опонент **`< 0`** (від'ємний рахунок) → підвішений ВіС **виграє** (`0` більше за від'ємне число) — цю третю гілку спершу сформулював неправильно ("0 або менше → нічия"), піймано фінальним code review, виправлено.
 - **Ротація дилера** — точна формула (`(currentIndex + 1) % playerCount`, wrap-around по колу) і що undo відновлює дилера **зі скасованого раунду** (`Round.dealerId`), а не просто рухає на крок назад.
@@ -113,6 +119,7 @@
 **Root cause** (підтверджено живим репро через `firebase/database` `goOffline()`/`goOnline()` у двох табах): `useSpectator.ts` дебаунсив (1.5с) перехід у `'ended'` тільки для НЕ першого callback від `onValue` (`firstCallRef`). Але рефреш сторінки — це завжди новий hook-інстанс, тобто новий "перший" callback. Якщо в момент рефрешу хост саме перепідключається (Firebase `onDisconnect` коротко стирає `games/${code}` до того як reconnect-хендлер його відновить — `useFirebaseSync.ts`), глядач ловить порожній snapshot як перший callback → миттєво `'not_found'`, без грейс-періоду, який рятує той самий сценарій для вже підключеного глядача.
 
 **Фікс**: `useSpectator.ts` — прибрано `firstCallRef`, дебаунс тепер застосовується до КОЖНОГО порожнього snapshot (перший чи ні). Замість "перший → одразу not_found" стан лишається `'loading'` (skeleton) на час дебаунсу; якщо дані так і не прийшли — статус вирішується новим `sawDataRef` (чи бачили колись живі дані для цього `watchId`): `'not_found'` якщо ні, `'ended'` якщо так.
+
 - **Тест-регресія**: `tests/ui/useSpectator.test.tsx` — новий тест "recovers without a further refresh when a spectator reloads mid-blip", симулює точний сценарій (порожній перший snapshot → live дані приходять у вікні дебаунсу → статус `'live'`, без флеша `'not_found'`).
 - Побічний ефект: генуїнно неправильний `?watch=` код тепер показує skeleton на 1.5с довше перед `'not_found'` замість миттєвої помилки — прийнятний компроміс, уникає флешу помилки при тимчасових мережевих гальмуваннях.
 
@@ -129,6 +136,7 @@
 **Критична знахідка**: у `package.json` роками стояв пакет `biome@0.3.3` — це **чужий dotenv-пакет 2016 року**, не лінтер. Його CLI мовчки ігнорував `check` і повертав exit 0 → `bun run lint` був повним no-op, усі попередні «Lint чистий» — фікція. Справжній `@biomejs/biome` не був встановлений взагалі.
 
 **Зроблено:**
+
 1. `package.json`: видалено фейковий `biome` і невикористаний `axios` (ніде в `src/` не імпортувався); додано `@biomejs/biome@2.5.4` у devDependencies. Скрипти `lint`/`lint:fix` без змін — тепер резолвляться у справжній бінарник.
 2. Перший реальний прогін: 86 errors / 45 warnings. `biome check --write` (safe fixes) переформатував 48 файлів — код ніколи не проходив крізь справжній форматер.
 3. `biome.json`: додано `css.parser.tailwindDirectives: true` — без цього Biome не парсить `@theme` у `index.css` (parse error). CSS відформатовано.
@@ -136,6 +144,7 @@
 5. CLAUDE.md: додано секцію Spectator Mode / Firebase (useFirebaseSync, useSpectator, env vars, гоча `?? []`), прибрано неіснуючий `mcp_config.json`.
 
 **Беклог lint закрито тієї ж сесії (2026-07-19) — `bun run lint` повністю чистий.** Ключові рішення:
+
 - **NameInput**: додано повноцінну клавіатурну навігацію за APG combobox-патерном — ArrowUp/Down, Enter (вибір), Escape, `aria-activedescendant` + підсвітка активної опції; фокус лишається на input, опції не табабельні. Розмітка `ul[role=listbox] > li[role=option]` — канонічна, false-positive правила заглушені `biome-ignore` з поясненнями.
 - **RoundHistory**: хедер-toggle отримав `tabIndex={0}` + `onKeyDown` (Enter/Space) — тепер доступний з клавіатури; `<label htmlFor>` у редакторі; тип `onUpdateRound` звужено до `=> boolean` (глядацька гілка повертає `true`); deps ефекту анімації → `[rounds]` (guard по length всередині лишився).
 - **Odometer**: `role="text"` (нестандартна) → `role="img"` з `aria-label` — обидві aria-діагностики закриті.
@@ -183,6 +192,7 @@
 Проведено повне ревью проєкту, всі знайдені баги виправлено (TDD для логіки в `src/utils/`):
 
 **Виправлені баги:**
+
 1. **Подвійний інкремент winCount** — `updateWinner` замінено на `syncWinner` (`App.tsx`) з транзиціями: null→id інкремент, id→null відкат, idA→idB обидва. Редагування раунду після перемоги більше не накручує перемоги; якщо редагування опускає всіх нижче target — `winnerPlayer` скидається і інкремент відкочується. Чиста логіка визначення переможця — `findWinner` у `gameHelpers.ts` (з тестами).
 2. **Stale `snapshotRound`** — скидається у `createGame` і `resetGame`; нова гра зі снапшот-режиму більше не ховає RoundForm.
 3. **Штраф 0** — `parseScore`: `||` → `??` (тести на `hvPenalty: 0`, `secondBPenalty: 0`).
@@ -196,6 +206,7 @@
 11. **PlayerStatistics** — `parseInt(_, 10)`, прибрано optional chaining на required prop, `calculateGameTotals` викликається один раз (був O(гравці × раунди)).
 
 **Дедуплікація:**
+
 - `bestOpponent(scores, pid)` — ВіС-резолюція "мій рахунок vs найкращий опонент" тепер в одному місці (було 3: `calculateGameTotals`, `getVisDisplayValue` ×2, звуковий блок `addRound`).
 - `BottomSheet.tsx` — спільний примітив для `ConfirmSheet`/`PenaltySheet`/`ShareSheet` (backdrop, slide-up, swipe-down у всіх трьох).
 - `Avatar.tsx` + `initialOf()` — кружечок з ініціалом у 6 компонентах.
@@ -205,15 +216,16 @@
 - **Видалено мертвий код**: `PlayerInput.tsx` (ніде не імпортувався, дублював easter-egg логіку PlayerRow).
 
 **i18n:**
+
 - Захардкоджені рядки → `t()`: `RoundTimeline` (кнопка "Повернутись до гри"), `PenaltySheet` (Закрити + підказка), `PlayerRow` (title дилера). Нові ключі: `timeline.backToGame`, `common.close`, `common.sheetCloseHint`, `setup.setDealer`.
 - `GameHistory` — плюралізація через `Intl.PluralRules` (виправлено «22 перемог» → «22 перемоги», «11 перемоги» → «11 перемог»).
 
 **Інфраструктура:**
+
 - `tsconfig.json` — до `include` додано `tests/` (раніше тести не проходили type-check взагалі).
 - Нові тести: parseScore zero penalties, `findWinner` (4), `validateRoundTokens` (5), `bestOpponent` (3), `winCountKey` (2), savedGame+gameRules (2). Разом 107 → 125.
 
 **Оновлення 2026-07-05:** обидва пункти з "відомих обмежень" закриті — Firebase-записи чистяться через `onDisconnect`, winner-транзиції покриті RTL-тестом `tests/ui/appWinner.test.tsx`.
-
 
 ### Стан на 2026-05-26 (попередні сесії)
 
