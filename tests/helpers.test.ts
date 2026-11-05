@@ -8,6 +8,8 @@ import {
   getVisDisplayValue,
   isValidScore,
   parseScore,
+  penaltyToken,
+  roundTokens,
   validateRoundTokens,
   winStreak,
 } from '../src/utils/gameHelpers';
@@ -656,5 +658,39 @@ describe('winStreak', () => {
       round(2, { '1': 'Б', '2': 40 }), // 0 < 40 — loss
     ];
     expect(winStreak(rounds, 1)).toBe(0);
+  });
+});
+
+// ─── roundTokens / penaltyToken ──────────────────────────────────────────────
+
+describe('roundTokens', () => {
+  it('records Б and ХВ from raw input, case/space-insensitive', () => {
+    expect(roundTokens({ '1': ' б ', '2': 'хв', '3': '120', '4': 'ВІС' })).toEqual({ '1': 'Б', '2': 'ХВ' });
+  });
+
+  it('returns an empty object when nobody took a token', () => {
+    expect(roundTokens({ '1': '-100', '2': '50' })).toEqual({});
+  });
+});
+
+describe('penaltyToken', () => {
+  const r = (scores: Record<string, number | string>, tokens?: Record<string, 'Б' | 'ХВ'>) => ({ ...round(1, scores), tokens });
+
+  it('second Б stored as a penalty number is still a Б when tokens are recorded', () => {
+    expect(penaltyToken(r({ '1': -100 }, { '1': 'Б' }), '1', rules)).toBe('Б');
+  });
+
+  it('ХВ stored as a penalty number is a ХВ when tokens are recorded', () => {
+    expect(penaltyToken(r({ '1': -100 }, { '1': 'ХВ' }), '1', rules)).toBe('ХВ');
+  });
+
+  it('a typed -100 is plain points when tokens are recorded', () => {
+    expect(penaltyToken(r({ '1': -100 }, {}), '1', rules)).toBeNull();
+  });
+
+  it('legacy rounds (no tokens): Б string is Б, hvPenalty number is ХВ', () => {
+    expect(penaltyToken(r({ '1': 'Б' }), '1', rules)).toBe('Б');
+    expect(penaltyToken(r({ '1': -100 }), '1', rules)).toBe('ХВ');
+    expect(penaltyToken(r({ '1': 40 }), '1', rules)).toBeNull();
   });
 });

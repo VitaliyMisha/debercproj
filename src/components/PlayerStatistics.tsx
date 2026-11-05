@@ -2,7 +2,7 @@ import { BarChart3 } from 'lucide-react';
 import type React from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Game, GameRulesConfig, Player } from '../types';
-import { calculateGameTotals, getVisDisplayValue } from '../utils/gameHelpers';
+import { calculateGameTotals, getVisDisplayValue, penaltyToken } from '../utils/gameHelpers';
 import { Avatar } from './Avatar';
 
 interface PlayerStatisticsProps {
@@ -58,10 +58,16 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
       let effectiveScore = 0;
       let countInRounds = true;
 
-      if (score === 'Б') {
+      const token = penaltyToken(round, String(playerId), gameRules);
+
+      if (token === 'Б') {
         bCount++;
-        effectiveScore = bCount >= 2 ? secondBPenalty : 0;
-        if (bCount >= 2) negativeRounds++;
+        effectiveScore = typeof score === 'number' ? score : bCount >= 2 ? secondBPenalty : 0;
+        if (effectiveScore < 0) negativeRounds++;
+      } else if (token === 'ХВ') {
+        hvCount++;
+        effectiveScore = typeof score === 'number' ? score : hvPenalty;
+        if (effectiveScore < 0) negativeRounds++;
       } else if (typeof score === 'string' && score.toUpperCase() === 'ВІС') {
         visCount++;
         countInRounds = false;
@@ -72,23 +78,14 @@ const PlayerStatistics: React.FC<PlayerStatisticsProps> = ({ game, players, game
         }
       } else if (typeof score === 'number') {
         effectiveScore = score;
-        if (score === hvPenalty) hvCount++;
         if (score > 0) positiveRounds++;
         else if (score < 0) negativeRounds++;
       } else {
-        const upper = String(score).toUpperCase();
-        if (upper === 'ХВ') {
-          hvCount++;
-          effectiveScore = hvPenalty;
-          negativeRounds++;
-        } else {
-          const n = parseInt(score, 10);
-          if (!Number.isNaN(n)) {
-            effectiveScore = n;
-            if (n === hvPenalty) hvCount++;
-            if (n > 0) positiveRounds++;
-            else if (n < 0) negativeRounds++;
-          }
+        const n = parseInt(score, 10);
+        if (!Number.isNaN(n)) {
+          effectiveScore = n;
+          if (n > 0) positiveRounds++;
+          else if (n < 0) negativeRounds++;
         }
       }
 

@@ -33,6 +33,7 @@ import {
   loadPlayerNames,
   loadWinCounts,
   parseScore,
+  roundTokens,
   saveGameState,
   savePlayerNames,
   saveWinCounts,
@@ -280,7 +281,13 @@ export default function App() {
     game.players.forEach((p) => {
       updatedScores[p.id] = parseScore(scores[String(p.id)], p.id.toString(), game.rounds, gameRules);
     });
-    const newRound: Round = { id: roundNumber, number: roundNumber, scores: updatedScores, dealerId: game.dealerId };
+    const newRound: Round = {
+      id: roundNumber,
+      number: roundNumber,
+      scores: updatedScores,
+      dealerId: game.dealerId,
+      tokens: roundTokens(scores),
+    };
     const nextDealerIndex = (game.players.findIndex((p) => p.id === game.dealerId) + 1) % game.players.length;
     const updatedGame: Game = {
       ...game,
@@ -354,7 +361,9 @@ export default function App() {
     Object.entries(newScores).forEach(([playerId, scoreStr]) => {
       convertedScores[playerId] = parseScore(scoreStr, playerId, priorRounds, gameRules);
     });
-    const updatedRounds = game.rounds.map((r) => (r.number === roundNumber ? { ...r, scores: convertedScores } : r));
+    const updatedRounds = game.rounds.map((r) =>
+      r.number === roundNumber ? { ...r, scores: convertedScores, tokens: roundTokens(newScores) } : r
+    );
     const updatedGame: Game = { ...game, rounds: updatedRounds };
     setGame(syncWinner(updatedGame));
     setError('');

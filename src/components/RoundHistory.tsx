@@ -57,7 +57,8 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({
     const initial: Record<string, string> = {};
     players.forEach((p) => {
       const s = round.scores[String(p.id)];
-      initial[String(p.id)] = s !== undefined ? String(s) : '';
+      // A 2nd+ Б is stored as a penalty number — edit it as Б so re-saving keeps the token.
+      initial[String(p.id)] = round.tokens?.[String(p.id)] ?? (s !== undefined ? String(s) : '');
     });
     setEditScores(initial);
   };

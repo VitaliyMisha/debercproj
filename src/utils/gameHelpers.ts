@@ -56,6 +56,25 @@ export const parseScore = (value: string | number, pid: string, playerRounds: Ro
   return Number.isNaN(parsed) ? 0 : parsed;
 };
 
+/** Penalty tokens (Б / ХВ) the players typed this round, keyed by player id. */
+export const roundTokens = (raw: Record<string, string | number>): Record<string, 'Б' | 'ХВ'> => {
+  const tokens: Record<string, 'Б' | 'ХВ'> = {};
+  for (const [pid, v] of Object.entries(raw)) {
+    const t = String(v).trim().toUpperCase();
+    if (t === 'Б' || t === 'ХВ') tokens[pid] = t;
+  }
+  return tokens;
+};
+
+/** Б / ХВ actually taken in this cell. Legacy rounds (no `tokens`) fall back to guessing from the stored value. */
+export const penaltyToken = (round: Round, pid: string, gameRules: GameRulesConfig): 'Б' | 'ХВ' | null => {
+  if (round.tokens) return round.tokens[pid] ?? null;
+  const s = round.scores[pid];
+  if (s === 'Б') return 'Б';
+  if (s === gameRules.hvPenalty || String(s).toUpperCase() === 'ХВ') return 'ХВ';
+  return null;
+};
+
 /**
  * Returns the value to display in round history for a given score cell.
  * For ВіС: shows 'ВіС' while pending or won, 'Б' / penalty when lost.
