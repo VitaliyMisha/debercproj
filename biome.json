@@ -13,7 +13,8 @@
     }
   },
   "files": {
-    "ignoreUnknown": true
+    "ignoreUnknown": true,
+    "includes": ["**", "!.claude"]
   },
   "formatter": {
     "enabled": true,

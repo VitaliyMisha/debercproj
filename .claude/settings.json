@@ -2,5 +2,18 @@
   "enabledPlugins": {
     "superpowers@claude-plugins-official": true,
     "ui-ux-pro-max@ui-ux-pro-max-skill": true
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '⚠️  НАГАДУВАННЯ: Оновив PROGRESS.md перед завершенням? (дата, завершені задачі, next steps)'"
+          }
+        ]
+      }
+    ]
   }
 }
