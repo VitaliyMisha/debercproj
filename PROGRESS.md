@@ -5,9 +5,10 @@
 Дописуй сюди коротко. Коли запис стає історією, переноси його в архів, а не нарощуй цей файл
 (стелю стереже `tests/claudeConfig.test.ts`).
 
-## Поточний стан (2026-11-14)
+## Поточний стан (2026-11-17)
 
 - Усе влито в `main`, відкритих гілок немає. Перевірки: lint ✅, type-check ✅, тести ✅, build ✅.
+- **2026-11-17 — deps**: patch/minor (firebase 13.4, lucide 1.74, vite 8.3.8, biome 2.6.8, tailwind 4.3.5 …) + MAJOR i18next 27 / react-i18next 18. Усе зелене, 202 тести, precache 31 / 709 KiB, audit 4 (без змін).
 - **2026-11-14 — налаштування Claude Code приведено до best practices**: `CLAUDE.md` скорочено з ~2,6k до ~1,1k токенів (разом із `PROGRESS.md` на старті сесії тепер іде ~1,7k замість ~18,5k).
   Доменні пастки рознесено по `.claude/rules/*.md` з `paths:`, процедури винесено в skills `/deps-refresh` і `/ship`.
   Історію з `PROGRESS.md` (~16k токенів) перенесено в `docs/claude-history/`. Розкладку стереже `tests/claudeConfig.test.ts`.
