@@ -385,7 +385,8 @@
 .odometer-strip {
   display: flex;
   flex-direction: column;
-  transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+  /* springy settle, overshoot kept ~3%: the strip ends at 0/9, a bigger overshoot flashes an empty cell */
+  transition: transform 700ms cubic-bezier(0.34, 1.12, 0.64, 1);
   will-change: transform;
 }
 
@@ -435,6 +436,107 @@
 }
 .score-delta.neg {
   color: #f87171;
+}
+
+/* HoldButton: early release shakes "no"; the confirm check pops in. */
+@keyframes holdNope {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(5px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+.hold-nope {
+  animation: holdNope 360ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+.hold-btn {
+  -webkit-touch-callout: none;
+}
+
+.hold-check {
+  animation: crownPop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* UndoToast: rises in, and its outline drains around the pill over the countdown. */
+@keyframes undoToastIn {
+  from {
+    opacity: 0;
+    /* transform only — Tailwind's -translate-x-1/2 lives on the separate `translate` property */
+    transform: translateY(16px) scale(0.96);
+  }
+}
+
+.undo-toast {
+  animation: undoToastIn 320ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes undoDrain {
+  to {
+    stroke-dashoffset: 100;
+  }
+}
+
+.undo-toast-outline {
+  color: #fca5a5;
+  stroke-width: 1.5;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 0;
+  animation: undoDrain linear forwards;
+}
+
+/* ShareSheet copy button: copy icon spins out, check pops in, label rolls up (springy overshoot). */
+.copy-btn .copy-from,
+.copy-btn .copy-to {
+  transition:
+    transform 380ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 200ms ease;
+}
+.copy-btn .copy-to {
+  opacity: 0;
+}
+.copy-icons .copy-to {
+  transform: scale(0.4);
+}
+.copy-labels .copy-to {
+  transform: translateY(100%);
+}
+.copy-btn[data-copied="true"] .copy-from {
+  opacity: 0;
+}
+.copy-btn[data-copied="true"] .copy-icons .copy-from {
+  transform: rotate(-40deg) scale(0.4);
+}
+.copy-btn[data-copied="true"] .copy-labels .copy-from {
+  transform: translateY(-100%);
+}
+.copy-btn[data-copied="true"] .copy-to {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes odometerSignIn {
+  from {
+    opacity: 0;
+    transform: translateY(-0.4em);
+  }
+}
+
+.odometer-sign {
+  display: inline-block;
+  animation: odometerSignIn 300ms cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {

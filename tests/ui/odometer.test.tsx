@@ -20,6 +20,12 @@ describe('Odometer', () => {
     expect(stripOffsets(container)).toEqual(['translateY(-5em)', 'translateY(-2em)', 'translateY(-3em)']);
   });
 
+  it('cascades the roll right-to-left like a carry: ones first, each higher column 60ms later', () => {
+    const { container } = render(<Odometer value={523} />);
+    const delays = Array.from(container.querySelectorAll<HTMLElement>('.odometer-strip')).map((s) => s.style.transitionDelay);
+    expect(delays).toEqual(['120ms', '60ms', '0ms']);
+  });
+
   it('renders a minus sign for negative values', () => {
     render(<Odometer value={-40} />);
     expect(screen.getByLabelText('-40').textContent).toContain('-');

@@ -14,7 +14,7 @@ paths:
 - **Іконки**: структурні беруться ТІЛЬКИ з `lucide-react` (SVG), не emoji. Контентні emoji (👑 🏆 🔥 🃏) дозволені.
 - **Motion**: JS-анімації (WAAPI, View Transitions) мусять перевіряти `prefers-reduced-motion` і мати `typeof`-guard для jsdom (`el.animate`, `document.startViewTransition`).
   CSS-анімації глушить media-query в `src/styles/index.css`.
-- **Спільні примітиви, не дублюй їх**: `BottomSheet` (основа `ConfirmSheet`, `PenaltySheet`, `ShareSheet`, `RulesSheet`), `Avatar` (`initialOf`), `LangToggleButton`.
+- **Спільні примітиви, не дублюй їх**: `BottomSheet` (основа `PenaltySheet`, `ShareSheet`, `RulesSheet`), `HoldButton` (підтвердження утриманням замість confirm-шторки: «Нова гра», undo раунду), `Avatar` (`initialOf`), `LangToggleButton`.
   Шторку тримай локальним станом компонента, що її відкриває, а не в `App.tsx`.
 - **Keydown на контейнері з вкладеними кнопками** фільтруй через `e.target === e.currentTarget`, бо keydown спливає (так було з хедером `RoundHistory`).
 - `RoundForm`: поля `inputMode="numeric"`. iOS numpad не має мінуса, тому є чіп **±**. Enter або натискання чіпа переводить фокус на наступне порожнє поле.

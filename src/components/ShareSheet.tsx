@@ -1,3 +1,4 @@
+import { Check, Copy } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -55,12 +56,26 @@ export const ShareSheet: React.FC<ShareSheetProps> = ({ shareUrl, onStopSharing,
         <button
           type="button"
           onClick={handleCopy}
-          className="w-full h-12 rounded-2xl font-semibold text-sm text-white
+          data-copied={copied}
+          aria-label={copied ? t('share.copied') : t('share.copyLink')}
+          className="copy-btn w-full h-12 rounded-2xl font-semibold text-sm text-white
             bg-white/10 border border-white/15
-            hover:border-white/30 transition-all duration-150 active:scale-[0.97]"
+            hover:border-white/30 transition-all duration-150 active:scale-[0.97]
+            inline-flex items-center justify-center gap-2"
         >
-          {copied ? t('share.copied') : t('share.copyLink')}
+          {/* Icon and label cross-roll: copy icon spins out, check pops in, text rolls up. */}
+          <span className="copy-icons relative w-4 h-4" aria-hidden="true">
+            <Copy className="copy-from absolute inset-0 w-4 h-4" />
+            <Check className="copy-to absolute inset-0 w-4 h-4 text-emerald-300" />
+          </span>
+          <span className="copy-labels relative overflow-hidden h-5 leading-5 text-center" aria-hidden="true">
+            <span className="copy-from block">{t('share.copyLink')}</span>
+            <span className="copy-to absolute inset-x-0 top-0 block">{t('share.copied')}</span>
+          </span>
         </button>
+        <span className="sr-only" role="status">
+          {copied ? t('share.copied') : ''}
+        </span>
 
         {/* Stop sharing */}
         <button

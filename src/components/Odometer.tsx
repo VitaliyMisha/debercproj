@@ -1,6 +1,7 @@
 import type React from 'react';
 
 const DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+const CARRY_MS = 60;
 
 interface OdometerProps {
   value: number;
@@ -22,7 +23,11 @@ export const Odometer: React.FC<OdometerProps> = ({ value, instant = false }) =>
 
   return (
     <span className="odometer" role="img" aria-label={String(value)}>
-      {negative && <span aria-hidden="true">-</span>}
+      {negative && (
+        <span className="odometer-sign" aria-hidden="true">
+          -
+        </span>
+      )}
       {digits.map((d, i) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: intentional — keys count from the right so columns roll instead of remounting (99 → 102)
         <span key={digits.length - i} className="odometer-digit" aria-hidden="true">
@@ -31,6 +36,8 @@ export const Odometer: React.FC<OdometerProps> = ({ value, instant = false }) =>
             style={{
               transform: `translateY(-${Number(d)}em)`,
               transition: instant ? 'none' : undefined,
+              // carry cascade: ones roll first, each higher column a beat later
+              transitionDelay: `${(digits.length - 1 - i) * CARRY_MS}ms`,
             }}
           >
             {DIGITS.map((n) => (

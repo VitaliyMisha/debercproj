@@ -18,6 +18,7 @@ import LangToggleButton from './components/LangToggleButton';
 import RecoverScreen from './components/RecoverScreen';
 import ShareSheet from './components/ShareSheet';
 import SpectatorSkeleton from './components/SpectatorSkeleton';
+import UndoToast from './components/UndoToast';
 import { useFirebaseSync } from './hooks/useFirebaseSync';
 import { useSound } from './hooks/useSound';
 import { LANG_STORAGE_KEY } from './i18n';
@@ -90,6 +91,8 @@ export default function App() {
   const [game, setGame] = useState<Game | null>(null);
   const [scores, setScores] = useState<Record<string, number | string>>({});
   const [winnerPlayer, setWinnerPlayer] = useState<number | null>(null);
+  /** Round number the undo toast offers to take back; it hides itself once rounds.length moves on. */
+  const [undoToastRound, setUndoToastRound] = useState<number | null>(null);
   const [error, setError] = useState<string>('');
   const [hasHistoryShown, setHasHistoryShown] = useState(false);
   const [showStatistics, setShowStatistics] = useState(false);
@@ -314,6 +317,7 @@ export default function App() {
     }, 2200);
 
     setGame(syncWinner(updatedGame));
+    setUndoToastRound(roundNumber);
     setSnapshotRound(null);
     setScores(Object.fromEntries(updatedGame.players.map((p) => [p.id.toString(), ''])));
     setError('');
@@ -610,6 +614,18 @@ export default function App() {
                 snapshotRound={snapshotRound}
                 onUndoLastRound={winnerObj === null ? handleUndoLastRound : undefined}
               />
+
+              {undoToastRound !== null && undoToastRound === game.rounds.length && winnerObj === null && (
+                <UndoToast
+                  key={deltaKey}
+                  roundNumber={undoToastRound}
+                  onUndo={() => {
+                    setUndoToastRound(null);
+                    handleUndoLastRound();
+                  }}
+                  onExpire={() => setUndoToastRound(null)}
+                />
+              )}
 
               {game.rounds.length > 0 && <StatsToggle shown={showStatistics} onToggle={() => setShowStatistics((prev) => !prev)} />}
 

@@ -10,7 +10,7 @@ interface BottomSheetProps {
 
 /**
  * Shared bottom sheet: blurred backdrop (tap to close), slide-up animation,
- * drag handle and swipe-down-to-close. Used by ConfirmSheet, PenaltySheet
+ * drag handle and swipe-down-to-close. Used by PenaltySheet
  * and ShareSheet so they stay visually and behaviourally consistent.
  */
 export const BottomSheet: React.FC<BottomSheetProps> = ({ onClose, ariaLabelledBy, children }) => {

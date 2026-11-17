@@ -10,8 +10,6 @@ export const en: typeof uk = {
     soundOn: 'Enable sound',
     newGame: 'New Game',
     langToggle: 'УК',
-    confirmNewGame: 'Start a new game?',
-    confirmDesc: 'Current progress will be lost.',
   },
   setup: {
     playersLabel: 'Players',
@@ -59,9 +57,6 @@ export const en: typeof uk = {
     save: 'Save',
     cancelEdit: 'Cancel',
     invalidHint: 'Enter numbers or Б / ХВ / ВІС',
-    confirmUndo: 'Undo last round?',
-    confirmUndoDesc: 'The round result will be removed.',
-    undoConfirmLabel: 'Undo round',
   },
   score: {
     title: 'Score',
@@ -87,6 +82,9 @@ export const en: typeof uk = {
     newGame: 'New Game',
   },
   common: {
+    holdHint: 'Hold…',
+    roundAdded: 'Round {{n}} added',
+    undoRoundAria: 'Undo adding round {{n}}',
     cancel: 'Cancel',
     close: 'Close',
     sheetCloseHint: 'Swipe down or tap the backdrop to close',
@@ -208,7 +206,7 @@ export const en: typeof uk = {
   share: {
     title: 'Share Game',
     copyLink: 'Copy Link',
-    copied: '✓ Copied',
+    copied: 'Copied',
     stopSharing: 'Stop Sharing',
     spectatorBanner: '👁 Spectator Mode · Game #{{id}}',
     spectatorLoading: 'Loading game...',

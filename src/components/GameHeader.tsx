@@ -3,7 +3,7 @@ import type React from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { GameRulesConfig } from '../types';
-import { ConfirmSheet } from './ConfirmSheet';
+import { HoldButton } from './HoldButton';
 import { LangToggleButton } from './LangToggleButton';
 import { RulesSheet } from './RulesSheet';
 
@@ -38,16 +38,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
   gameRules,
 }) => {
   const { t } = useTranslation();
-  const [confirming, setConfirming] = useState(false);
   const [showRules, setShowRules] = useState(false);
-
-  const handleNewGame = () => {
-    if (hasRounds) {
-      setConfirming(true);
-    } else {
-      onNewGame?.();
-    }
-  };
 
   return (
     <>
@@ -126,36 +117,35 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
                 <div />
               )}
 
-              {onNewGame && (
-                <button
-                  type="button"
-                  onClick={handleNewGame}
-                  className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-muted text-sm font-semibold
-                    hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]
-                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-to/60"
-                >
-                  {t('header.newGame')}
-                </button>
-              )}
+              {onNewGame &&
+                (hasRounds ? (
+                  // Progress would be lost — confirm by holding instead of a confirm sheet.
+                  <HoldButton
+                    label={t('header.newGame')}
+                    ariaLabel={t('header.newGame')}
+                    onComplete={onNewGame}
+                    fill="rgba(185, 28, 28, 0.55)"
+                    className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-muted text-sm font-semibold
+                      hover:border-white/30 hover:text-white transition-colors duration-150
+                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-to/60"
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={onNewGame}
+                    className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-muted text-sm font-semibold
+                      hover:border-white/30 hover:text-white transition-all duration-150 active:scale-[0.97]
+                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-to/60"
+                  >
+                    {t('header.newGame')}
+                  </button>
+                ))}
             </div>
           )}
         </div>
       </div>
 
       {showRules && gameRules && <RulesSheet gameRules={gameRules} targetScore={targetScore} onClose={() => setShowRules(false)} />}
-
-      {confirming && (
-        <ConfirmSheet
-          title={t('header.confirmNewGame')}
-          description={t('header.confirmDesc')}
-          confirmLabel={t('header.newGame')}
-          onConfirm={() => {
-            setConfirming(false);
-            onNewGame?.();
-          }}
-          onCancel={() => setConfirming(false)}
-        />
-      )}
     </>
   );
 };

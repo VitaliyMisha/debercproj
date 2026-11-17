@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import '../../src/i18n';
@@ -84,8 +84,8 @@ describe('Dealer rotation (regression)', () => {
     await playRoundFor(user, ['10', '10', '10', '10']); // round 2, dealer Богдан
 
     await openHistory(user);
-    await user.click(screen.getByRole('button', { name: 'Скасувати останній раунд' }));
-    await user.click(screen.getByRole('button', { name: 'Скасувати раунд' }));
+    // Undo is a HoldButton now; a detail-0 click is the assistive-tech activation that confirms at once.
+    fireEvent.click(screen.getByRole('button', { name: 'Скасувати останній раунд' }));
 
     // Re-play round 2: dealer must be Богдан again, proving undo restored the
     // pre-round-2 dealer rather than leaving the post-round-1 rotation in place.

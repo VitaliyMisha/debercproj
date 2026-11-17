@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { GameRulesConfig, Player, Round } from '../types';
 import { getVisDisplayValue, isValidScore, validateRoundTokens } from '../utils/gameHelpers';
-import { ConfirmSheet } from './ConfirmSheet';
+import { HoldButton } from './HoldButton';
 
 interface RoundHistoryProps {
   rounds: Round[];
@@ -29,7 +29,6 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({
   const { t } = useTranslation();
   const [editingRound, setEditingRound] = useState<number | null>(null);
   const [editScores, setEditScores] = useState<Record<string, string>>({});
-  const [confirmingUndo, setConfirmingUndo] = useState(false);
   const [collapsed, setCollapsed] = useState(true);
   const prevLengthRef = useRef(rounds.length);
   const [newRoundId, setNewRoundId] = useState<number | null>(null);
@@ -118,22 +117,23 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({
           </div>
           <div className="flex items-center gap-2">
             {!collapsed && onUndoLastRound && !readOnly && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setConfirmingUndo(true);
-                }}
-                aria-label={t('history.undoAriaLabel')}
-                className="h-7 px-3 rounded-full text-xs font-bold transition-all duration-150 active:scale-[0.93] inline-flex items-center gap-1"
-                style={{
-                  background: '#7F1D1D88',
-                  color: '#FCA5A5',
-                  border: '1px solid #DC262655',
-                }}
-              >
-                <Undo2 className="w-3 h-3" aria-hidden="true" /> {t('history.undoBtn')}
-              </button>
+              // stopPropagation: the header toggles collapse on click; holding must not collapse it.
+              // biome-ignore lint/a11y/noStaticElementInteractions: wrapper only stops the click bubbling to the header toggle
+              // biome-ignore lint/a11y/useKeyWithClickEvents: keyboard is handled by the HoldButton itself
+              <span onClick={(e) => e.stopPropagation()}>
+                <HoldButton
+                  label={
+                    <>
+                      <Undo2 className="w-3 h-3" aria-hidden="true" /> {t('history.undoBtn')}
+                    </>
+                  }
+                  ariaLabel={t('history.undoAriaLabel')}
+                  onComplete={onUndoLastRound}
+                  fill="#B91C1C"
+                  className="h-7 px-3 rounded-full text-xs font-bold inline-flex items-center"
+                  style={{ background: '#7F1D1D88', color: '#FCA5A5', border: '1px solid #DC262655' }}
+                />
+              </span>
             )}
             <span className="text-muted text-xs bg-white/5 px-2 py-0.5 rounded-full">{t('history.total', { n: rounds.length })}</span>
           </div>
@@ -277,19 +277,6 @@ const RoundHistory: React.FC<RoundHistoryProps> = ({
           </div>
         )}
       </div>
-
-      {confirmingUndo && (
-        <ConfirmSheet
-          title={t('history.confirmUndo')}
-          description={t('history.confirmUndoDesc')}
-          confirmLabel={t('history.undoConfirmLabel')}
-          onConfirm={() => {
-            setConfirmingUndo(false);
-            onUndoLastRound?.();
-          }}
-          onCancel={() => setConfirmingUndo(false)}
-        />
-      )}
     </>
   );
 };

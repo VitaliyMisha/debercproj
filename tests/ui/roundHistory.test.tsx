@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import '../../src/i18n';
+import { HOLD_MS } from '../../src/components/HoldButton';
 import RoundHistory from '../../src/components/RoundHistory';
 import type { Player, Round } from '../../src/types';
 import { DEFAULT_GAME_RULES } from '../../src/utils/gameHelpers';
@@ -82,17 +83,24 @@ describe('RoundHistory — inline edit validation', () => {
     expect(header.getAttribute('aria-expanded')).toBe('false');
   });
 
-  it('Enter on the nested undo button opens the undo confirm, not the collapse toggle (regression)', async () => {
+  it('holding Enter on the nested undo button undoes without collapsing the history (regression)', async () => {
     const user = userEvent.setup();
+    const onUndo = vi.fn();
     render(
-      <RoundHistory rounds={rounds} players={players} onUpdateRound={vi.fn()} gameRules={DEFAULT_GAME_RULES} onUndoLastRound={vi.fn()} />
+      <RoundHistory rounds={rounds} players={players} onUpdateRound={vi.fn()} gameRules={DEFAULT_GAME_RULES} onUndoLastRound={onUndo} />
     );
     await user.click(screen.getByRole('button', { name: 'Показати або сховати історію раундів' }));
-    screen.getByRole('button', { name: 'Скасувати останній раунд' }).focus();
-    await user.keyboard('{Enter}');
+    const undo = screen.getByRole('button', { name: 'Скасувати останній раунд' });
 
-    // the keydown bubbles to the header — it must NOT collapse the history nor swallow the button's click
-    expect(screen.getByText('Скасувати останній раунд?')).toBeTruthy();
+    vi.useFakeTimers();
+    try {
+      // the keydown bubbles to the header — it must NOT collapse the history nor block the hold
+      fireEvent.keyDown(undo, { key: 'Enter' });
+      act(() => vi.advanceTimersByTime(HOLD_MS));
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(onUndo).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('button', { name: 'Показати або сховати історію раундів' }).getAttribute('aria-expanded')).toBe('true');
   });
 

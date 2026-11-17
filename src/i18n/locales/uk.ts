@@ -8,8 +8,6 @@ export const uk = {
     soundOn: 'Увімкнути звук',
     newGame: 'Нова гра',
     langToggle: 'EN',
-    confirmNewGame: 'Розпочати нову гру?',
-    confirmDesc: 'Поточний прогрес буде втрачено.',
   },
   setup: {
     playersLabel: 'Гравців',
@@ -57,9 +55,6 @@ export const uk = {
     save: 'Зберегти',
     cancelEdit: 'Відмінити',
     invalidHint: 'Вкажіть числа або Б / ХВ / ВІС',
-    confirmUndo: 'Скасувати останній раунд?',
-    confirmUndoDesc: 'Раунд буде видалено, рахунки повернуться до попереднього стану.',
-    undoConfirmLabel: 'Скасувати раунд',
   },
   score: {
     title: 'Рахунок',
@@ -85,6 +80,9 @@ export const uk = {
     newGame: 'Нова гра',
   },
   common: {
+    holdHint: 'Утримуйте…',
+    roundAdded: 'Раунд {{n}} додано',
+    undoRoundAria: 'Скасувати додавання раунду {{n}}',
     cancel: 'Скасувати',
     close: 'Закрити',
     sheetCloseHint: 'Проведіть вниз або торкніться фону щоб закрити',
@@ -209,7 +207,7 @@ export const uk = {
   share: {
     title: 'Поділитися грою',
     copyLink: 'Копіювати посилання',
-    copied: '✓ Скопійовано',
+    copied: 'Скопійовано',
     stopSharing: 'Зупинити шеринг',
     spectatorBanner: '👁 Режим перегляду · Гра #{{id}}',
     spectatorLoading: 'Завантаження гри...',

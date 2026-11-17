@@ -115,3 +115,39 @@ describe('App — winner winCount transitions (regression)', () => {
     expect(screen.getAllByLabelText(/Рахунок для/).length).toBeGreaterThan(0);
   });
 });
+
+describe('App — undo toast after a round', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+  afterEach(cleanup);
+
+  const startGame = async (user: ReturnType<typeof userEvent.setup>) => {
+    await user.type(screen.getByPlaceholderText('Гравець 1'), 'Аліса');
+    await user.type(screen.getByPlaceholderText('Гравець 2'), 'Богдан');
+    await user.click(screen.getByRole('button', { name: '🎴 Почати гру' }));
+  };
+
+  it('offers to undo the round just added, and the undo removes it', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await startGame(user);
+
+    await playRound(user, '100', '20');
+    expect(screen.getByText('Всього: 1')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'Скасувати додавання раунду 1' }));
+
+    await waitFor(() => expect(screen.queryByText('Всього: 1')).toBeNull());
+    expect(screen.queryByRole('button', { name: 'Скасувати додавання раунду 1' })).toBeNull();
+  });
+
+  it('does not offer undo over the winner screen', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await startGame(user);
+
+    await playRound(user, '1020', '0');
+    expect(await screen.findByText('ПЕРЕМОЖЕЦЬ')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Скасувати додавання раунду 1' })).toBeNull();
+  });
+});
