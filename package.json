@@ -13,30 +13,30 @@
     "preview": "bun x vite preview"
   },
   "dependencies": {
-    "firebase": "^13.2.0",
-    "i18next": "^26.7.1",
-    "lucide-react": "^1.69.0",
+    "firebase": "^13.4.0",
+    "i18next": "^26.7.2",
+    "lucide-react": "^1.74.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "react-i18next": "^17.1.12"
+    "react-i18next": "^17.1.13"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.6.5",
-    "@tailwindcss/postcss": "^4.3.4",
+    "@biomejs/biome": "^2.6.8",
+    "@tailwindcss/postcss": "^4.3.5",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
-    "@testing-library/user-event": "^14.6.8",
+    "@testing-library/user-event": "^14.6.12",
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6.2.1",
-    "jsdom": "^31.0.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "jsdom": "^31.0.1",
     "npm-check-updates": "^23.1.1",
-    "postcss": "^8.5.32",
-    "tailwindcss": "^4.3.4",
+    "postcss": "^8.5.33",
+    "tailwindcss": "^4.3.5",
     "typescript": "^7.0.2",
-    "vite": "^8.3.6",
+    "vite": "^8.3.8",
     "vite-plugin-pwa": "^2.0.0",
     "vitest": "^5.1.0"
   }
